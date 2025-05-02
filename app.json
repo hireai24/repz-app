@@ -1,0 +1,39 @@
+{
+  "expo": {
+    "name": "REPZ",
+    "slug": "repz-app",
+    "version": "1.0.1",
+    "orientation": "portrait",
+    "icon": "./src/assets/logo.png",
+    "splash": {
+      "image": "./src/assets/splash/splash-dark.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#000000"
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.repz.app",
+      "buildNumber": "2"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./src/assets/logo.png",
+        "backgroundColor": "#000000"
+      },
+      "package": "com.repz.app",
+      "versionCode": 2
+    },
+    "web": {
+      "favicon": "./src/assets/logo.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "REPLACE_WITH_REAL_EAS_PROJECT_ID"
+      }
+    }
+  }
+}
