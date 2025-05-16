@@ -1,25 +1,33 @@
-import { db } from '../firebase/init.js';
-import { collection, addDoc } from 'firebase/firestore';
-import { sendPrompt, cleanAIOutput } from '../utils/aiUtils.js';
-import { generateMealPlan as generateMealPlanAI } from '../../ai/prompts/mealGenerator.js';
+import { collection, addDoc } from "firebase/firestore";
+
+import { db } from "../firebase/init.js";
+import { generateMealPlan as generateMealPlanAI } from "../../ai/prompts/mealGenerator.js";
 
 const generateMealPlan = async (
   userId,
-  { goal, calories, macros, preferences = {}, mealsPerDay = 4 }
+  { goal, calories, macros, preferences = {}, mealsPerDay = 4 },
 ) => {
   if (
-    !userId || typeof userId !== 'string' ||
-    !goal || typeof goal !== 'string' ||
-    !calories || typeof calories !== 'number' ||
-    !macros || typeof macros !== 'object' ||
-    !macros.protein || typeof macros.protein !== 'number' ||
-    !macros.carbs || typeof macros.carbs !== 'number' ||
-    !macros.fat || typeof macros.fat !== 'number' ||
-    typeof mealsPerDay !== 'number'
+    !userId ||
+    typeof userId !== "string" ||
+    !goal ||
+    typeof goal !== "string" ||
+    !calories ||
+    typeof calories !== "number" ||
+    !macros ||
+    typeof macros !== "object" ||
+    !macros.protein ||
+    typeof macros.protein !== "number" ||
+    !macros.carbs ||
+    typeof macros.carbs !== "number" ||
+    !macros.fat ||
+    typeof macros.fat !== "number" ||
+    typeof mealsPerDay !== "number"
   ) {
     return {
       success: false,
-      error: 'Missing or invalid inputs. Ensure userId, goal, calories, macros, and mealsPerDay are valid.'
+      error:
+        "Missing or invalid inputs. Ensure userId, goal, calories, macros, and mealsPerDay are valid.",
     };
   }
 
@@ -35,39 +43,45 @@ const generateMealPlan = async (
       carbs,
       fat,
       dietaryPrefs: preferences,
-      mealsPerDay
+      mealsPerDay,
     });
 
     const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('AI meal plan generation timeout.')), aiTimeoutMs)
+      setTimeout(
+        () => reject(new Error("AI meal plan generation timeout.")),
+        aiTimeoutMs,
+      ),
     );
 
-    const { success, planText, error } = await Promise.race([aiPromise, timeoutPromise]);
+    const { success, planText, error } = await Promise.race([
+      aiPromise,
+      timeoutPromise,
+    ]);
 
     if (!success || !planText) {
-      throw new Error(error || 'AI prompt returned no result.');
+      throw new Error(error || "AI prompt returned no result.");
     }
 
-    const docRef = await addDoc(collection(db, 'mealPlans'), {
+    const docRef = await addDoc(collection(db, "mealPlans"), {
       userId,
       goal,
       calories,
       macros,
       preferences,
       plan: planText,
-      createdAt: new Date()
+      createdAt: new Date(),
     });
 
     return {
       success: true,
       mealPlanId: docRef.id,
-      mealPlan: planText
+      mealPlan: planText,
     };
   } catch (error) {
-    console.error('🔥 Error generating meal plan:', error);
+    console.error("🔥 Error generating meal plan:", error);
     return {
       success: false,
-      error: error.message || 'Unknown error generating meal plan.'
+      error: error.message || "Unknown error generating meal plan.",
     };
   }
 };

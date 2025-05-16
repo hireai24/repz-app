@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext } from "react";
 import {
   View,
   Text,
@@ -10,34 +10,36 @@ import {
   Keyboard,
   TouchableWithoutFeedback,
   Animated,
-  Image,
   Alert,
-} from 'react-native';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
-import { auth, db } from '../backend/firebase/init';
-import { AuthContext } from '../context/AuthContext';
-import { UserContext } from '../context/UserContext';
-import AvatarSelector from '../components/AvatarSelector';
-import useFadeIn from '../animations/fadeIn';
-import colors from '../theme/colors';
-import spacing from '../theme/spacing';
-import typography from '../theme/typography';
-import i18n from '../locales/i18n';
+} from "react-native";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
 
-const goals = ['Fat Loss', 'Muscle Gain', 'Strength', 'Athletic'];
+import { auth, db } from "../../backend/firebase/init.js";
+import { AuthContext } from "../context/AuthContext";
+import { UserContext } from "../context/UserContext";
+import AvatarSelector from "../components/AvatarSelector";
+import useFadeIn from "../animations/fadeIn";
+import colors from "../theme/colors";
+import spacing from "../theme/spacing";
+import typography from "../theme/typography";
+import i18n from "../locales/i18n";
+
+const goals = ["Fat Loss", "Muscle Gain", "Strength", "Athletic"];
 
 const OnboardingScreen = () => {
   const { signIn } = useContext(AuthContext);
   const { setUserProfile } = useContext(UserContext);
 
-  const [username, setUsername] = useState('');
-  const [gym, setGym] = useState('');
+  const [username, setUsername] = useState("");
+  const [gym, setGym] = useState("");
   const [goal, setGoal] = useState(null);
-  const [avatar, setAvatar] = useState(require('../assets/avatars/avatar1.png'));
+  const [avatar, setAvatar] = useState(
+    require("../assets/avatars/avatar1.png"),
+  );
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
@@ -47,13 +49,16 @@ const OnboardingScreen = () => {
   const validateInputs = () => {
     const newErrors = {};
     if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
-      newErrors.email = i18n.t('onboarding.invalidEmail') || 'Invalid email address';
+      newErrors.email =
+        i18n.t("onboarding.invalidEmail") || "Invalid email address";
     }
     if (!password || password.length < 6) {
-      newErrors.password = i18n.t('onboarding.invalidPassword') || 'Password must be at least 6 characters';
+      newErrors.password =
+        i18n.t("onboarding.invalidPassword") ||
+        "Password must be at least 6 characters";
     }
-    if (!username) newErrors.username = i18n.t('onboarding.required');
-    if (!goal) newErrors.goal = i18n.t('onboarding.required');
+    if (!username) newErrors.username = i18n.t("onboarding.required");
+    if (!goal) newErrors.goal = i18n.t("onboarding.required");
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -64,10 +69,14 @@ const OnboardingScreen = () => {
     try {
       setLoading(true);
 
-      const userCred = await createUserWithEmailAndPassword(auth, email, password);
+      const userCred = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password,
+      );
       const userId = userCred.user.uid;
 
-      const tier = 'Free';
+      const tier = "Free";
       const userData = {
         id: userId,
         email,
@@ -79,14 +88,17 @@ const OnboardingScreen = () => {
         createdAt: new Date().toISOString(),
       };
 
-      await setDoc(doc(db, 'users', userId), userData);
+      await setDoc(doc(db, "users", userId), userData);
       setUserProfile(userData);
       signIn();
 
-      Alert.alert(i18n.t('onboarding.successTitle') || 'Welcome!', i18n.t('onboarding.successMessage') || 'Your account has been created.');
+      Alert.alert(
+        i18n.t("onboarding.successTitle") || "Welcome!",
+        i18n.t("onboarding.successMessage") || "Your account has been created.",
+      );
     } catch (err) {
-      console.error('Sign up error:', err);
-      setErrors({ general: err.message || i18n.t('common.error') });
+      console.error("Sign up error:", err);
+      setErrors({ general: err.message || i18n.t("common.error") });
     } finally {
       setLoading(false);
     }
@@ -96,15 +108,17 @@ const OnboardingScreen = () => {
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <ScrollView contentContainerStyle={styles.container}>
         <Animated.Image
-          source={require('../assets/logo.png')}
+          source={require("../assets/logo.png")}
           style={[styles.logo, { opacity: logoFade }]}
           resizeMode="contain"
         />
 
-        <Animated.View style={{ opacity: formFade, width: '100%' }}>
-          <Text style={styles.title}>{i18n.t('onboarding.welcome')}</Text>
+        <Animated.View style={{ opacity: formFade, width: "100%" }}>
+          <Text style={styles.title}>{i18n.t("onboarding.welcome")}</Text>
 
-          {errors.general && <Text style={styles.errorText}>{errors.general}</Text>}
+          {errors.general && (
+            <Text style={styles.errorText}>{errors.general}</Text>
+          )}
 
           {/* Email */}
           <Text style={styles.label}>Email</Text>
@@ -121,7 +135,7 @@ const OnboardingScreen = () => {
           {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
 
           {/* Password */}
-          <Text style={styles.label}>{i18n.t('onboarding.password')}</Text>
+          <Text style={styles.label}>{i18n.t("onboarding.password")}</Text>
           <TextInput
             style={styles.input}
             value={password}
@@ -131,10 +145,12 @@ const OnboardingScreen = () => {
             placeholderTextColor={colors.textSecondary}
             accessibilityLabel="password"
           />
-          {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
+          {errors.password && (
+            <Text style={styles.errorText}>{errors.password}</Text>
+          )}
 
           {/* Username */}
-          <Text style={styles.label}>{i18n.t('onboarding.username')}</Text>
+          <Text style={styles.label}>{i18n.t("onboarding.username")}</Text>
           <TextInput
             style={styles.input}
             value={username}
@@ -143,10 +159,12 @@ const OnboardingScreen = () => {
             placeholderTextColor={colors.textSecondary}
             accessibilityLabel="username"
           />
-          {errors.username && <Text style={styles.errorText}>{errors.username}</Text>}
+          {errors.username && (
+            <Text style={styles.errorText}>{errors.username}</Text>
+          )}
 
           {/* Gym */}
-          <Text style={styles.label}>{i18n.t('onboarding.gym')}</Text>
+          <Text style={styles.label}>{i18n.t("onboarding.gym")}</Text>
           <TextInput
             style={styles.input}
             value={gym}
@@ -157,7 +175,7 @@ const OnboardingScreen = () => {
           />
 
           {/* Goal selection */}
-          <Text style={styles.label}>{i18n.t('onboarding.goalPrompt')}</Text>
+          <Text style={styles.label}>{i18n.t("onboarding.goalPrompt")}</Text>
           <View style={styles.optionRow}>
             {goals.map((g) => (
               <TouchableOpacity
@@ -168,7 +186,10 @@ const OnboardingScreen = () => {
                 accessibilityState={{ selected: goal === g }}
               >
                 <Text
-                  style={[styles.optionText, goal === g && styles.optionTextActive]}
+                  style={[
+                    styles.optionText,
+                    goal === g && styles.optionTextActive,
+                  ]}
                 >
                   {g}
                 </Text>
@@ -178,7 +199,7 @@ const OnboardingScreen = () => {
           {errors.goal && <Text style={styles.errorText}>{errors.goal}</Text>}
 
           {/* Avatar selector */}
-          <Text style={styles.label}>{i18n.t('onboarding.selectAvatar')}</Text>
+          <Text style={styles.label}>{i18n.t("onboarding.selectAvatar")}</Text>
           <AvatarSelector selectedAvatar={avatar} onSelect={setAvatar} />
 
           {/* CTA Button */}
@@ -191,7 +212,7 @@ const OnboardingScreen = () => {
             {loading ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Text style={styles.ctaText}>{i18n.t('onboarding.start')}</Text>
+              <Text style={styles.ctaText}>{i18n.t("onboarding.start")}</Text>
             )}
           </TouchableOpacity>
         </Animated.View>
@@ -204,10 +225,10 @@ const styles = StyleSheet.create({
   container: {
     padding: spacing.lg,
     backgroundColor: colors.background,
-    alignItems: 'center',
+    alignItems: "center",
   },
   logo: {
-    width: '50%',
+    width: "50%",
     height: undefined,
     aspectRatio: 1,
     marginBottom: spacing.md,
@@ -216,26 +237,26 @@ const styles = StyleSheet.create({
     ...typography.heading1,
     color: colors.textPrimary,
     marginBottom: spacing.lg,
-    textAlign: 'center',
+    textAlign: "center",
   },
   label: {
     color: colors.textSecondary,
-    alignSelf: 'flex-start',
+    alignSelf: "flex-start",
     marginTop: spacing.md,
     fontSize: 15,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   input: {
     backgroundColor: colors.surface,
     color: colors.textPrimary,
-    width: '100%',
+    width: "100%",
     padding: spacing.md,
     borderRadius: 8,
     marginTop: 6,
   },
   optionRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: 10,
     marginTop: 10,
   },
@@ -253,25 +274,25 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
   },
   optionTextActive: {
-    color: '#fff',
-    fontWeight: 'bold',
+    color: "#fff",
+    fontWeight: "bold",
   },
   cta: {
     marginTop: spacing.xl,
     backgroundColor: colors.primary,
     padding: spacing.lg,
-    width: '100%',
+    width: "100%",
     borderRadius: 8,
-    alignItems: 'center',
+    alignItems: "center",
   },
   ctaText: {
     color: colors.textOnPrimary,
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   errorText: {
     color: colors.error,
-    alignSelf: 'flex-start',
+    alignSelf: "flex-start",
     fontSize: 13,
     marginTop: 4,
   },

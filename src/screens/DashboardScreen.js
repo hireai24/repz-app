@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState, useCallback } from 'react';
+import React, { useContext, useEffect, useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -11,64 +11,64 @@ import {
   FlatList,
   RefreshControl,
   ActivityIndicator,
-} from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+} from "react-native";
+import { useNavigation } from "@react-navigation/native";
 
-import { UserContext } from '../context/UserContext';
-import { XPContext } from '../context/XPContext';
-import { getUserPlans } from '../api/userApi';
-import XPProgress from '../components/XPProgress';
-import TierBadge from '../components/TierBadge';
-import ChallengeCard from '../components/ChallengeCard';
-import UserPlanCard from '../components/UserPlanCard';
-import useBounceXP from '../animations/bounceXP';
-import useFadeIn from '../animations/fadeIn';
-import { useTierAccess } from '../hooks/useTierAccess';
-import spacing from '../theme/spacing';
-import typography from '../theme/typography';
-import colors from '../theme/colors';
-import i18n from '../locales/i18n';
+import { UserContext } from "../context/UserContext";
+import { XPContext } from "../context/XPContext";
+import { getUserPlans } from "../api/userApi";
+import XPProgress from "../components/XPProgress";
+import TierBadge from "../components/TierBadge";
+import ChallengeCard from "../components/ChallengeCard";
+import UserPlanCard from "../components/UserPlanCard";
+import useBounceXP from "../animations/bounceXP";
+import useFadeIn from "../animations/fadeIn";
+import { useTierAccess } from "../hooks/useTierAccess";
+import spacing from "../theme/spacing";
+import typography from "../theme/typography";
+import colors from "../theme/colors";
+import i18n from "../locales/i18n";
 
 const DashboardScreen = () => {
   const { userProfile, userId } = useContext(UserContext);
   const { xp, level, xpToNext } = useContext(XPContext);
   const { triggerBounce, scale } = useBounceXP();
   const fadeAnim = useFadeIn(200);
-  const { allowed } = useTierAccess('Free');
+  const { allowed } = useTierAccess("Free");
   const navigation = useNavigation();
 
   const [ownedPlans, setOwnedPlans] = useState([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
-  const name = userProfile?.username || i18n.t('dashboard.defaultName');
-  const avatar = userProfile?.profilePicture || require('../assets/avatars/avatar1.png');
-  const nextWorkout = i18n.t('dashboard.nextWorkoutTitle');
+  const name = userProfile?.username || i18n.t("dashboard.defaultName");
+  const avatar =
+    userProfile?.profilePicture || require("../assets/avatars/avatar1.png");
+  const nextWorkout = i18n.t("dashboard.nextWorkoutTitle");
   const challenge = {
-    title: i18n.t('dashboard.challengeTitle'),
-    status: 'Active',
+    title: i18n.t("dashboard.challengeTitle"),
+    status: "Active",
     xpReward: 120,
   };
 
-  const loadPlans = async () => {
+  const loadPlans = useCallback(async () => {
     if (!userId) return;
     try {
       setLoading(true);
-      setError('');
+      setError("");
       const result = await getUserPlans(userId);
       if (result.success) {
         setOwnedPlans(result.plans);
       } else {
-        setError(i18n.t('dashboard.errorLoadingPlans'));
+        setError(i18n.t("dashboard.errorLoadingPlans"));
       }
-    } catch (err) {
-      console.error('Unexpected error loading plans:', err);
-      setError(i18n.t('dashboard.errorLoadingPlans'));
+    } catch {
+      setError(i18n.t("dashboard.errorLoadingPlans"));
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId]);
 
   useEffect(() => {
     triggerBounce();
@@ -76,17 +76,17 @@ const DashboardScreen = () => {
 
   useEffect(() => {
     loadPlans();
-  }, [userId]);
+  }, [loadPlans]);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     loadPlans().finally(() => setRefreshing(false));
-  }, [userId]);
+  }, [loadPlans]);
 
   if (!allowed) {
     return (
       <View style={styles.centered}>
-        <Text style={styles.locked}>{i18n.t('dashboard.tierLock')}</Text>
+        <Text style={styles.locked}>{i18n.t("dashboard.tierLock")}</Text>
       </View>
     );
   }
@@ -94,48 +94,49 @@ const DashboardScreen = () => {
   return (
     <ScrollView
       style={styles.container}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
     >
-      {/* Welcome Header */}
       <Animated.View style={[styles.header, { opacity: fadeAnim }]}>
         <Image source={avatar} style={styles.avatar} />
         <View style={styles.headerText}>
-          <Text style={styles.welcome}>{i18n.t('dashboard.welcome')}</Text>
+          <Text style={styles.welcome}>{i18n.t("dashboard.welcome")}</Text>
           <Text style={styles.name}>{name}</Text>
         </View>
         <TierBadge tier={userProfile?.tier} />
       </Animated.View>
 
-      {/* XP Tracker */}
       <View style={styles.section}>
         <Animated.View style={{ transform: [{ scale }] }}>
           <XPProgress xp={xp} level={level} xpToNext={xpToNext} />
         </Animated.View>
       </View>
 
-      {/* Next Workout */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>{i18n.t('dashboard.nextWorkout')}</Text>
+        <Text style={styles.sectionTitle}>
+          {i18n.t("dashboard.nextWorkout")}
+        </Text>
         <TouchableOpacity style={styles.card}>
           <Text style={styles.cardText}>{nextWorkout}</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Daily Challenge */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>{i18n.t('dashboard.challenges')}</Text>
+        <Text style={styles.sectionTitle}>
+          {i18n.t("dashboard.challenges")}
+        </Text>
         <ChallengeCard challenge={challenge} progress={{}} />
       </View>
 
-      {/* Owned Plans */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>{i18n.t('dashboard.myPlans')}</Text>
+        <Text style={styles.sectionTitle}>{i18n.t("dashboard.myPlans")}</Text>
         {error ? (
           <Text style={styles.errorText}>{error}</Text>
         ) : loading ? (
           <ActivityIndicator size="large" color={colors.primary} />
         ) : ownedPlans.length === 0 ? (
-          <Text style={styles.emptyText}>{i18n.t('dashboard.noPlans')}</Text>
+          <Text style={styles.emptyText}>{i18n.t("dashboard.noPlans")}</Text>
         ) : (
           <FlatList
             data={ownedPlans}
@@ -143,47 +144,66 @@ const DashboardScreen = () => {
             renderItem={({ item }) => (
               <UserPlanCard
                 plan={item}
-                onPress={() => navigation.navigate('PlanDetails', { plan: item })}
+                onPress={() =>
+                  navigation.navigate("PlanDetails", { plan: item })
+                }
               />
             )}
             scrollEnabled={false}
-            contentContainerStyle={{ paddingBottom: 20 }}
+            contentContainerStyle={styles.planListContent}
           />
         )}
       </View>
 
-      {/* Pro Tools Navigation */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>{i18n.t('dashboard.proTools')}</Text>
+        <Text style={styles.sectionTitle}>{i18n.t("dashboard.proTools")}</Text>
         <View style={styles.toolRow}>
-          <TouchableOpacity style={styles.toolButton} onPress={() => navigation.navigate('PlanBuilder')}>
-            <Text style={styles.toolText}>{i18n.t('dashboard.toolPlanBuilder')}</Text>
+          <TouchableOpacity
+            style={styles.toolButton}
+            onPress={() => navigation.navigate("PlanBuilder")}
+          >
+            <Text style={styles.toolText}>
+              {i18n.t("dashboard.toolPlanBuilder")}
+            </Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.toolButton} onPress={() => navigation.navigate('FormGhost')}>
-            <Text style={styles.toolText}>{i18n.t('dashboard.toolFormGhost')}</Text>
+          <TouchableOpacity
+            style={styles.toolButton}
+            onPress={() => navigation.navigate("FormGhost")}
+          >
+            <Text style={styles.toolText}>
+              {i18n.t("dashboard.toolFormGhost")}
+            </Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.toolButton} onPress={() => navigation.navigate('VisualGains')}>
-            <Text style={styles.toolText}>{i18n.t('dashboard.toolVisualGains')}</Text>
+          <TouchableOpacity
+            style={styles.toolButton}
+            onPress={() => navigation.navigate("VisualGains")}
+          >
+            <Text style={styles.toolText}>
+              {i18n.t("dashboard.toolVisualGains")}
+            </Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.toolButton} onPress={() => navigation.navigate('UserPlans')}>
-            <Text style={styles.toolText}>{i18n.t('dashboard.toolUserPlans')}</Text>
+          <TouchableOpacity
+            style={styles.toolButton}
+            onPress={() => navigation.navigate("UserPlans")}
+          >
+            <Text style={styles.toolText}>
+              {i18n.t("dashboard.toolUserPlans")}
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
 
-      {/* Feed Placeholder */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>{i18n.t('dashboard.feed')}</Text>
+        <Text style={styles.sectionTitle}>{i18n.t("dashboard.feed")}</Text>
         <TextInput
           style={styles.input}
-          placeholder={i18n.t('dashboard.feedPlaceholder')}
+          placeholder={i18n.t("dashboard.feedPlaceholder")}
           placeholderTextColor={colors.textSecondary}
         />
       </View>
 
-      {/* Bottom Nav */}
       <View style={styles.navBar}>
-        {['🏠', '🏋️', '⚔️', '🧑‍🤝‍🧑', '⚙️'].map((icon, idx) => (
+        {["🏠", "🏋️", "⚔️", "🧑‍🤝‍🧑", "⚙️"].map((icon, idx) => (
           <TouchableOpacity key={idx} accessible accessibilityRole="tab">
             <Text style={styles.navIcon}>{icon}</Text>
           </TouchableOpacity>
@@ -200,8 +220,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: spacing.md,
   },
   headerText: {
@@ -245,8 +265,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   navBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+    flexDirection: "row",
+    justifyContent: "space-around",
     paddingVertical: spacing.md,
     borderTopColor: colors.surface,
     borderTopWidth: 1,
@@ -260,29 +280,29 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     padding: spacing.lg,
     fontSize: 16,
-    textAlign: 'center',
+    textAlign: "center",
   },
   centered: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     backgroundColor: colors.background,
   },
   emptyText: {
     color: colors.textSecondary,
-    textAlign: 'center',
+    textAlign: "center",
     fontSize: 14,
     marginTop: spacing.md,
   },
   errorText: {
     color: colors.error,
-    textAlign: 'center',
+    textAlign: "center",
     fontSize: 14,
     marginTop: spacing.md,
   },
   toolRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: spacing.sm,
   },
   toolButton: {
@@ -295,6 +315,9 @@ const styles = StyleSheet.create({
   toolText: {
     color: colors.textPrimary,
     fontSize: 13,
+  },
+  planListContent: {
+    paddingBottom: spacing.lg,
   },
 });
 

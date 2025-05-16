@@ -1,4 +1,4 @@
-import { startOfDay, differenceInDays, parseISO, isValid } from 'date-fns';
+import { startOfDay, differenceInDays, parseISO, isValid } from "date-fns";
 
 /**
  * Calculates workout streaks based on the last workout date.
@@ -11,7 +11,7 @@ import { startOfDay, differenceInDays, parseISO, isValid } from 'date-fns';
 const calculateStreak = (lastWorkoutDateStr = null) => {
   const today = startOfDay(new Date());
 
-  if (!lastWorkoutDateStr || typeof lastWorkoutDateStr !== 'string') {
+  if (!lastWorkoutDateStr || typeof lastWorkoutDateStr !== "string") {
     return {
       updatedStreak: 1,
       isNewDay: true,

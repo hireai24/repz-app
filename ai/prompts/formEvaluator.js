@@ -1,4 +1,4 @@
-import { sendPrompt, cleanAIOutput } from '../../backend/utils/aiUtils.js';
+import { sendPrompt, cleanAIOutput } from "../../backend/utils/aiUtils.js";
 
 /**
  * Evaluates exercise form based on rep-by-rep video transcript.
@@ -10,19 +10,23 @@ import { sendPrompt, cleanAIOutput } from '../../backend/utils/aiUtils.js';
  * @param {string} input.transcript - Rep-by-rep breakdown text
  * @returns {Object} AI feedback response
  */
-export const evaluateFormFromTranscript = async ({ exercise, reps, transcript }) => {
+export const evaluateFormFromTranscript = async ({
+  exercise,
+  reps,
+  transcript,
+}) => {
   if (
-    typeof exercise !== 'string' ||
-    typeof reps !== 'number' ||
-    typeof transcript !== 'string' ||
+    typeof exercise !== "string" ||
+    typeof reps !== "number" ||
+    typeof transcript !== "string" ||
     !exercise.trim() ||
     !transcript.trim()
   ) {
     return {
       success: false,
       error: {
-        message: 'Invalid input. Exercise, reps, and transcript are required.',
-        code: 'INVALID_INPUT',
+        message: "Invalid input. Exercise, reps, and transcript are required.",
+        code: "INVALID_INPUT",
       },
     };
   }
@@ -102,9 +106,9 @@ Expert Cues:
       return {
         success: false,
         error: {
-          message: 'AI prompt failed',
+          message: "AI prompt failed.",
           details: error,
-          code: 'PROMPT_FAILURE',
+          code: "PROMPT_FAILURE",
         },
       };
     }
@@ -114,13 +118,12 @@ Expert Cues:
       feedback: cleanAIOutput(result),
     };
   } catch (err) {
-    console.error('🔥 Form evaluation error:', err);
     return {
       success: false,
       error: {
-        message: 'Unexpected error during AI evaluation.',
+        message: "Unexpected error during AI evaluation.",
         details: err,
-        code: 'UNEXPECTED_ERROR',
+        code: "UNEXPECTED_ERROR",
       },
     };
   }

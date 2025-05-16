@@ -19,15 +19,15 @@ REPZ is an AI-powered social fitness platform built for modern lifters, creators
 
 ## 🧱 Tech Stack
 
-| Layer        | Tech Stack                                  |
-|--------------|---------------------------------------------|
-| **Frontend** | React Native (Expo SDK)                     |
-| **Backend**  | Firebase + Node.js Functions                |
-| **AI Engine**| OpenAI (GPT-3.5) + TensorFlow Pose Detection|
-| **Payments** | Stripe (Web) + RevenueCat (Mobile)          |
-| **Database** | Firebase Firestore                          |
-| **Storage**  | Firebase Cloud Storage                      |
-| **Hosting**  | Firebase Hosting                            |
+| Layer         | Tech Stack                                   |
+| ------------- | -------------------------------------------- |
+| **Frontend**  | React Native (Expo SDK)                      |
+| **Backend**   | Firebase + Node.js Functions                 |
+| **AI Engine** | OpenAI (GPT-3.5) + TensorFlow Pose Detection |
+| **Payments**  | Stripe (Web) + RevenueCat (Mobile)           |
+| **Database**  | Firebase Firestore                           |
+| **Storage**   | Firebase Cloud Storage                       |
+| **Hosting**   | Firebase Hosting                             |
 
 ---
 
@@ -126,3 +126,4 @@ Or use EAS Build.
 yaml
 Copy
 Edit
+```

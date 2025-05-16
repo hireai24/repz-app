@@ -1,10 +1,10 @@
 // src/api/userPlansApi.js
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
-const USER_PLANS_URL = `${BASE_URL}/user-plans`;
-const SAVE_PLAN_URL = `${BASE_URL}/user-plans/save`;
+const USER_PLANS_URL = `${BASE_URL}/save-plan`;
+const XP_TRACK_URL = `${BASE_URL}/xp`; // Added for XP tracking if needed
 
 const MAX_RETRIES = 2;
 const RETRY_DELAY_MS = 500;
@@ -14,11 +14,10 @@ const RETRY_DELAY_MS = 500;
  */
 const getAuthToken = async () => {
   try {
-    const token = await AsyncStorage.getItem('authToken');
-    return token || '';
-  } catch (err) {
-    console.error('Token retrieval error:', err);
-    return '';
+    const token = await AsyncStorage.getItem("authToken");
+    return token || "";
+  } catch {
+    return "";
   }
 };
 
@@ -37,7 +36,6 @@ const fetchWithRetry = async (url, options = {}, retries = MAX_RETRIES) => {
       }
       return await res.json();
     } catch (err) {
-      console.error(`Fetch attempt ${attempt + 1} failed:`, err.message);
       if (attempt === retries) {
         return { success: false, error: err.message };
       }
@@ -47,38 +45,43 @@ const fetchWithRetry = async (url, options = {}, retries = MAX_RETRIES) => {
 };
 
 /**
- * Fetch all plans the user owns
+ * Fetch all saved user plans
  */
 export const getUserPlans = async (userId) => {
-  try {
-    const token = await getAuthToken();
-    return await fetchWithRetry(`${USER_PLANS_URL}/${userId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-  } catch (err) {
-    console.error('Error fetching user plans:', err);
-    return { success: false, error: err.message };
-  }
+  const token = await getAuthToken();
+  return await fetchWithRetry(`${USER_PLANS_URL}/${userId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
 };
 
 /**
- * Save a new user plan (AI-generated or uploaded)
+ * Save a new plan
  */
 export const saveUserPlan = async (planData) => {
-  try {
-    const token = await getAuthToken();
-    return await fetchWithRetry(SAVE_PLAN_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(planData),
-    });
-  } catch (err) {
-    console.error('Error saving user plan:', err);
-    return { success: false, error: err.message };
-  }
+  const token = await getAuthToken();
+  return await fetchWithRetry(`${USER_PLANS_URL}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(planData),
+  });
+};
+
+/**
+ * Optional: Track XP after saving
+ */
+export const trackXP = async (xpPayload) => {
+  const token = await getAuthToken();
+  return await fetchWithRetry(`${XP_TRACK_URL}/log`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(xpPayload),
+  });
 };

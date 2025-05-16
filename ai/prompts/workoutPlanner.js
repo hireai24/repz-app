@@ -1,4 +1,4 @@
-import { sendPrompt, cleanAIOutput } from '../../backend/utils/aiUtils.js';
+import { sendPrompt, cleanAIOutput } from "../../backend/utils/aiUtils.js";
 
 /**
  * Generates a 1-week gym workout plan using AI prompt.
@@ -20,17 +20,22 @@ export const generateWorkoutPlan = async ({
   equipment,
   experienceLevel,
 }) => {
-  if (
-    !goal || typeof goal !== 'string' ||
-    !availableDays || typeof availableDays !== 'number' ||
-    !preferredSplit || typeof preferredSplit !== 'string' ||
-    !experienceLevel || typeof experienceLevel !== 'string'
-  ) {
+  const isValid =
+    typeof goal === "string" &&
+    typeof preferredSplit === "string" &&
+    typeof experienceLevel === "string" &&
+    typeof availableDays === "number" &&
+    goal.trim() &&
+    preferredSplit.trim() &&
+    experienceLevel.trim() &&
+    availableDays > 0;
+
+  if (!isValid) {
     return {
       success: false,
       error: {
-        message: 'Invalid input. Required fields: goal, availableDays, preferredSplit, experienceLevel.',
-        code: 'INVALID_INPUT',
+        message: "Invalid input. Required: goal, availableDays, preferredSplit, experienceLevel.",
+        code: "INVALID_INPUT",
       },
     };
   }
@@ -43,19 +48,16 @@ You are an elite personal trainer AI building a safe, effective, and motivating 
 - Experience: ${experienceLevel}
 - Available Days: ${availableDays}
 - Preferred Split: ${preferredSplit}
-- Injuries: ${injuries || 'None'}
-- Equipment: ${equipment || 'Standard gym machines & free weights'}
+- Injuries: ${injuries || "None"}
+- Equipment: ${equipment || "Standard gym machines & free weights"}
 
 === INSTRUCTIONS ===
-- Provide a detailed 1-week workout plan
-- Each day (Day 1 to Day ${availableDays}) includes:
-  • Day Label (e.g., Push, Pull, Full Body)
-  • 3–5 Exercises
-  • Sets x Reps format
-- Use safe variations if injuries are listed
-- Include supersets or finishers when appropriate
-- Do not include warmups, cooldowns, or general advice
-- No explanations — just return the plan in pure format
+Provide a structured 1-week plan:
+• Label each day (e.g., Push, Pull, Full Body)
+• Include 3–5 exercises per day in Sets x Reps format
+• Use injury-safe variations if applicable
+• Include supersets or finishers where fitting
+• Do not add warmups, cooldowns, tips, or explanations
 
 === OUTPUT FORMAT ===
 Day 1 - Push  
@@ -66,26 +68,37 @@ Day 1 - Push
 ...
 
 === DISCLAIMER ===
-This plan is AI-generated for educational use. It does not replace guidance from certified professionals. Consult a trainer or physician before starting any workout program.
+This plan is AI-generated for educational use. Always consult a certified trainer or physician before starting any new program.
 
 Begin:
 `;
 
-  const { success, result, error } = await sendPrompt(prompt);
+  try {
+    const { success, result, error } = await sendPrompt(prompt);
 
-  if (!success) {
+    if (!success) {
+      return {
+        success: false,
+        error: {
+          message: "Workout plan generation failed.",
+          details: error,
+          code: "PROMPT_FAILURE",
+        },
+      };
+    }
+
+    return {
+      success: true,
+      planText: cleanAIOutput(result),
+    };
+  } catch (err) {
     return {
       success: false,
       error: {
-        message: 'Workout plan generation failed.',
-        details: error,
-        code: 'PROMPT_FAILURE',
+        message: "Unexpected error during workout generation.",
+        details: err,
+        code: "UNEXPECTED_ERROR",
       },
     };
   }
-
-  return {
-    success: true,
-    planText: cleanAIOutput(result),
-  };
 };

@@ -1,17 +1,25 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { TouchableOpacity, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import React from "react";
+import PropTypes from "prop-types";
+import {
+  TouchableOpacity,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+} from "react-native";
 
-const COLORS = {
-  primary: '#E63946',
-  secondary: '#1a1a1a',
-  danger: '#ff3b3b',
-  disabled: '#333',
-  text: '#fff',
-};
+import colors from "../theme/colors";
 
-const Button = ({ label, onPress, variant = 'primary', disabled = false, loading = false, style }) => {
-  const backgroundColor = disabled ? COLORS.disabled : COLORS[variant] || COLORS.primary;
+const Button = ({
+  label,
+  onPress,
+  variant = "primary",
+  disabled = false,
+  loading = false,
+  style,
+}) => {
+  const backgroundColor = disabled
+    ? colors.disabled
+    : colors[variant] || colors.primary;
 
   return (
     <TouchableOpacity
@@ -22,12 +30,12 @@ const Button = ({ label, onPress, variant = 'primary', disabled = false, loading
       accessibilityRole="button"
       accessibilityLabel={label}
       accessibilityState={{ disabled: disabled || loading, busy: loading }}
-      testID={`button-${label.toLowerCase().replace(/\s+/g, '-')}`}
+      testID={`button-${label.toLowerCase().replace(/\s+/g, "-")}`}
     >
       {loading ? (
-        <ActivityIndicator color={COLORS.text} />
+        <ActivityIndicator color={colors.white} />
       ) : (
-        <Text style={[styles.text, { color: COLORS.text }]}>{label}</Text>
+        <Text style={[styles.text, { color: colors.white }]}>{label}</Text>
       )}
     </TouchableOpacity>
   );
@@ -38,12 +46,12 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 24,
     borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginVertical: 6,
   },
   text: {
-    fontWeight: '600',
+    fontWeight: "600",
     fontSize: 15,
   },
 });
@@ -51,7 +59,7 @@ const styles = StyleSheet.create({
 Button.propTypes = {
   label: PropTypes.string.isRequired,
   onPress: PropTypes.func.isRequired,
-  variant: PropTypes.oneOf(['primary', 'secondary', 'danger']),
+  variant: PropTypes.oneOf(["primary", "secondary", "danger"]),
   disabled: PropTypes.bool,
   loading: PropTypes.bool,
   style: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),

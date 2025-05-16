@@ -1,4 +1,3 @@
-import { db } from '../firebase/init.js';
 import {
   doc,
   getDoc,
@@ -9,11 +8,13 @@ import {
   where,
   orderBy,
   collection,
-} from 'firebase/firestore';
-import { verifyUser } from '../utils/authMiddleware.js';
-import fetch from 'node-fetch';
+} from "firebase/firestore";
+import fetch from "node-fetch";
 
-const REVENUECAT_API_URL = 'https://api.revenuecat.com/v1/subscribers';
+import { db } from "../firebase/init.js";
+import { verifyUser } from "../utils/authMiddleware.js";
+
+const REVENUECAT_API_URL = "https://api.revenuecat.com/v1/subscribers";
 const REVENUECAT_SECRET = process.env.REVENUECAT_WEBHOOK_SECRET;
 const FIREBASE_API_KEY = process.env.FIREBASE_API_KEY;
 
@@ -28,7 +29,7 @@ const upsertUserProfile = async (req, res) => {
       gym,
       goal,
       tier,
-      profileImage, // legacy field
+      profileImage,
       profilePicture,
       avatar,
       bestLifts,
@@ -36,42 +37,39 @@ const upsertUserProfile = async (req, res) => {
     } = req.body;
 
     if (
-      typeof userId !== 'string' ||
-      typeof username !== 'string' ||
-      typeof gym !== 'string'
+      typeof userId !== "string" ||
+      typeof username !== "string" ||
+      typeof gym !== "string"
     ) {
-      return res.status(400).json({ success: false, error: 'Missing or invalid required fields.' });
+      return res
+        .status(400)
+        .json({ success: false, error: "Missing or invalid required fields." });
     }
 
     try {
-      const userRef = doc(db, 'users', userId);
+      const userRef = doc(db, "users", userId);
 
-      // Ensure mutually exclusive use of avatar and profilePicture
       const profile = {
         username: username.trim(),
         gym: gym.trim(),
-        goal: goal || '',
-        tier: tier || 'Free',
+        goal: goal || "",
+        tier: tier || "Free",
         profileImage: profileImage || null,
-        profilePicture: typeof profilePicture === 'string' ? profilePicture : null,
-        avatar: typeof avatar === 'number' ? avatar : null,
+        profilePicture:
+          typeof profilePicture === "string" ? profilePicture : null,
+        avatar: typeof avatar === "number" ? avatar : null,
         bestLifts: Array.isArray(bestLifts) ? bestLifts : [],
-        stats: typeof stats === 'object' && stats !== null ? stats : {},
+        stats: typeof stats === "object" && stats !== null ? stats : {},
         updatedAt: new Date(),
       };
 
-      // Clear one field if the other is provided
-      if (profile.profilePicture) {
-        profile.avatar = null;
-      }
-      if (typeof profile.avatar === 'number') {
-        profile.profilePicture = null;
-      }
+      if (profile.profilePicture) profile.avatar = null;
+      if (typeof profile.avatar === "number") profile.profilePicture = null;
 
       await setDoc(userRef, profile, { merge: true });
       res.status(200).json({ success: true });
     } catch (err) {
-      console.error('Error saving profile:', err);
+      // TODO: Replace with logging utility
       res.status(500).json({ success: false, error: err.message });
     }
   });
@@ -85,15 +83,17 @@ const getUserProfile = async (req, res) => {
     const { userId } = req.params;
 
     if (!userId) {
-      return res.status(400).json({ success: false, error: 'Missing userId' });
+      return res.status(400).json({ success: false, error: "Missing userId" });
     }
 
     try {
-      const docRef = doc(db, 'users', userId);
+      const docRef = doc(db, "users", userId);
       const snapshot = await getDoc(docRef);
 
       if (!snapshot.exists()) {
-        return res.status(404).json({ success: false, error: 'User not found' });
+        return res
+          .status(404)
+          .json({ success: false, error: "User not found" });
       }
 
       const data = snapshot.data();
@@ -102,13 +102,13 @@ const getUserProfile = async (req, res) => {
         success: true,
         user: {
           ...data,
-          profileImage: data.profileImage || '',
-          avatar: typeof data.avatar === 'number' ? data.avatar : null,
-          profilePicture: data.profilePicture || '',
+          profileImage: data.profileImage || "",
+          avatar: typeof data.avatar === "number" ? data.avatar : null,
+          profilePicture: data.profilePicture || "",
         },
       });
     } catch (err) {
-      console.error('Error fetching profile:', err);
+      // TODO: Replace with logging utility
       res.status(500).json({ success: false, error: err.message });
     }
   });
@@ -122,15 +122,17 @@ const uploadProgressPhoto = async (req, res) => {
     const { userId, imageUrl, view } = req.body;
 
     if (
-      typeof userId !== 'string' ||
-      typeof imageUrl !== 'string' ||
-      typeof view !== 'string'
+      typeof userId !== "string" ||
+      typeof imageUrl !== "string" ||
+      typeof view !== "string"
     ) {
-      return res.status(400).json({ success: false, error: 'Missing or invalid required fields' });
+      return res
+        .status(400)
+        .json({ success: false, error: "Missing or invalid required fields" });
     }
 
     try {
-      const docRef = await addDoc(collection(db, 'progressPhotos'), {
+      const docRef = await addDoc(collection(db, "progressPhotos"), {
         userId,
         imageUrl,
         view,
@@ -139,7 +141,7 @@ const uploadProgressPhoto = async (req, res) => {
 
       res.status(200).json({ success: true, photoId: docRef.id });
     } catch (err) {
-      console.error('Error uploading photo:', err);
+      // TODO: Replace with logging utility
       res.status(500).json({ success: false, error: err.message });
     }
   });
@@ -153,14 +155,14 @@ const getProgressPhotos = async (req, res) => {
     const { userId } = req.params;
 
     if (!userId) {
-      return res.status(400).json({ success: false, error: 'Missing userId' });
+      return res.status(400).json({ success: false, error: "Missing userId" });
     }
 
     try {
       const q = query(
-        collection(db, 'progressPhotos'),
-        where('userId', '==', userId),
-        orderBy('createdAt', 'asc')
+        collection(db, "progressPhotos"),
+        where("userId", "==", userId),
+        orderBy("createdAt", "asc"),
       );
 
       const snapshot = await getDocs(q);
@@ -171,7 +173,7 @@ const getProgressPhotos = async (req, res) => {
 
       res.status(200).json({ success: true, photos });
     } catch (err) {
-      console.error('Error fetching progress photos:', err);
+      // TODO: Replace with logging utility
       res.status(500).json({ success: false, error: err.message });
     }
   });
@@ -185,7 +187,7 @@ const checkEntitlements = async (req, res) => {
     const { userId } = req.params;
 
     if (!userId) {
-      return res.status(400).json({ success: false, error: 'Missing userId' });
+      return res.status(400).json({ success: false, error: "Missing userId" });
     }
 
     try {
@@ -196,7 +198,9 @@ const checkEntitlements = async (req, res) => {
       });
 
       if (!response.ok) {
-        return res.status(400).json({ success: false, error: 'Failed to fetch entitlements' });
+        return res
+          .status(400)
+          .json({ success: false, error: "Failed to fetch entitlements" });
       }
 
       const data = await response.json();
@@ -209,7 +213,7 @@ const checkEntitlements = async (req, res) => {
 
       res.status(200).json({ success: true, access });
     } catch (err) {
-      console.error('Error checking entitlements:', err);
+      // TODO: Replace with logging utility
       res.status(500).json({ success: false, error: err.message });
     }
   });
@@ -221,27 +225,29 @@ const checkEntitlements = async (req, res) => {
 const resetPassword = async (req, res) => {
   const { email } = req.body;
 
-  if (!email || typeof email !== 'string') {
-    return res.status(400).json({ success: false, error: 'Missing or invalid email' });
+  if (!email || typeof email !== "string") {
+    return res
+      .status(400)
+      .json({ success: false, error: "Missing or invalid email" });
   }
 
   try {
     const response = await fetch(
       `https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=${FIREBASE_API_KEY}`,
       {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ requestType: 'PASSWORD_RESET', email }),
-      }
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ requestType: "PASSWORD_RESET", email }),
+      },
     );
 
     if (!response.ok) {
-      throw new Error('Failed to send reset email');
+      throw new Error("Failed to send reset email");
     }
 
     res.status(200).json({ success: true });
   } catch (err) {
-    console.error('Password reset error:', err);
+    // TODO: Replace with logging utility
     res.status(500).json({ success: false, error: err.message });
   }
 };

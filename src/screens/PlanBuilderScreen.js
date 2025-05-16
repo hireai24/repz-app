@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext } from "react";
 import {
   View,
   Text,
@@ -7,68 +7,69 @@ import {
   ScrollView,
   ActivityIndicator,
   Animated,
-} from 'react-native';
-import auth from '@react-native-firebase/auth';
-import { UserContext } from '../context/UserContext';
-import { useTierAccess } from '../hooks/useTierAccess';
-import useFadeIn from '../animations/fadeIn';
-import generateWorkout from '../../backend/functions/generateWorkout';
-import { saveNewUserPlan } from '../services/userPlanService';
-import i18n from '../locales/i18n';
-import colors from '../theme/colors';
-import spacing from '../theme/spacing';
-import typography from '../theme/typography';
+} from "react-native";
+import { auth } from "../../backend/firebase/init"; // ✅ Updated import
 
-const goals = ['Fat Loss', 'Muscle Gain', 'Strength', 'Athletic'];
-const splits = ['Push/Pull/Legs', 'Full Body', 'Upper/Lower', 'Bro Split'];
+import { UserContext } from "../context/UserContext";
+import { useTierAccess } from "../hooks/useTierAccess";
+import useFadeIn from "../animations/fadeIn";
+import generateWorkout from "../../backend/functions/generateWorkout";
+import { saveNewUserPlan } from "../services/userPlanService";
+import i18n from "../locales/i18n";
+import colors from "../theme/colors";
+import spacing from "../theme/spacing";
+import typography from "../theme/typography";
+
+const goals = ["Fat Loss", "Muscle Gain", "Strength", "Athletic"];
+const splits = ["Push/Pull/Legs", "Full Body", "Upper/Lower", "Bro Split"];
 
 const PlanBuilderScreen = () => {
   const fadeAnim = useFadeIn(100);
-  const { allowed, locked } = useTierAccess('Pro');
+  const { locked } = useTierAccess("Pro");
   const { userProfile, userId } = useContext(UserContext);
 
-  const [goal, setGoal] = useState('');
-  const [split, setSplit] = useState('');
+  const [goal, setGoal] = useState("");
+  const [split, setSplit] = useState("");
   const [days, setDays] = useState(4);
   const [loading, setLoading] = useState(false);
   const [plan, setPlan] = useState(null);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const generatePlan = async () => {
     if (!goal || !split || !days) {
-      setError(i18n.t('plan.missing'));
+      setError(i18n.t("plan.missing"));
       return;
     }
 
     setLoading(true);
-    setError('');
+    setError("");
     setPlan(null);
 
     const data = {
       goal,
       days,
       injuries: userProfile?.injuries || [],
-      equipment: userProfile?.equipment || ['Dumbbell', 'Barbell'],
+      equipment: userProfile?.equipment || ["Dumbbell", "Barbell"],
       preferredSplit: split,
-      experienceLevel: userProfile?.experience || 'Intermediate',
+      experienceLevel: userProfile?.experience || "Intermediate",
     };
 
     try {
-      const token = await auth().currentUser?.getIdToken();
+      const currentUser = auth.currentUser;
+      const token = currentUser ? await currentUser.getIdToken() : null;
       const result = await generateWorkout(userId, data, token);
       const structured = result?.workoutPlan;
 
       if (!structured || Object.keys(structured).length === 0) {
-        throw new Error('Invalid AI output');
+        throw new Error("Invalid AI output");
       }
 
-      // ✅ Minimum number of exercises validation
       const totalExercises = Object.values(structured)
         .flat()
         .filter(Boolean).length;
 
       if (totalExercises < 6) {
-        throw new Error('Generated plan has too few exercises.');
+        throw new Error("Generated plan has too few exercises.");
       }
 
       setPlan(structured);
@@ -76,7 +77,7 @@ const PlanBuilderScreen = () => {
       await saveNewUserPlan({
         userId,
         name: `AI Plan - ${goal}`,
-        type: 'Workout',
+        type: "Workout",
         exercises: Object.entries(structured).map(([day, workout]) => ({
           day,
           workout,
@@ -84,8 +85,7 @@ const PlanBuilderScreen = () => {
         createdAt: new Date().toISOString(),
       });
     } catch (err) {
-      console.error('Plan generation failed:', err.message);
-      setError(i18n.t('plan.error') || 'Plan generation failed.');
+      setError(i18n.t("plan.error") || "Plan generation failed.");
     }
 
     setLoading(false);
@@ -94,7 +94,7 @@ const PlanBuilderScreen = () => {
   if (locked) {
     return (
       <View style={styles.lockedContainer}>
-        <Text style={styles.lockedText}>{i18n.t('plan.locked')}</Text>
+        <Text style={styles.lockedText}>{i18n.t("plan.locked")}</Text>
       </View>
     );
   }
@@ -102,9 +102,9 @@ const PlanBuilderScreen = () => {
   return (
     <ScrollView style={styles.container}>
       <Animated.View style={{ opacity: fadeAnim }}>
-        <Text style={styles.title}>{i18n.t('plan.title')}</Text>
+        <Text style={styles.title}>{i18n.t("plan.title")}</Text>
 
-        <Text style={styles.label}>{i18n.t('plan.goal')}</Text>
+        <Text style={styles.label}>{i18n.t("plan.goal")}</Text>
         <View style={styles.optionsRow}>
           {goals.map((g) => (
             <TouchableOpacity
@@ -112,12 +112,16 @@ const PlanBuilderScreen = () => {
               onPress={() => setGoal(g)}
               style={[styles.option, goal === g && styles.optionActive]}
             >
-              <Text style={goal === g ? styles.optionTextActive : styles.optionText}>{g}</Text>
+              <Text
+                style={goal === g ? styles.optionTextActive : styles.optionText}
+              >
+                {g}
+              </Text>
             </TouchableOpacity>
           ))}
         </View>
 
-        <Text style={styles.label}>{i18n.t('plan.split')}</Text>
+        <Text style={styles.label}>{i18n.t("plan.split")}</Text>
         <View style={styles.optionsRow}>
           {splits.map((s) => (
             <TouchableOpacity
@@ -125,12 +129,18 @@ const PlanBuilderScreen = () => {
               onPress={() => setSplit(s)}
               style={[styles.option, split === s && styles.optionActive]}
             >
-              <Text style={split === s ? styles.optionTextActive : styles.optionText}>{s}</Text>
+              <Text
+                style={
+                  split === s ? styles.optionTextActive : styles.optionText
+                }
+              >
+                {s}
+              </Text>
             </TouchableOpacity>
           ))}
         </View>
 
-        <Text style={styles.label}>{i18n.t('plan.days')}</Text>
+        <Text style={styles.label}>{i18n.t("plan.days")}</Text>
         <View style={styles.optionsRow}>
           {[3, 4, 5, 6].map((n) => (
             <TouchableOpacity
@@ -138,14 +148,16 @@ const PlanBuilderScreen = () => {
               onPress={() => setDays(n)}
               style={[styles.option, days === n && styles.optionActive]}
             >
-              <Text style={days === n ? styles.optionTextActive : styles.optionText}>
-                {n} {i18n.t('plan.daysShort')}
+              <Text
+                style={days === n ? styles.optionTextActive : styles.optionText}
+              >
+                {n} {i18n.t("plan.daysShort")}
               </Text>
             </TouchableOpacity>
           ))}
         </View>
 
-        {error !== '' && <Text style={styles.errorText}>{error}</Text>}
+        {error !== "" && <Text style={styles.errorText}>{error}</Text>}
 
         <TouchableOpacity
           style={[styles.generateBtn, loading && { opacity: 0.6 }]}
@@ -153,7 +165,7 @@ const PlanBuilderScreen = () => {
           disabled={loading}
         >
           <Text style={styles.generateText}>
-            {loading ? i18n.t('plan.generating') : i18n.t('plan.generate')}
+            {loading ? i18n.t("plan.generating") : i18n.t("plan.generate")}
           </Text>
         </TouchableOpacity>
 
@@ -163,12 +175,12 @@ const PlanBuilderScreen = () => {
               <View key={day} style={styles.dayBlock}>
                 <Text style={styles.dayTitle}>{day}</Text>
                 <Text style={styles.workoutText}>
-                  {Array.isArray(workout) ? workout.join(', ') : workout}
+                  {Array.isArray(workout) ? workout.join(", ") : workout}
                 </Text>
               </View>
             ))}
             <TouchableOpacity style={styles.startBtn}>
-              <Text style={styles.startText}>{i18n.t('plan.startToday')}</Text>
+              <Text style={styles.startText}>{i18n.t("plan.startToday")}</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -203,8 +215,8 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   optionsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: spacing.sm,
   },
   option: {
@@ -222,14 +234,14 @@ const styles = StyleSheet.create({
   },
   optionTextActive: {
     color: colors.textPrimary,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   errorText: {
     color: colors.error,
     marginTop: spacing.sm,
     marginBottom: spacing.sm,
     fontSize: 13,
-    textAlign: 'center',
+    textAlign: "center",
   },
   generateBtn: {
     backgroundColor: colors.primary,
@@ -238,9 +250,9 @@ const styles = StyleSheet.create({
     marginTop: spacing.lg,
   },
   generateText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    textAlign: 'center',
+    color: "#fff",
+    fontWeight: "bold",
+    textAlign: "center",
   },
   planBox: {
     backgroundColor: colors.surface,
@@ -253,7 +265,7 @@ const styles = StyleSheet.create({
   },
   dayTitle: {
     color: colors.success,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: spacing.xs,
   },
   workoutText: {
@@ -267,21 +279,21 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
   },
   startText: {
-    textAlign: 'center',
-    color: '#000',
-    fontWeight: 'bold',
+    textAlign: "center",
+    color: "#000",
+    fontWeight: "bold",
   },
   lockedContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: spacing.lg,
     backgroundColor: colors.background,
   },
   lockedText: {
     color: colors.textSecondary,
     fontSize: 16,
-    textAlign: 'center',
+    textAlign: "center",
   },
 });
 

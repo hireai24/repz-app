@@ -1,53 +1,63 @@
+import { Dimensions, PixelRatio } from "react-native";
+
+const { width } = Dimensions.get("window");
+const guidelineBaseWidth = 375;
+
+const scale = (size) => {
+  const newSize = (width / guidelineBaseWidth) * size;
+  return Math.round(PixelRatio.roundToNearestPixel(newSize));
+};
+
 const typography = {
-  fontFamily: 'System',
+  fontFamily: "System",
 
   heading1: {
-    fontSize: 28,
-    fontWeight: '700',
-    lineHeight: 36,
+    fontSize: scale(28),
+    fontWeight: "700",
+    lineHeight: scale(36),
   },
   heading2: {
-    fontSize: 24,
-    fontWeight: '700',
-    lineHeight: 32,
+    fontSize: scale(24),
+    fontWeight: "700",
+    lineHeight: scale(32),
   },
   heading3: {
-    fontSize: 20,
-    fontWeight: '600',
-    lineHeight: 28,
+    fontSize: scale(20),
+    fontWeight: "600",
+    lineHeight: scale(28),
   },
   heading4: {
-    fontSize: 18,
-    fontWeight: '600',
-    lineHeight: 26,
+    fontSize: scale(18),
+    fontWeight: "600",
+    lineHeight: scale(26),
   },
 
   body: {
-    fontSize: 16,
-    fontWeight: '400',
-    lineHeight: 24,
+    fontSize: scale(16),
+    fontWeight: "400",
+    lineHeight: scale(24),
   },
   bodyBold: {
-    fontSize: 16,
-    fontWeight: '600',
-    lineHeight: 24,
+    fontSize: scale(16),
+    fontWeight: "600",
+    lineHeight: scale(24),
   },
 
   small: {
-    fontSize: 14,
-    fontWeight: '400',
-    lineHeight: 20,
+    fontSize: scale(14),
+    fontWeight: "400",
+    lineHeight: scale(20),
   },
   smallBold: {
-    fontSize: 14,
-    fontWeight: '600',
-    lineHeight: 20,
+    fontSize: scale(14),
+    fontWeight: "600",
+    lineHeight: scale(20),
   },
 
   caption: {
-    fontSize: 12,
-    fontWeight: '400',
-    lineHeight: 16,
+    fontSize: scale(12),
+    fontWeight: "400",
+    lineHeight: scale(16),
   },
 };
 

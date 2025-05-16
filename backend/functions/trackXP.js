@@ -1,14 +1,8 @@
-import { db } from '../firebase/init.js';
-import {
-  doc,
-  getDoc,
-  setDoc,
-  updateDoc,
-  increment,
-} from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, increment } from "firebase/firestore";
 
-import { calculateStreak } from '../utils/streakUtils.js';
-import calculateWorkoutXP from '../utils/xpCalculator.js';
+import { db } from "../firebase/init.js";
+import { calculateStreak } from "../utils/streakUtils.js";
+import { calculateWorkoutXP } from "../../src/utils/xpCalculator.js"; // ✅ FIXED path
 
 /**
  * Tracks XP and streaks based on a workout log.
@@ -18,12 +12,21 @@ import calculateWorkoutXP from '../utils/xpCalculator.js';
  * @param {Object} workoutLog - The logged workout data
  */
 const trackXP = async (userId, workoutLog) => {
-  if (!userId || typeof userId !== 'string' || typeof workoutLog !== 'object') {
-    return { success: false, error: 'Invalid input: userId and workoutLog required.' };
+  if (
+    !userId ||
+    typeof userId !== "string" ||
+    typeof workoutLog !== "object" ||
+    !Array.isArray(workoutLog.exercises) ||
+    workoutLog.exercises.length === 0
+  ) {
+    return {
+      success: false,
+      error: "Invalid input: userId and workoutLog.exercises are required.",
+    };
   }
 
   try {
-    const xpRef = doc(db, 'xp', userId);
+    const xpRef = doc(db, "xp", userId);
     const xpSnap = await getDoc(xpRef);
 
     const existing = xpSnap.exists()
@@ -58,8 +61,8 @@ const trackXP = async (userId, workoutLog) => {
       newStreak: updatedData.streak,
     };
   } catch (err) {
-    console.error('Error tracking XP:', err);
-    return { success: false, error: err.message };
+    console.error("🔥 XP tracking failed:", err.message);
+    return { success: false, error: err.message || "XP tracking failed." };
   }
 };
 

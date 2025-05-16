@@ -1,24 +1,24 @@
-import { useEffect, useState } from 'react';
-import { format, subDays } from 'date-fns';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { db } from '../../backend/firebase/init';
+import { useEffect, useState } from "react";
+import { format, subDays } from "date-fns";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   collection,
   query,
   where,
   getDocs,
   Timestamp,
-} from 'firebase/firestore';
+} from "firebase/firestore";
 
-const STREAK_KEY = 'repz_user_streak';
-const LAST_DATE_KEY = 'repz_last_workout_date';
+import { db } from "../../backend/firebase/init";
+
+const STREAK_KEY = "repz_user_streak";
+const LAST_DATE_KEY = "repz_last_workout_date";
 
 const getFormattedUTCDate = (date = new Date()) =>
-  format(new Date(Date.UTC(
-    date.getFullYear(),
-    date.getMonth(),
-    date.getDate()
-  )), 'yyyy-MM-dd');
+  format(
+    new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())),
+    "yyyy-MM-dd",
+  );
 
 const useStreakTracker = (userId) => {
   const [streak, setStreak] = useState(0);
@@ -35,11 +35,11 @@ const useStreakTracker = (userId) => {
       const today = getFormattedUTCDate();
       const oneWeekAgo = subDays(new Date(), 7);
 
-      const logsRef = collection(db, 'logs');
+      const logsRef = collection(db, "logs");
       const q = query(
         logsRef,
-        where('userId', '==', uid),
-        where('date', '>=', Timestamp.fromDate(oneWeekAgo))
+        where("userId", "==", uid),
+        where("date", ">=", Timestamp.fromDate(oneWeekAgo)),
       );
 
       const snapshot = await getDocs(q);
@@ -48,7 +48,9 @@ const useStreakTracker = (userId) => {
         .map((doc) => {
           const data = doc.data();
           const ts = data?.date;
-          return ts?.seconds ? getFormattedUTCDate(new Date(ts.seconds * 1000)) : null;
+          return ts?.seconds
+            ? getFormattedUTCDate(new Date(ts.seconds * 1000))
+            : null;
         })
         .filter(Boolean);
 
@@ -74,12 +76,17 @@ const useStreakTracker = (userId) => {
       await AsyncStorage.setItem(STREAK_KEY, currentStreak.toString());
       await AsyncStorage.setItem(LAST_DATE_KEY, today);
       setStreak(currentStreak);
-
     } catch (err) {
-      console.error('Firestore streak fetch failed. Falling back to local.', err);
+      console.error(
+        "Firestore streak fetch failed. Falling back to local.",
+        err,
+      );
 
       try {
-        const savedStreak = parseInt(await AsyncStorage.getItem(STREAK_KEY) || '0', 10);
+        const savedStreak = parseInt(
+          (await AsyncStorage.getItem(STREAK_KEY)) || "0",
+          10,
+        );
         const lastDate = await AsyncStorage.getItem(LAST_DATE_KEY);
         const today = getFormattedUTCDate();
 
@@ -91,7 +98,7 @@ const useStreakTracker = (userId) => {
           setStreak(0);
         }
       } catch (storageErr) {
-        console.error('Fallback streak storage read failed:', storageErr);
+        console.error("Fallback streak storage read failed:", storageErr);
         setIsTodayLogged(false);
         setStreak(0);
       }
@@ -104,7 +111,7 @@ const useStreakTracker = (userId) => {
       await AsyncStorage.setItem(LAST_DATE_KEY, today);
       setIsTodayLogged(true);
     } catch (err) {
-      console.error('Manual streak update failed:', err);
+      console.error("Manual streak update failed:", err);
     }
   };
 

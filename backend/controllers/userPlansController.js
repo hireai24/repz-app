@@ -1,4 +1,3 @@
-import { db } from '../firebase/init.js';
 import {
   collection,
   doc,
@@ -9,8 +8,10 @@ import {
   where,
   orderBy,
   Timestamp,
-} from 'firebase/firestore';
-import { verifyUser } from '../utils/authMiddleware.js';
+} from "firebase/firestore";
+
+import { db } from "../firebase/init.js";
+import { verifyUser } from "../utils/authMiddleware.js";
 
 /**
  * Add a purchased plan to the user's plans (userPlans collection)
@@ -20,21 +21,23 @@ const addUserPlan = async (req, res) => {
     const { planId } = req.body;
 
     if (!planId) {
-      return res.status(400).json({ success: false, error: 'Missing planId.' });
+      return res.status(400).json({ success: false, error: "Missing planId." });
     }
 
     try {
-      const planRef = doc(db, 'plans', planId);
+      const planRef = doc(db, "plans", planId);
       const planSnap = await getDoc(planRef);
 
       if (!planSnap.exists()) {
-        return res.status(404).json({ success: false, error: 'Plan not found.' });
+        return res
+          .status(404)
+          .json({ success: false, error: "Plan not found." });
       }
 
       const planData = planSnap.data();
 
-      await addDoc(collection(db, 'userPlans'), {
-        userId: user.uid, // 🔐 Always use logged-in user
+      await addDoc(collection(db, "userPlans"), {
+        userId: user.uid,
         originalPlanId: planId,
         title: planData.title,
         type: planData.type,
@@ -47,8 +50,10 @@ const addUserPlan = async (req, res) => {
 
       res.status(200).json({ success: true });
     } catch (err) {
-      console.error('🔥 Error adding user plan:', err);
-      res.status(500).json({ success: false, error: 'Failed to add user plan.' });
+      // TODO: Replace with logging utility
+      res
+        .status(500)
+        .json({ success: false, error: "Failed to add user plan." });
     }
   });
 };
@@ -60,9 +65,9 @@ const getUserPlans = async (req, res) => {
   await verifyUser(req, res, async (user) => {
     try {
       const q = query(
-        collection(db, 'userPlans'),
-        where('userId', '==', user.uid),
-        orderBy('createdAt', 'desc')
+        collection(db, "userPlans"),
+        where("userId", "==", user.uid),
+        orderBy("createdAt", "desc"),
       );
 
       const snapshot = await getDocs(q);
@@ -73,8 +78,10 @@ const getUserPlans = async (req, res) => {
 
       res.status(200).json({ success: true, plans });
     } catch (err) {
-      console.error('🔥 Error fetching user plans:', err);
-      res.status(500).json({ success: false, error: 'Failed to fetch user plans.' });
+      // TODO: Replace with logging utility
+      res
+        .status(500)
+        .json({ success: false, error: "Failed to fetch user plans." });
     }
   });
 };

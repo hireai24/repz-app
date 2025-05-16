@@ -1,13 +1,29 @@
 module.exports = function (api) {
   api.cache(true);
   return {
-    presets: ['babel-preset-expo'],
+    presets: ["babel-preset-expo"],
     plugins: [
-      '@babel/plugin-transform-optional-chaining',
-      '@babel/plugin-transform-nullish-coalescing-operator',
-      '@babel/plugin-transform-class-properties',
-      '@babel/plugin-transform-async-generator-functions',
-      'react-native-reanimated/plugin'
+      [
+        "module:react-native-dotenv",
+        {
+          moduleName: "@env",
+          path: ".env",
+          blacklist: null,
+          whitelist: null,
+          safe: false,
+          allowUndefined: true
+        }
+      ],
+      [
+        "@babel/plugin-transform-runtime",
+        {
+          corejs: false,
+          helpers: true,
+          regenerator: true,
+          useESModules: false
+        }
+      ],
+      "react-native-reanimated/plugin" // Must be last
     ]
   };
 };

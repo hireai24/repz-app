@@ -1,21 +1,24 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import React from "react";
+import PropTypes from "prop-types";
+import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
+
+import colors from "../theme/colors";
+
+const fallbackIcon = "https://via.placeholder.com/40x40.png?text=EX";
 
 const ExerciseCard = ({ exercise, onAdd }) => {
-  const fallbackIcon = 'https://via.placeholder.com/40x40.png?text=EX';
-
   return (
     <TouchableOpacity
       style={styles.card}
       onPress={onAdd}
       accessibilityRole="button"
       accessibilityLabel={`Add ${exercise.name}`}
-      testID={`exercise-card-${exercise.name.toLowerCase().replace(/\s+/g, '-')}`}
+      testID={`exercise-card-${exercise.name.toLowerCase().replace(/\s+/g, "-")}`}
     >
       <Image
         source={{ uri: exercise.icon || fallbackIcon }}
         style={styles.icon}
+        accessibilityLabel={`${exercise.name} icon`}
       />
       <View style={styles.details}>
         <Text style={styles.name}>{exercise.name}</Text>
@@ -40,9 +43,9 @@ ExerciseCard.propTypes = {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#1a1a1a',
-    flexDirection: 'row',
-    alignItems: 'center',
+    backgroundColor: colors.surface,
+    flexDirection: "row",
+    alignItems: "center",
     padding: 12,
     borderRadius: 10,
     marginRight: 12,
@@ -58,19 +61,19 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   name: {
-    color: '#fff',
-    fontWeight: '600',
+    color: colors.textPrimary,
+    fontWeight: "600",
     fontSize: 16,
   },
   meta: {
-    color: '#aaa',
+    color: colors.textSecondary,
     fontSize: 12,
     marginTop: 2,
   },
   add: {
-    color: '#E63946',
+    color: colors.primary,
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
 });
 

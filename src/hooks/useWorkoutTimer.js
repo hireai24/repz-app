@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 
 const useWorkoutTimer = () => {
   const [seconds, setSeconds] = useState(0);
@@ -62,7 +62,7 @@ const useWorkoutTimer = () => {
   const formatted = useMemo(() => {
     const minutes = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${minutes}:${secs < 10 ? '0' + secs : secs}`;
+    return `${minutes}:${secs < 10 ? "0" + secs : secs}`;
   }, [seconds]);
 
   return {

@@ -4,8 +4,9 @@ import React, {
   useState,
   useEffect,
   useMemo,
-} from 'react';
-import { AuthContext } from './AuthContext';
+} from "react";
+
+import { AuthContext } from "./AuthContext";
 
 export const TierContext = createContext();
 export const useTier = () => useContext(TierContext);
@@ -14,14 +15,14 @@ const BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 
 export const TierProvider = ({ children }) => {
   const { authUser, userToken } = useContext(AuthContext);
-  const [tier, setTier] = useState('Free');
+  const [tier, setTier] = useState("Free");
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null); // 🔥 New: Error handling
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchTier = async () => {
       if (!authUser || !userToken) {
-        setTier('Free');
+        setTier("Free");
         setLoading(false);
         return;
       }
@@ -33,25 +34,24 @@ export const TierProvider = ({ children }) => {
             headers: {
               Authorization: `Bearer ${userToken}`,
             },
-          }
+          },
         );
 
         if (!res.ok) {
           const errText = await res.text();
-          throw new Error(errText || 'Failed to fetch entitlements');
+          throw new Error(errText || "Failed to fetch entitlements");
         }
 
         const { access } = await res.json();
 
-        if (access?.elite) setTier('Elite');
-        else if (access?.pro) setTier('Pro');
-        else setTier('Free');
+        if (access?.elite) setTier("Elite");
+        else if (access?.pro) setTier("Pro");
+        else setTier("Free");
 
-        setError(null); // Clear previous errors if success
-      } catch (err) {
-        console.error('🔥 Tier fetch error:', err);
-        setTier('Free');
-        setError('Failed to determine subscription tier.');
+        setError(null);
+      } catch {
+        setTier("Free");
+        setError("Failed to determine subscription tier.");
       } finally {
         setLoading(false);
       }
@@ -70,7 +70,7 @@ export const TierProvider = ({ children }) => {
       tier,
       hasAccess,
       loading,
-      error, // 🔥 Expose error to UI
+      error,
       refreshTier: () => {
         setLoading(true);
         setError(null);
@@ -81,28 +81,23 @@ export const TierProvider = ({ children }) => {
             })
               .then((res) => res.json())
               .then(({ access }) => {
-                if (access?.elite) setTier('Elite');
-                else if (access?.pro) setTier('Pro');
-                else setTier('Free');
+                if (access?.elite) setTier("Elite");
+                else if (access?.pro) setTier("Pro");
+                else setTier("Free");
               })
-              .catch((err) => {
-                console.error('🔥 Tier refresh error:', err);
-                setError('Failed to refresh tier.');
+              .catch(() => {
+                setError("Failed to refresh tier.");
               })
               .finally(() => setLoading(false));
           } else {
-            setTier('Free');
+            setTier("Free");
             setLoading(false);
           }
         }, 500);
       },
     }),
-    [tier, loading, authUser, userToken, error]
+    [tier, hasAccess, loading, error],
   );
 
-  return (
-    <TierContext.Provider value={value}>
-      {children}
-    </TierContext.Provider>
-  );
+  return <TierContext.Provider value={value}>{children}</TierContext.Provider>;
 };

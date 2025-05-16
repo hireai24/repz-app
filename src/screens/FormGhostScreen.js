@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext } from "react";
 import {
   View,
   Text,
@@ -9,27 +9,28 @@ import {
   Alert,
   ActivityIndicator,
   RefreshControl,
-} from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
-import FormFeedbackCard from '../components/FormFeedbackCard';
-import { UserContext } from '../context/UserContext';
-import { useTierAccess } from '../hooks/useTierAccess';
-import { saveNewUserPlan } from '../services/userPlanService';
-import { uploadFile } from '../utils/fileUploader';
-import i18n from '../locales/i18n';
-import colors from '../theme/colors';
-import spacing from '../theme/spacing';
-import typography from '../theme/typography';
-import { analyzeForm } from '../../backend/functions/analyzeForm'; // ✅ Correct import path
+} from "react-native";
+import * as ImagePicker from "expo-image-picker";
+
+import FormFeedbackCard from "../components/FormFeedbackCard";
+import { UserContext } from "../context/UserContext";
+import { useTierAccess } from "../hooks/useTierAccess";
+import { saveNewUserPlan } from "../services/userPlanService";
+import { uploadFile } from "../utils/fileUploader";
+import { uploadFormVideo } from "../api/formGhostApi"; // ✅ Updated import
+import i18n from "../locales/i18n";
+import colors from "../theme/colors";
+import spacing from "../theme/spacing";
+import typography from "../theme/typography";
 
 const FormGhostScreen = () => {
-  const { userProfile, userId } = useContext(UserContext);
-  const { locked } = useTierAccess('Pro');
+  const { userProfile } = useContext(UserContext);
+  const { locked } = useTierAccess("Pro");
 
   const [videoUri, setVideoUri] = useState(null);
   const [analysis, setAnalysis] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [errorText, setErrorText] = useState('');
+  const [errorText, setErrorText] = useState("");
   const [refreshing, setRefreshing] = useState(false);
 
   const pickVideo = async () => {
@@ -40,52 +41,56 @@ const FormGhostScreen = () => {
       });
 
       if (!result.canceled && result.assets?.[0]?.uri) {
-        setErrorText('');
+        setErrorText("");
         setVideoUri(result.assets[0].uri);
         analyzeUploadedVideo(result.assets[0].uri);
       }
     } catch (err) {
-      console.error('Video picker error:', err);
-      setErrorText(i18n.t('form.uploadError') || 'Could not select video.');
+      console.error("Video picker error:", err);
+      setErrorText(i18n.t("form.uploadError") || "Could not select video.");
     }
   };
 
   const analyzeUploadedVideo = async (uri) => {
     setLoading(true);
-    setErrorText('');
+    setErrorText("");
     setAnalysis([]);
 
     try {
       const uploaded = await uploadFile({
         uri,
-        type: 'video',
+        type: "video",
         userId: userProfile?.id,
         endpoint: `${process.env.EXPO_PUBLIC_API_BASE_URL}/upload/video`,
       });
 
-      if (!uploaded?.url) throw new Error('Upload failed');
+      if (!uploaded?.url) throw new Error("Upload failed");
 
-      const result = await analyzeForm(userProfile.id, uploaded.url, 'Squat'); // Default to Squat
+      const result = await uploadFormVideo(userProfile.id, uploaded.url, "Squat"); // ✅ Updated call
       if (result?.results?.length > 0) {
         setAnalysis(result.results);
 
         await saveNewUserPlan({
           userId: userProfile.id,
           name: `Form Analysis - Squat`,
-          type: 'Form',
+          type: "Form",
           exercises: result.results.map((rep, idx) => ({
             day: `Rep ${idx + 1}`,
-            workout: rep.feedback?.comment || 'Good form',
+            workout: rep.feedback?.comment || "Good form",
           })),
           createdAt: new Date().toISOString(),
           videoUrl: uploaded.url,
         });
       } else {
-        setErrorText(i18n.t('form.noFeedback') || 'No feedback returned.');
+        setErrorText(i18n.t("form.noFeedback") || "No feedback returned.");
       }
     } catch (err) {
-      console.error('Video analysis error:', err);
-      setErrorText(i18n.t('form.error') || 'Something went wrong during analysis.');
+      console.error("Video analysis error:", err);
+      setErrorText(
+        i18n.t("form.error") ||
+          err.message ||
+          "Something went wrong during analysis.",
+      );
     } finally {
       setLoading(false);
     }
@@ -95,19 +100,21 @@ const FormGhostScreen = () => {
     setRefreshing(true);
     setVideoUri(null);
     setAnalysis([]);
-    setErrorText('');
+    setErrorText("");
     setTimeout(() => setRefreshing(false), 600);
   };
 
   const handleChallengeSubmit = () => {
-    Alert.alert(i18n.t('form.challengeSubmitted') || 'Challenge submission pending...');
+    Alert.alert(
+      i18n.t("form.challengeSubmitted") || "Challenge submission pending...",
+    );
     // Future: trigger backend challenge entry here
   };
 
   if (locked) {
     return (
       <View style={styles.lockedContainer}>
-        <Text style={styles.lockedText}>{i18n.t('form.locked')}</Text>
+        <Text style={styles.lockedText}>{i18n.t("form.locked")}</Text>
       </View>
     );
   }
@@ -115,15 +122,17 @@ const FormGhostScreen = () => {
   return (
     <ScrollView
       style={styles.container}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+      }
     >
-      <Text style={styles.title}>{i18n.t('form.title')}</Text>
+      <Text style={styles.title}>{i18n.t("form.title")}</Text>
 
       <TouchableOpacity
         style={styles.uploadBox}
         onPress={pickVideo}
         accessibilityRole="button"
-        accessibilityLabel={i18n.t('form.upload')}
+        accessibilityLabel={i18n.t("form.upload")}
       >
         {videoUri ? (
           <Image
@@ -132,21 +141,23 @@ const FormGhostScreen = () => {
             onError={() => setVideoUri(null)}
           />
         ) : (
-          <Text style={styles.uploadText}>{i18n.t('form.upload')}</Text>
+          <Text style={styles.uploadText}>{i18n.t("form.upload")}</Text>
         )}
       </TouchableOpacity>
 
-      {errorText !== '' && (
-        <Text style={styles.errorText}>{errorText}</Text>
-      )}
+      {errorText !== "" && <Text style={styles.errorText}>{errorText}</Text>}
 
       {loading && (
-        <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: spacing.md }} />
+        <ActivityIndicator
+          size="large"
+          color={colors.primary}
+          style={{ marginTop: spacing.md }}
+        />
       )}
 
       {analysis.length > 0 && (
         <View style={styles.analysisBlock}>
-          <Text style={styles.subTitle}>{i18n.t('form.analysis')}</Text>
+          <Text style={styles.subTitle}>{i18n.t("form.analysis")}</Text>
           {analysis.map((rep, index) => (
             <FormFeedbackCard key={index} rep={rep.feedback} />
           ))}
@@ -154,7 +165,7 @@ const FormGhostScreen = () => {
       )}
 
       {!loading && analysis.length === 0 && videoUri && (
-        <Text style={styles.emptyState}>{i18n.t('form.noFeedback')}</Text>
+        <Text style={styles.emptyState}>{i18n.t("form.noFeedback")}</Text>
       )}
 
       {analysis.length > 0 && (
@@ -164,7 +175,7 @@ const FormGhostScreen = () => {
           accessibilityRole="button"
           accessibilityLabel="Submit Challenge"
         >
-          <Text style={styles.ctaText}>{i18n.t('form.challenge')}</Text>
+          <Text style={styles.ctaText}>{i18n.t("form.challenge")}</Text>
         </TouchableOpacity>
       )}
     </ScrollView>
@@ -185,20 +196,20 @@ const styles = StyleSheet.create({
   uploadBox: {
     backgroundColor: colors.surface,
     aspectRatio: 1.6,
-    width: '100%',
+    width: "100%",
     borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: spacing.md,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   uploadText: {
-    color: '#888',
+    color: "#888",
     fontSize: 14,
   },
   thumbnail: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
   },
   analysisBlock: {
     backgroundColor: colors.surface,
@@ -208,7 +219,7 @@ const styles = StyleSheet.create({
   },
   subTitle: {
     color: colors.success,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     fontSize: 16,
     marginBottom: 10,
   },
@@ -217,34 +228,34 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     padding: spacing.md,
     borderRadius: 10,
-    alignItems: 'center',
+    alignItems: "center",
   },
   ctaText: {
-    color: '#fff',
-    fontWeight: 'bold',
+    color: "#fff",
+    fontWeight: "bold",
   },
   errorText: {
     color: colors.error,
     marginTop: 10,
     fontSize: 13,
-    textAlign: 'center',
+    textAlign: "center",
   },
   lockedContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: spacing.lg,
     backgroundColor: colors.background,
   },
   lockedText: {
     color: colors.textSecondary,
     fontSize: 16,
-    textAlign: 'center',
+    textAlign: "center",
   },
   emptyState: {
     color: colors.textSecondary,
     fontSize: 14,
-    textAlign: 'center',
+    textAlign: "center",
     marginTop: spacing.md,
   },
 });

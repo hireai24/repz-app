@@ -1,5 +1,6 @@
-import { useContext, useMemo } from 'react';
-import { UserContext } from '../context/UserContext';
+import { useContext, useMemo } from "react";
+
+import { UserContext } from "../context/UserContext";
 
 const tierLevels = {
   Free: 0,
@@ -12,11 +13,12 @@ const tierLevels = {
  * @param {string} requiredTier - The minimum required tier: 'Free' | 'Pro' | 'Elite'
  * @returns {Object} - access state and tier checks
  */
-const useTierAccess = (requiredTier = 'Free') => {
+const useTierAccess = (requiredTier = "Free") => {
   const { userProfile } = useContext(UserContext);
 
   return useMemo(() => {
-    const userTier = typeof userProfile?.tier === 'string' ? userProfile.tier : 'Free';
+    const userTier =
+      typeof userProfile?.tier === "string" ? userProfile.tier : "Free";
 
     const userLevel = tierLevels[userTier] ?? 0;
     const requiredLevel = tierLevels[requiredTier] ?? 0;
@@ -27,9 +29,9 @@ const useTierAccess = (requiredTier = 'Free') => {
       tier: userTier,
       allowed,
       locked: !allowed,
-      isFree: userTier === 'Free',
-      isPro: userTier === 'Pro' || userTier === 'Elite',
-      isElite: userTier === 'Elite',
+      isFree: userTier === "Free",
+      isPro: userTier === "Pro" || userTier === "Elite",
+      isElite: userTier === "Elite",
       requiredTier,
     };
   }, [userProfile, requiredTier]);

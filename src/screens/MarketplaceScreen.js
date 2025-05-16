@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useContext,
+  useRef,
+  useCallback,
+} from "react";
 import {
   View,
   Text,
@@ -6,37 +12,44 @@ import {
   FlatList,
   TouchableOpacity,
   ActivityIndicator,
-  Alert,
   Dimensions,
   RefreshControl,
   Animated,
-} from 'react-native';
-import PlanCard from '../components/PlanCard';
-import { fetchMarketplacePlans } from '../services/planService';
-import { useTierAccess } from '../hooks/useTierAccess';
-import { UserContext } from '../context/UserContext';
-import i18n from '../locales/i18n';
-import colors from '../theme/colors';
-import spacing from '../theme/spacing';
-import typography from '../theme/typography';
+} from "react-native";
 
-const filters = ['Fat Loss', 'Strength', 'Hypertrophy', 'Athletic', 'Meal', 'Bundle'];
-const screenWidth = Dimensions.get('window').width;
+import PlanCard from "../components/PlanCard";
+import { fetchMarketplacePlans } from "../services/planService";
+import { useTierAccess } from "../hooks/useTierAccess";
+import { UserContext } from "../context/UserContext";
+import i18n from "../locales/i18n";
+import colors from "../theme/colors";
+import spacing from "../theme/spacing";
+import typography from "../theme/typography";
+
+const filters = [
+  "Fat Loss",
+  "Strength",
+  "Hypertrophy",
+  "Athletic",
+  "Meal",
+  "Bundle",
+];
+const screenWidth = Dimensions.get("window").width;
 
 const MarketplaceScreen = () => {
-  const [selectedFilter, setSelectedFilter] = useState('Fat Loss');
+  const [selectedFilter, setSelectedFilter] = useState("Fat Loss");
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [errorText, setErrorText] = useState('');
+  const [errorText, setErrorText] = useState("");
   const [refreshing, setRefreshing] = useState(false);
-  const { locked } = useTierAccess('Pro');
+  const { locked } = useTierAccess("Pro");
   const { userId } = useContext(UserContext);
-  const fadeAnim = new Animated.Value(0);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
 
-  const loadPlans = async () => {
+  const loadPlans = useCallback(async () => {
     try {
       setLoading(true);
-      setErrorText('');
+      setErrorText("");
       const response = await fetchMarketplacePlans(selectedFilter);
       if (response.success) {
         setPlans(response.plans || []);
@@ -46,20 +59,19 @@ const MarketplaceScreen = () => {
           useNativeDriver: true,
         }).start();
       } else {
-        throw new Error(response.error || 'Unknown error');
+        throw new Error(response.error || "Unknown error");
       }
-    } catch (err) {
-      console.error('Marketplace load error:', err);
+    } catch {
       setPlans([]);
-      setErrorText(i18n.t('marketplace.errorLoad') || 'Unable to load plans.');
+      setErrorText(i18n.t("marketplace.errorLoad") || "Unable to load plans.");
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedFilter, fadeAnim]);
 
   useEffect(() => {
     loadPlans();
-  }, [selectedFilter]);
+  }, [loadPlans]);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -71,7 +83,8 @@ const MarketplaceScreen = () => {
     return (
       <View style={styles.lockedContainer}>
         <Text style={styles.lockedText}>
-          {i18n.t('marketplace.locked') || 'Upgrade your tier to access this feature.'}
+          {i18n.t("marketplace.locked") ||
+            "Upgrade your tier to access this feature."}
         </Text>
       </View>
     );
@@ -79,9 +92,8 @@ const MarketplaceScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{i18n.t('marketplace.title')}</Text>
+      <Text style={styles.title}>{i18n.t("marketplace.title")}</Text>
 
-      {/* Filters */}
       <View style={styles.filtersRow}>
         {filters.map((f) => (
           <TouchableOpacity
@@ -92,10 +104,14 @@ const MarketplaceScreen = () => {
             ]}
             onPress={() => setSelectedFilter(f)}
             accessibilityRole="button"
-            accessibilityLabel={`${i18n.t('marketplace.filters.' + f.toLowerCase())} filter`}
+            accessibilityLabel={`${i18n.t("marketplace.filters." + f.toLowerCase())} filter`}
           >
             <Text
-              style={selectedFilter === f ? styles.filterTextActive : styles.filterText}
+              style={
+                selectedFilter === f
+                  ? styles.filterTextActive
+                  : styles.filterText
+              }
             >
               {i18n.t(`marketplace.filters.${f.toLowerCase()}`) || f}
             </Text>
@@ -103,27 +119,28 @@ const MarketplaceScreen = () => {
         ))}
       </View>
 
-      {/* Plan Results */}
       {loading ? (
         <ActivityIndicator
           size="large"
           color={colors.primary}
-          style={{ marginTop: 20 }}
+          style={styles.loadingIndicator}
         />
       ) : errorText ? (
         <View style={styles.emptyState}>
           <Text style={styles.errorText}>{errorText}</Text>
           <TouchableOpacity style={styles.retryButton} onPress={loadPlans}>
-            <Text style={styles.retryButtonText}>{i18n.t('common.retry') || 'Retry'}</Text>
+            <Text style={styles.retryButtonText}>
+              {i18n.t("common.retry") || "Retry"}
+            </Text>
           </TouchableOpacity>
         </View>
       ) : plans.length === 0 ? (
         <View style={styles.emptyState}>
           <Text style={styles.emptyText}>
-            {i18n.t('common.noData') || 'No plans found.'}
+            {i18n.t("common.noData") || "No plans found."}
           </Text>
           <Text style={styles.hintText}>
-            {i18n.t('marketplace.hint') || 'Try adjusting your filter.'}
+            {i18n.t("marketplace.hint") || "Try adjusting your filter."}
           </Text>
         </View>
       ) : (
@@ -138,8 +155,10 @@ const MarketplaceScreen = () => {
                 creatorStripeAccountId={item.creatorStripeAccountId}
               />
             )}
-            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-            contentContainerStyle={{ paddingBottom: 40 }}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
+            contentContainerStyle={styles.listContent}
           />
         </Animated.View>
       )}
@@ -159,8 +178,8 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   filtersRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     marginBottom: spacing.md,
     gap: 12,
   },
@@ -170,7 +189,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderRadius: 20,
-    alignItems: 'center',
+    alignItems: "center",
   },
   filterChipActive: {
     backgroundColor: colors.primary,
@@ -181,28 +200,28 @@ const styles = StyleSheet.create({
   },
   filterTextActive: {
     color: colors.textPrimary,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   lockedContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     backgroundColor: colors.background,
     padding: spacing.xl,
   },
   lockedText: {
     color: colors.textSecondary,
-    textAlign: 'center',
+    textAlign: "center",
     fontSize: 16,
   },
   emptyState: {
     marginTop: 40,
-    alignItems: 'center',
+    alignItems: "center",
   },
   emptyText: {
     color: colors.textSecondary,
     fontSize: 15,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: 6,
   },
   hintText: {
@@ -212,7 +231,7 @@ const styles = StyleSheet.create({
   errorText: {
     color: colors.error,
     fontSize: 14,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: 10,
   },
   retryButton: {
@@ -223,8 +242,14 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   retryButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
+    color: "#fff",
+    fontWeight: "bold",
+  },
+  loadingIndicator: {
+    marginTop: spacing.lg,
+  },
+  listContent: {
+    paddingBottom: spacing.xl,
   },
 });
 

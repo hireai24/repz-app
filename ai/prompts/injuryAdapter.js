@@ -1,4 +1,4 @@
-import { sendPrompt, cleanAIOutput } from '../../backend/utils/aiUtils.js';
+import { sendPrompt, cleanAIOutput } from "../../backend/utils/aiUtils.js";
 
 /**
  * Recommends a safer alternative to an exercise based on injury type.
@@ -16,20 +16,17 @@ export const getInjurySafeAlternative = async ({
   injuryType,
   equipmentAvailable,
 }) => {
-  if (
-    typeof exerciseName !== 'string' ||
-    typeof muscleGroup !== 'string' ||
-    typeof injuryType !== 'string' ||
-    typeof equipmentAvailable !== 'string' ||
-    !exerciseName.trim() ||
-    !muscleGroup.trim() ||
-    !injuryType.trim()
-  ) {
+  const fieldsValid =
+    [exerciseName, muscleGroup, injuryType, equipmentAvailable].every(
+      (field) => typeof field === "string" && field.trim() !== ""
+    );
+
+  if (!fieldsValid) {
     return {
       success: false,
       error: {
-        message: 'Invalid input. All fields must be non-empty strings.',
-        code: 'INVALID_INPUT',
+        message: "Invalid input. All fields must be non-empty strings.",
+        code: "INVALID_INPUT",
       },
     };
   }
@@ -61,21 +58,32 @@ This is not medical advice. Always consult a licensed healthcare provider or phy
 Return ONLY the output above. No introductions, no extra commentary.
 `;
 
-  const { success, result, error } = await sendPrompt(prompt);
+  try {
+    const { success, result, error } = await sendPrompt(prompt);
 
-  if (!success) {
+    if (!success) {
+      return {
+        success: false,
+        error: {
+          message: "AI prompt failed.",
+          details: error,
+          code: "PROMPT_FAILURE",
+        },
+      };
+    }
+
+    return {
+      success: true,
+      alternative: cleanAIOutput(result),
+    };
+  } catch (err) {
     return {
       success: false,
       error: {
-        message: 'AI prompt failed',
-        details: error,
-        code: 'PROMPT_FAILURE',
+        message: "Unexpected error during safe alternative generation.",
+        details: err,
+        code: "UNEXPECTED_ERROR",
       },
     };
   }
-
-  return {
-    success: true,
-    alternative: cleanAIOutput(result),
-  };
 };

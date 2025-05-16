@@ -1,22 +1,15 @@
-import React, { useMemo } from 'react';
-import PropTypes from 'prop-types';
-import {
-  View,
-  Text,
-  Image,
-  StyleSheet,
-  TouchableOpacity,
-  useColorScheme,
-} from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
-import avatars from '../assets/avatars';
-import { Ionicons } from '@expo/vector-icons';
-import { uploadImageAsync } from '../utils/fileUploader'; // assumes uploader utility exists
+import React, { useMemo } from "react";
+import PropTypes from "prop-types";
+import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
+import * as ImagePicker from "expo-image-picker";
+import { Ionicons } from "@expo/vector-icons";
+
+import avatars from "../assets/avatars";
+import { uploadImageAsync } from "../utils/fileUploader";
+import colors from "../theme/colors";
 
 const AvatarSelector = ({ selectedAvatar, onSelect }) => {
-  const colorScheme = useColorScheme();
   const isCustomSelected = selectedAvatar?.profilePicture;
-
   const validAvatars = Array.isArray(avatars) ? avatars : [];
 
   const handleAvatarSelect = (index) => {
@@ -31,14 +24,16 @@ const AvatarSelector = ({ selectedAvatar, onSelect }) => {
         quality: 0.8,
       });
 
-      if (!result.cancelled) {
-        const uploadedUrl = await uploadImageAsync(result.assets?.[0]?.uri || result.uri);
+      if (!result.canceled && (result.assets?.[0]?.uri || result.uri)) {
+        const uploadedUrl = await uploadImageAsync(
+          result.assets?.[0]?.uri || result.uri,
+        );
         if (uploadedUrl) {
           onSelect({ profilePicture: uploadedUrl });
         }
       }
-    } catch (error) {
-      console.error('Image upload failed:', error);
+    } catch {
+      // Silent fail: image upload failed
     }
   };
 
@@ -53,17 +48,14 @@ const AvatarSelector = ({ selectedAvatar, onSelect }) => {
           accessibilityRole="imagebutton"
           accessibilityLabel={`Avatar ${index + 1}`}
           accessibilityState={{ selected: isSelected }}
-          style={[
-            styles.avatarWrap,
-            isSelected && styles.avatarSelected,
-          ]}
+          style={[styles.avatarWrap, isSelected && styles.avatarSelected]}
           onPress={() => handleAvatarSelect(index)}
         >
           <Image source={avatar} style={styles.avatar} />
         </TouchableOpacity>
       );
     });
-  }, [validAvatars, selectedAvatar]);
+  }, [validAvatars, selectedAvatar, handleAvatarSelect]);
 
   return (
     <View style={styles.container}>
@@ -73,18 +65,14 @@ const AvatarSelector = ({ selectedAvatar, onSelect }) => {
           accessible
           accessibilityRole="imagebutton"
           accessibilityLabel="Upload custom avatar"
-          style={[
-            styles.avatarWrap,
-            isCustomSelected && styles.avatarSelected,
-          ]}
+          style={[styles.avatarWrap, isCustomSelected && styles.avatarSelected]}
           onPress={handleImageUpload}
         >
           <View style={styles.uploadSlot}>
-            <Ionicons name="camera" size={24} color="#fff" />
+            <Ionicons name="camera" size={24} color={colors.white} />
             <Text style={styles.uploadText}>Upload</Text>
           </View>
         </TouchableOpacity>
-
         {avatarItems}
       </View>
     </View>
@@ -104,43 +92,42 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   title: {
-    color: '#ccc',
+    color: colors.gray,
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: 10,
   },
   avatarRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: 10,
   },
   avatarWrap: {
     width: 64,
     height: 64,
     borderRadius: 999,
-    overflow: 'hidden',
+    overflow: "hidden",
     borderWidth: 2,
-    borderColor: 'transparent',
-    position: 'relative',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#222',
+    borderColor: "transparent",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.darkGray,
   },
   avatar: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
     borderRadius: 999,
   },
   avatarSelected: {
-    borderColor: '#E63946',
+    borderColor: colors.primaryRed,
   },
   uploadSlot: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   uploadText: {
     fontSize: 10,
-    color: '#fff',
+    color: colors.white,
     marginTop: 4,
   },
 });

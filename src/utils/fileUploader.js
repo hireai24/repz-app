@@ -1,97 +1,117 @@
-import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
-import { storage } from '../../backend/firebase/init';
-import * as FileSystem from 'expo-file-system';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
+import * as FileSystem from "expo-file-system";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-// Allowed MIME types
-const allowedTypes = ['image/jpeg', 'image/png', 'video/mp4', 'video/quicktime'];
-const maxSizeMB = 10; // Maximum allowed file size (10MB)
+import { storage } from "../../backend/firebase/init";
 
-/**
- * Uploads a file to Firebase Storage after validating type and size.
- *
- * @param {Object} options
- * @param {string} options.uri - Local file URI (e.g., from ImagePicker)
- * @param {string} options.type - 'image' | 'video' | 'other'
- * @param {string} options.userId - Firebase Auth or app user ID
- * @param {string} [options.pathPrefix] - Optional folder path (default 'uploads')
- * @returns {Promise<Object>} - { url, path }
- */
-export const uploadFile = async ({ uri, type = 'image', userId, pathPrefix = 'uploads' }) => {
+const allowedTypes = [
+  "image/jpeg",
+  "image/png",
+  "video/mp4",
+  "video/quicktime",
+];
+const maxSizeMB = 10;
+const maxRetries = 3;
+
+export const uploadFile = async ({
+  uri,
+  type = "image",
+  userId,
+  pathPrefix = "uploads",
+  onProgress,
+}) => {
   if (!uri || !userId) {
-    throw new Error('Missing required parameters: uri or userId');
+    throw new Error("Missing required parameters: uri or userId");
   }
 
-  try {
-    const fileInfo = await FileSystem.getInfoAsync(uri);
-    if (!fileInfo.exists) {
-      throw new Error('File does not exist.');
-    }
+  const fileInfo = await FileSystem.getInfoAsync(uri);
+  if (!fileInfo.exists) throw new Error("File does not exist");
 
-    const fileSizeMB = fileInfo.size / (1024 * 1024);
-    if (fileSizeMB > maxSizeMB) {
-      throw new Error(`File size exceeds ${maxSizeMB}MB limit.`);
-    }
-
-    const fileName = uri.split('/').pop();
-    const fileExt = fileName.split('.').pop()?.toLowerCase() || '';
-    const mimeMap = {
-      jpg: 'image/jpeg',
-      jpeg: 'image/jpeg',
-      png: 'image/png',
-      heic: 'image/heic',
-      heif: 'image/heif',
-      mp4: 'video/mp4',
-      mov: 'video/quicktime',
-    };
-    const mimeType = mimeMap[fileExt] || `${type}/*`;
-
-    if (!allowedTypes.includes(mimeType)) {
-      throw new Error('Unsupported file type. Only JPEG, PNG, MP4, and MOV are allowed.');
-    }
-
-    const filePath = `${pathPrefix}/${userId}/${Date.now()}_${fileName}`;
-
-    // Uploading as blob directly
-    const fileUri = FileSystem.cacheDirectory + fileName;
-    await FileSystem.copyAsync({ from: uri, to: fileUri });
-
-    const response = await fetch(fileUri);
-    const blob = await response.blob();
-
-    const storageRef = ref(storage, filePath);
-    await uploadBytes(storageRef, blob);
-
-    const url = await getDownloadURL(storageRef);
-
-    return { url, path: filePath };
-  } catch (err) {
-    console.error('File upload failed:', err.message);
-    throw new Error('Upload failed: ' + err.message);
+  const fileSizeMB = fileInfo.size / (1024 * 1024);
+  if (fileSizeMB > maxSizeMB) {
+    throw new Error(`File exceeds ${maxSizeMB}MB limit`);
   }
+
+  const fileName = uri.split("/").pop();
+  const ext = fileName.split(".").pop()?.toLowerCase() || "";
+  const mimeMap = {
+    jpg: "image/jpeg",
+    jpeg: "image/jpeg",
+    png: "image/png",
+    heic: "image/heic",
+    heif: "image/heif",
+    mp4: "video/mp4",
+    mov: "video/quicktime",
+  };
+  const mimeType = mimeMap[ext] || `${type}/*`;
+
+  if (!allowedTypes.includes(mimeType)) {
+    throw new Error("Unsupported file type (only JPEG, PNG, MP4, MOV)");
+  }
+
+  const filePath = `${pathPrefix}/${userId}/${Date.now()}_${fileName}`;
+  const tempPath = FileSystem.cacheDirectory + fileName;
+
+  // ✅ Expo-safe file copy and blob conversion
+  await FileSystem.copyAsync({ from: uri, to: tempPath });
+  const blob = await fetch(tempPath).then((res) => res.blob());
+
+  let attempt = 0;
+  while (attempt < maxRetries) {
+    try {
+      const storageRef = ref(storage, filePath);
+      const uploadTask = uploadBytesResumable(storageRef, blob);
+
+      return await new Promise((resolve, reject) => {
+        uploadTask.on(
+          "state_changed",
+          (snapshot) => {
+            if (onProgress && typeof onProgress === "function") {
+              const progress =
+                snapshot.bytesTransferred / snapshot.totalBytes;
+              onProgress(progress);
+            }
+          },
+          (error) => {
+            console.warn(`Upload attempt ${attempt + 1} failed:`, error);
+            attempt++;
+            if (attempt >= maxRetries) {
+              reject(new Error("Upload failed after multiple attempts"));
+            }
+          },
+          async () => {
+            const url = await getDownloadURL(uploadTask.snapshot.ref);
+            resolve({ url, path: filePath });
+          }
+        );
+      });
+    } catch (err) {
+      console.error("Upload retry failed:", err.message);
+      attempt++;
+    }
+  }
+
+  throw new Error("Upload failed after all retries.");
 };
 
-/**
- * Simple helper for AvatarSelector.js to upload images easily
- * Assumes userId is stored in AsyncStorage as 'repz_user_profile'
- */
 export const uploadImageAsync = async (uri) => {
   try {
-    const raw = await AsyncStorage.getItem('repz_user_profile');
+    const raw = await AsyncStorage.getItem("repz_user_profile");
     const parsed = raw ? JSON.parse(raw) : null;
     const userId = parsed?.id || parsed?.userId;
-    if (!userId) throw new Error('No user ID found in local storage.');
+
+    if (!userId) throw new Error("No user ID found in local storage.");
 
     const { url } = await uploadFile({
       uri,
-      type: 'image',
+      type: "image",
       userId,
-      pathPrefix: 'profile-pictures',
+      pathPrefix: "profile-pictures",
     });
 
     return url;
   } catch (err) {
-    console.error('uploadImageAsync failed:', err.message);
+    console.error("uploadImageAsync failed:", err.message || err);
     return null;
   }
 };

@@ -1,29 +1,40 @@
-// src/theme/spacing.js
+import { Dimensions, PixelRatio } from "react-native";
+
+const { width, height } = Dimensions.get("window");
+
+// Base guideline sizes for scaling
+const guidelineBaseWidth = 375;  // iPhone 11/12 width
+const guidelineBaseHeight = 812; // iPhone 11/12 height
+
+const scale = (size) => (width / guidelineBaseWidth) * size;
+const verticalScale = (size) => (height / guidelineBaseHeight) * size;
+const moderateScale = (size, factor = 0.5) =>
+  size + (scale(size) - size) * factor;
 
 const spacing = {
   // Core scale
-  xs: 4,
-  sm: 8,
-  md: 16,
-  lg: 24,
-  xl: 32,
-  xxl: 48, // Slight tweak: 40 → 48 (more natural jump from xl)
+  xs: moderateScale(4),
+  sm: moderateScale(8),
+  md: moderateScale(16),
+  lg: moderateScale(24),
+  xl: moderateScale(32),
+  xxl: moderateScale(48), // Slight tweak: 40 → 48 (more natural jump from xl)
 
   // Layout-specific
-  screenPadding: 20,
-  cardPadding: 16,
-  elementGap: 12,
-  listItemSpacing: 12, // ✅ added (good for FlatLists, consistency)
+  screenPadding: moderateScale(20),
+  cardPadding: moderateScale(16),
+  elementGap: moderateScale(12),
+  listItemSpacing: moderateScale(12),
 
   // Border Radius
-  borderRadius: 8,
-  borderRadiusLarge: 16,
-  borderRadiusXL: 24, // ✅ added (future-proof for modals/cards)
+  borderRadius: moderateScale(8),
+  borderRadiusLarge: moderateScale(16),
+  borderRadiusXL: moderateScale(24),
 
   // Component Heights
-  buttonHeight: 48,
-  inputHeight: 44,
-  headerHeight: 56, // ✅ added (often needed for custom headers)
+  buttonHeight: verticalScale(48),
+  inputHeight: verticalScale(44),
+  headerHeight: verticalScale(56),
 };
 
 export default spacing;

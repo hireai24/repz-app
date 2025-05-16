@@ -1,4 +1,3 @@
-import { db } from '../firebase/init.js';
 import {
   collection,
   addDoc,
@@ -6,8 +5,10 @@ import {
   where,
   getDocs,
   Timestamp,
-} from 'firebase/firestore';
-import { verifyUser } from '../utils/authMiddleware.js';
+} from "firebase/firestore";
+
+import { db } from "../firebase/init.js";
+import { verifyUser } from "../utils/authMiddleware.js";
 
 /**
  * POST /api/purchases
@@ -18,11 +19,14 @@ const logPurchase = async (req, res) => {
     const { userId, planId, amountPaid, creatorId, sessionId } = req.body;
 
     if (!userId || !planId || !amountPaid || !creatorId || !sessionId) {
-      return res.status(400).json({ success: false, error: 'Missing required fields' });
+      return res.status(400).json({
+        success: false,
+        error: "Missing required fields",
+      });
     }
 
     try {
-      await addDoc(collection(db, 'purchases'), {
+      await addDoc(collection(db, "purchases"), {
         userId,
         planId,
         creatorId,
@@ -33,8 +37,12 @@ const logPurchase = async (req, res) => {
 
       return res.status(200).json({ success: true });
     } catch (err) {
-      console.error('Failed to log purchase:', err);
-      return res.status(500).json({ success: false, error: err.message });
+      // TODO: Replace with logging utility
+      return res.status(500).json({
+        success: false,
+        error: "Failed to log purchase.",
+        details: err.message,
+      });
     }
   });
 };
@@ -48,14 +56,17 @@ const getUserPurchases = async (req, res) => {
     const { startDate, endDate, export: exportFormat } = req.query;
 
     if (!userId) {
-      return res.status(400).json({ success: false, error: 'Missing userId' });
+      return res.status(400).json({
+        success: false,
+        error: "Missing userId",
+      });
     }
 
     try {
-      const purchaseRef = collection(db, 'purchases');
-      let q = query(purchaseRef, where('userId', '==', userId));
-
+      const purchaseRef = collection(db, "purchases");
+      const q = query(purchaseRef, where("userId", "==", userId));
       const snapshot = await getDocs(q);
+
       let purchases = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
@@ -63,26 +74,36 @@ const getUserPurchases = async (req, res) => {
 
       // Optional date filtering
       if (startDate || endDate) {
-        const start = startDate ? new Date(startDate) : new Date('2000-01-01');
+        const start = startDate ? new Date(startDate) : new Date("2000-01-01");
         const end = endDate ? new Date(endDate) : new Date();
 
         purchases = purchases.filter((p) => {
-          const date = p.purchasedAt?.toDate?.() || new Date(p.purchasedAt);
+          const date =
+            typeof p.purchasedAt?.toDate === "function"
+              ? p.purchasedAt.toDate()
+              : new Date(p.purchasedAt);
           return date >= start && date <= end;
         });
       }
 
-      // Optional export
-      if (exportFormat === 'json') {
-        res.setHeader('Content-Disposition', 'attachment; filename=purchases.json');
-        res.setHeader('Content-Type', 'application/json');
+      // Optional export format
+      if (exportFormat === "json") {
+        res.setHeader(
+          "Content-Disposition",
+          "attachment; filename=purchases.json",
+        );
+        res.setHeader("Content-Type", "application/json");
         return res.status(200).send(JSON.stringify(purchases, null, 2));
       }
 
       return res.status(200).json({ success: true, purchases });
     } catch (err) {
-      console.error('Error fetching user purchases:', err);
-      return res.status(500).json({ success: false, error: err.message });
+      // TODO: Replace with logging utility
+      return res.status(500).json({
+        success: false,
+        error: "Error fetching user purchases.",
+        details: err.message,
+      });
     }
   });
 };

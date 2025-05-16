@@ -1,8 +1,8 @@
-import { db } from '../firebase/init.js';
-import { collection, addDoc } from 'firebase/firestore';
-import { sendPrompt, cleanAIOutput } from '../utils/aiUtils.js';
-import { formatWorkoutPlan } from '../utils/planUtils.js';
-import { generateWorkoutPlan } from '../../ai/prompts/workoutPlanner.js';
+import { collection, addDoc } from "firebase/firestore";
+
+import { db } from "../firebase/init.js";
+import { formatWorkoutPlan } from "../utils/planUtils.js"; // ✅ Confirmed valid import
+import { generateWorkoutPlan } from "../../ai/prompts/workoutPlanner.js";
 
 /**
  * Generates and saves a structured workout plan tied to the user.
@@ -15,29 +15,33 @@ const generateWorkout = async (
   {
     goal,
     availableDays,
-    injuries = '',
-    equipment = '',
-    preferredSplit = '',
-    experienceLevel = '',
-  }
+    injuries = "",
+    equipment = "",
+    preferredSplit = "",
+    experienceLevel = "",
+  },
 ) => {
   if (
-    !userId || typeof userId !== 'string' ||
-    !goal || typeof goal !== 'string' ||
-    typeof availableDays !== 'number' || availableDays < 1 ||
-    typeof injuries !== 'string' ||
-    typeof equipment !== 'string' ||
-    typeof preferredSplit !== 'string' ||
-    typeof experienceLevel !== 'string'
+    !userId ||
+    typeof userId !== "string" ||
+    !goal ||
+    typeof goal !== "string" ||
+    typeof availableDays !== "number" ||
+    availableDays < 1 ||
+    typeof injuries !== "string" ||
+    typeof equipment !== "string" ||
+    typeof preferredSplit !== "string" ||
+    typeof experienceLevel !== "string"
   ) {
     return {
       success: false,
-      error: 'Invalid input. Ensure userId, goal, availableDays, and experienceLevel are valid.'
+      error:
+        "Invalid input. Ensure userId, goal, availableDays, and experienceLevel are valid.",
     };
   }
 
   try {
-    const aiTimeoutMs = 10000; // 10 seconds timeout safety
+    const aiTimeoutMs = 10000;
 
     const aiPromise = generateWorkoutPlan({
       goal,
@@ -49,18 +53,24 @@ const generateWorkout = async (
     });
 
     const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('AI workout plan generation timeout.')), aiTimeoutMs)
+      setTimeout(
+        () => reject(new Error("AI workout plan generation timeout.")),
+        aiTimeoutMs,
+      ),
     );
 
-    const { success, planText, error } = await Promise.race([aiPromise, timeoutPromise]);
+    const { success, planText, error } = await Promise.race([
+      aiPromise,
+      timeoutPromise,
+    ]);
 
     if (!success || !planText) {
-      throw new Error(error || 'AI failed to return a workout plan.');
+      throw new Error(error || "AI failed to return a workout plan.");
     }
 
-    const structuredPlan = formatWorkoutPlan(planText);
+    const structuredPlan = formatWorkoutPlan(planText); // ✅ Confirmed utility usage
 
-    const docRef = await addDoc(collection(db, 'userPlans'), {
+    const docRef = await addDoc(collection(db, "userPlans"), {
       userId,
       plan: structuredPlan,
       goal,
@@ -69,7 +79,7 @@ const generateWorkout = async (
       equipment,
       preferredSplit,
       experienceLevel,
-      type: 'AI',
+      type: "AI",
       createdAt: new Date(),
     });
 
@@ -78,11 +88,11 @@ const generateWorkout = async (
       planId: docRef.id,
       workoutPlan: structuredPlan,
     };
-  } catch (error) {
-    console.error('🔥 Error generating workout plan:', error);
+  } catch (err) {
+    console.error("🔥 Error generating workout plan:", err.message); // ✅ Clean logging
     return {
       success: false,
-      error: error.message || 'Unknown error generating workout.'
+      error: err.message || "Unknown error generating workout.",
     };
   }
 };

@@ -1,23 +1,26 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
-import TierBadge from './TierBadge';
+import React from "react";
+import PropTypes from "prop-types";
+import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 
-const placeholderImage = 'https://via.placeholder.com/150'; // 🛡️ Fallback image (if needed)
+import colors from "../theme/colors";
+
+import TierBadge from "./TierBadge";
+
+const placeholderImage = "https://via.placeholder.com/150";
 
 const ChallengeCard = ({ challenge, onEnter, onView, progress = {} }) => {
   const { title, status, xpReward, requiredTier, image } = challenge;
 
   const getStatusColor = () => {
     switch (status?.toLowerCase()) {
-      case 'active':
-        return '#43AA8B';
-      case 'expired':
-        return '#999';
-      case 'upcoming':
-        return '#FFD166';
+      case "active":
+        return colors.success;
+      case "expired":
+        return colors.disabled;
+      case "upcoming":
+        return colors.secondary;
       default:
-        return '#ccc';
+        return colors.textSecondary;
     }
   };
 
@@ -26,7 +29,6 @@ const ChallengeCard = ({ challenge, onEnter, onView, progress = {} }) => {
 
   return (
     <View style={styles.card}>
-      {/* 🖼️ Optional challenge image */}
       {image && (
         <Image
           source={{ uri: image || placeholderImage }}
@@ -57,10 +59,12 @@ const ChallengeCard = ({ challenge, onEnter, onView, progress = {} }) => {
           style={styles.button}
           onPress={onEnter}
           accessibilityRole="button"
-          accessibilityLabel={isInProgress ? 'Resume challenge' : 'Enter challenge'}
+          accessibilityLabel={
+            isInProgress ? "Resume challenge" : "Enter challenge"
+          }
         >
           <Text style={styles.buttonText}>
-            {isInProgress ? 'Resume Challenge' : 'Enter Challenge'}
+            {isInProgress ? "Resume Challenge" : "Enter Challenge"}
           </Text>
         </TouchableOpacity>
       )}
@@ -86,25 +90,25 @@ ChallengeCard.propTypes = {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: colors.surface,
     padding: 16,
     borderRadius: 10,
     marginBottom: 16,
   },
   challengeImage: {
-    width: '100%',
+    width: "100%",
     height: 140,
     borderRadius: 10,
     marginBottom: 10,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   title: {
-    color: '#fff',
-    fontWeight: 'bold',
+    color: colors.textPrimary,
+    fontWeight: "bold",
     fontSize: 16,
     flex: 1,
     paddingRight: 10,
@@ -112,34 +116,34 @@ const styles = StyleSheet.create({
   status: {
     marginTop: 6,
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   reward: {
-    color: '#ccc',
+    color: colors.textSecondary,
     marginTop: 6,
     fontSize: 13,
   },
   button: {
-    backgroundColor: '#E63946',
+    backgroundColor: colors.primary,
     marginTop: 14,
     paddingVertical: 10,
     borderRadius: 8,
   },
   buttonText: {
-    color: '#fff',
-    fontWeight: '600',
-    textAlign: 'center',
+    color: colors.textPrimary,
+    fontWeight: "600",
+    textAlign: "center",
   },
   viewBtn: {
-    backgroundColor: '#2a2a2a',
+    backgroundColor: colors.card,
     marginTop: 14,
     paddingVertical: 10,
     borderRadius: 8,
   },
   viewText: {
-    color: '#aaa',
-    fontWeight: '600',
-    textAlign: 'center',
+    color: colors.textSecondary,
+    fontWeight: "600",
+    textAlign: "center",
   },
 });
 

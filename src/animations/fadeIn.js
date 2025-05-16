@@ -1,5 +1,5 @@
-import { useRef, useEffect, useState } from 'react';
-import { Animated, Easing, AccessibilityInfo } from 'react-native';
+import { useRef, useEffect, useState } from "react";
+import { Animated, Easing, AccessibilityInfo } from "react-native";
 
 const useFadeIn = (delay = 0, duration = 500) => {
   const opacity = useRef(new Animated.Value(0)).current;
@@ -14,8 +14,8 @@ const useFadeIn = (delay = 0, duration = 500) => {
           setReduceMotionEnabled(result);
         }
       })
-      .catch((error) => {
-        console.error('AccessibilityInfo error:', error);
+      .catch(() => {
+        // Silent fail for accessibility query
       });
 
     return () => {
@@ -42,7 +42,7 @@ const useFadeIn = (delay = 0, duration = 500) => {
       clearTimeout(timeout);
       opacity.stopAnimation();
     };
-  }, [delay, duration, reduceMotionEnabled]);
+  }, [delay, duration, reduceMotionEnabled, opacity]);
 
   return opacity;
 };

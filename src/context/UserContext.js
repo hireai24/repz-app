@@ -1,19 +1,13 @@
-import React, {
-  createContext,
-  useState,
-  useEffect,
-  useContext,
-  useMemo,
-} from 'react';
-import { doc, getDoc } from 'firebase/firestore';
-import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from '../../backend/firebase/init';
-import { db } from '../../backend/firebase/init';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { createContext, useState, useEffect, useMemo } from "react";
+import { doc, getDoc } from "firebase/firestore";
+import { onAuthStateChanged } from "firebase/auth";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+import { auth, db } from "../../backend/firebase/init";
 
 export const UserContext = createContext();
 
-const USER_PROFILE_STORAGE_KEY = 'repz_user_profile';
+const USER_PROFILE_STORAGE_KEY = "repz_user_profile";
 
 export const UserProvider = ({ children }) => {
   const [userProfile, setUserProfile] = useState(null);
@@ -22,14 +16,20 @@ export const UserProvider = ({ children }) => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        setUserId(user.uid);
-        await loadUserProfile(user.uid);
-      } else {
+      try {
+        if (user) {
+          setUserId(user.uid);
+          await loadUserProfile(user.uid);
+        } else {
+          setUserId(null);
+          setUserProfile(null);
+          await AsyncStorage.removeItem(USER_PROFILE_STORAGE_KEY);
+        }
+      } catch {
         setUserId(null);
         setUserProfile(null);
+      } finally {
         setLoadingProfile(false);
-        await AsyncStorage.removeItem(USER_PROFILE_STORAGE_KEY);
       }
     });
 
@@ -38,37 +38,38 @@ export const UserProvider = ({ children }) => {
 
   const loadUserProfile = async (uid) => {
     try {
-      const docRef = doc(db, 'users', uid);
+      const docRef = doc(db, "users", uid);
       const snap = await getDoc(docRef);
+
       if (snap.exists()) {
         const data = snap.data();
         const formattedProfile = {
           id: uid,
-          name: data.name || '',
-          email: data.email || '',
+          name: data.name || "",
+          email: data.email || "",
           profilePicture: data.profilePicture || null,
-          avatar: typeof data.avatar === 'number' ? data.avatar : null,
+          avatar: typeof data.avatar === "number" ? data.avatar : null,
           stripeAccountId: data.stripeAccountId || null,
           ...data,
         };
+
         setUserProfile(formattedProfile);
-        await AsyncStorage.setItem(USER_PROFILE_STORAGE_KEY, JSON.stringify(formattedProfile));
+        await AsyncStorage.setItem(
+          USER_PROFILE_STORAGE_KEY,
+          JSON.stringify(formattedProfile),
+        );
       } else {
         setUserProfile(null);
       }
-    } catch (err) {
-      console.error('Failed to load user profile from Firestore:', err);
-
-      // 🔥 Fallback: Try loading from AsyncStorage
+    } catch {
       try {
-        const cachedProfile = await AsyncStorage.getItem(USER_PROFILE_STORAGE_KEY);
-        if (cachedProfile) {
-          setUserProfile(JSON.parse(cachedProfile));
+        const cached = await AsyncStorage.getItem(USER_PROFILE_STORAGE_KEY);
+        if (cached) {
+          setUserProfile(JSON.parse(cached));
         } else {
           setUserProfile(null);
         }
-      } catch (storageErr) {
-        console.error('Fallback: Failed to load cached user profile:', storageErr);
+      } catch {
         setUserProfile(null);
       }
     } finally {
@@ -91,12 +92,8 @@ export const UserProvider = ({ children }) => {
       loadingProfile,
       refreshUserProfile,
     }),
-    [userProfile, userId, loadingProfile]
+    [userProfile, userId, loadingProfile, refreshUserProfile],
   );
 
-  return (
-    <UserContext.Provider value={value}>
-      {children}
-    </UserContext.Provider>
-  );
+  return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 };

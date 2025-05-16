@@ -1,5 +1,5 @@
-import { useRef, useEffect, useState } from 'react';
-import { Animated, Easing, AccessibilityInfo } from 'react-native';
+import { useRef, useEffect, useState } from "react";
+import { Animated, Easing, AccessibilityInfo } from "react-native";
 
 const useBounceXP = () => {
   const scale = useRef(new Animated.Value(1)).current;
@@ -15,7 +15,7 @@ const useBounceXP = () => {
         }
       })
       .catch((error) => {
-        console.error('Accessibility info error:', error);
+        console.error("Accessibility info error:", error);
       });
 
     return () => {

@@ -1,8 +1,8 @@
 // src/api/mealApi.js
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL + '/meals';
+const BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL + "/api/meal";
 const MAX_RETRIES = 2;
 const RETRY_DELAY_MS = 500;
 
@@ -11,11 +11,10 @@ const RETRY_DELAY_MS = 500;
  */
 const getAuthToken = async () => {
   try {
-    const token = await AsyncStorage.getItem('authToken');
-    return token || '';
-  } catch (err) {
-    console.error('Error retrieving auth token:', err);
-    return '';
+    const token = await AsyncStorage.getItem("authToken");
+    return token || "";
+  } catch {
+    return "";
   }
 };
 
@@ -34,7 +33,6 @@ const fetchWithRetry = async (url, options = {}, retries = MAX_RETRIES) => {
       }
       return await res.json();
     } catch (err) {
-      console.error(`Fetch attempt ${attempt + 1} failed:`, err.message);
       if (attempt === retries) {
         return { success: false, error: err.message };
       }
@@ -49,20 +47,15 @@ const fetchWithRetry = async (url, options = {}, retries = MAX_RETRIES) => {
  * @returns {Promise<Object>} - { success, mealPlan }
  */
 export const generateMealPlan = async (preferences) => {
-  try {
-    const token = await getAuthToken();
-    return await fetchWithRetry(`${BASE_URL}/generate`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(preferences),
-    });
-  } catch (err) {
-    console.error('Error generating meal plan:', err);
-    return { success: false, error: err.message };
-  }
+  const token = await getAuthToken();
+  return await fetchWithRetry(`${BASE_URL}/generate`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(preferences),
+  });
 };
 
 /**
@@ -71,19 +64,14 @@ export const generateMealPlan = async (preferences) => {
  * @returns {Promise<Object>} - { success, meals }
  */
 export const getSavedMeals = async (userId) => {
-  try {
-    const token = await getAuthToken();
-    const res = await fetchWithRetry(`${BASE_URL}/${userId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+  const token = await getAuthToken();
+  const res = await fetchWithRetry(`${BASE_URL}/${userId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
 
-    return { success: true, meals: res.meals || res };
-  } catch (err) {
-    console.error('Error fetching saved meals:', err);
-    return { success: false, error: err.message };
-  }
+  return { success: true, meals: res.meals || res };
 };
 
 /**
@@ -93,18 +81,13 @@ export const getSavedMeals = async (userId) => {
  * @returns {Promise<Object>} - { success, mealPlanId }
  */
 export const saveMealPlan = async (userId, mealData) => {
-  try {
-    const token = await getAuthToken();
-    return await fetchWithRetry(`${BASE_URL}/save`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ userId, ...mealData }),
-    });
-  } catch (err) {
-    console.error('Error saving meal plan:', err);
-    return { success: false, error: err.message };
-  }
+  const token = await getAuthToken();
+  return await fetchWithRetry(`${BASE_URL}/save`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ userId, ...mealData }),
+  });
 };

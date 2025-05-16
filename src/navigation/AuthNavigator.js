@@ -1,9 +1,10 @@
-import React, { useContext } from 'react';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import React, { useContext } from "react";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
-import OnboardingScreen from '../screens/OnboardingScreen';
-import AppNavigator from './AppNavigator';
-import { AuthContext } from '../context/AuthContext';
+import OnboardingScreen from "../screens/OnboardingScreen";
+import { AuthContext } from "../context/AuthContext";
+
+import AppNavigator from "./AppNavigator";
 
 const Stack = createNativeStackNavigator();
 

@@ -1,20 +1,19 @@
-import React, { useContext } from 'react';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { NavigationContainer } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
-import { AuthContext } from '../context/AuthContext';
+import React, { useContext } from "react";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { NavigationContainer } from "@react-navigation/native";
+import { Ionicons } from "@expo/vector-icons";
 
-// Screens
-import DashboardScreen from '../screens/DashboardScreen';
-import WorkoutLogScreen from '../screens/WorkoutLogScreen';
-import ChallengeScreen from '../screens/ChallengeScreen';
-import MarketplaceScreen from '../screens/MarketplaceScreen';
-import ProfileScreen from '../screens/ProfileScreen';
-import PlanBuilderScreen from '../screens/PlanBuilderScreen';
-import FormGhostScreen from '../screens/FormGhostScreen';
-import VisualGainsScreen from '../screens/VisualGainsScreen';
-import UserPlansScreen from '../screens/UserPlansScreen'; // ✅ NEW import
+import { AuthContext } from "../context/AuthContext";
+import DashboardScreen from "../screens/DashboardScreen";
+import WorkoutLogScreen from "../screens/WorkoutLogScreen";
+import ChallengeScreen from "../screens/ChallengeScreen";
+import MarketplaceScreen from "../screens/MarketplaceScreen";
+import ProfileScreen from "../screens/ProfileScreen";
+import PlanBuilderScreen from "../screens/PlanBuilderScreen";
+import FormGhostScreen from "../screens/FormGhostScreen";
+import VisualGainsScreen from "../screens/VisualGainsScreen";
+import UserPlansScreen from "../screens/UserPlansScreen";
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -25,38 +24,38 @@ const TabNavigator = () => (
     screenOptions={({ route }) => ({
       headerShown: false,
       tabBarStyle: {
-        backgroundColor: '#000',
-        borderTopColor: '#111',
+        backgroundColor: "#000",
+        borderTopColor: "#111",
         paddingBottom: 6,
         paddingTop: 4,
         height: 64,
       },
       tabBarLabelStyle: {
         fontSize: 12,
-        fontWeight: '600',
+        fontWeight: "600",
       },
-      tabBarActiveTintColor: '#E63946',
-      tabBarInactiveTintColor: '#777',
+      tabBarActiveTintColor: "#E63946",
+      tabBarInactiveTintColor: "#777",
       tabBarIcon: ({ focused, color }) => {
         let iconName;
         switch (route.name) {
-          case 'Dashboard':
-            iconName = focused ? 'home' : 'home-outline';
+          case "Dashboard":
+            iconName = focused ? "home" : "home-outline";
             break;
-          case 'Workout':
-            iconName = focused ? 'barbell' : 'barbell-outline';
+          case "Workout":
+            iconName = focused ? "barbell" : "barbell-outline";
             break;
-          case 'Challenges':
-            iconName = focused ? 'flame' : 'flame-outline';
+          case "Challenges":
+            iconName = focused ? "flame" : "flame-outline";
             break;
-          case 'Marketplace':
-            iconName = focused ? 'cart' : 'cart-outline';
+          case "Marketplace":
+            iconName = focused ? "cart" : "cart-outline";
             break;
-          case 'Profile':
-            iconName = focused ? 'person' : 'person-outline';
+          case "Profile":
+            iconName = focused ? "person" : "person-outline";
             break;
           default:
-            iconName = 'ellipse-outline';
+            iconName = "ellipse-outline";
         }
         return <Ionicons name={iconName} size={22} color={color} />;
       },
@@ -73,8 +72,7 @@ const TabNavigator = () => (
 const AppNavigator = () => {
   const { authUser, loading } = useContext(AuthContext);
 
-  if (loading) return null;
-  if (!authUser) return null;
+  if (loading || !authUser) return null;
 
   return (
     <NavigationContainer>
@@ -83,7 +81,7 @@ const AppNavigator = () => {
         <Stack.Screen name="PlanBuilder" component={PlanBuilderScreen} />
         <Stack.Screen name="FormGhost" component={FormGhostScreen} />
         <Stack.Screen name="VisualGains" component={VisualGainsScreen} />
-        <Stack.Screen name="UserPlans" component={UserPlansScreen} /> {/* ✅ ADDED */}
+        <Stack.Screen name="UserPlans" component={UserPlansScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

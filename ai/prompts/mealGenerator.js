@@ -1,4 +1,4 @@
-import { sendPrompt, cleanAIOutput } from '../../backend/utils/aiUtils.js';
+import { sendPrompt, cleanAIOutput } from "../../backend/utils/aiUtils.js";
 
 /**
  * Generates a structured meal plan using AI prompt.
@@ -22,26 +22,27 @@ export const generateMealPlan = async ({
   dietaryPrefs,
   mealsPerDay = 4,
 }) => {
-  if (
-    typeof goal !== 'string' ||
-    typeof calories !== 'number' ||
-    typeof protein !== 'number' ||
-    typeof carbs !== 'number' ||
-    typeof fat !== 'number' ||
-    typeof mealsPerDay !== 'number' ||
-    (dietaryPrefs && typeof dietaryPrefs !== 'string') ||
-    !goal.trim() ||
-    calories <= 0 ||
-    protein <= 0 ||
-    carbs <= 0 ||
-    fat <= 0 ||
-    mealsPerDay < 1
-  ) {
+  const isValid =
+    typeof goal === "string" &&
+    typeof calories === "number" &&
+    typeof protein === "number" &&
+    typeof carbs === "number" &&
+    typeof fat === "number" &&
+    typeof mealsPerDay === "number" &&
+    (!dietaryPrefs || typeof dietaryPrefs === "string") &&
+    goal.trim() &&
+    calories > 0 &&
+    protein > 0 &&
+    carbs > 0 &&
+    fat > 0 &&
+    mealsPerDay >= 1;
+
+  if (!isValid) {
     return {
       success: false,
       error: {
-        message: 'Invalid input. Please check all fields for correct types and values.',
-        code: 'INVALID_INPUT',
+        message: "Invalid input. Please check all fields for correct types and values.",
+        code: "INVALID_INPUT",
       },
     };
   }
@@ -53,7 +54,7 @@ You are a certified performance nutritionist creating a structured, goal-based m
 - Goal: ${goal}
 - Calories: ${calories} kcal
 - Macros: ${protein}g protein / ${carbs}g carbs / ${fat}g fat
-- Dietary Restrictions: ${dietaryPrefs || 'None'}
+- Dietary Restrictions: ${dietaryPrefs || "None"}
 - Meals Per Day: ${mealsPerDay}
 
 === OBJECTIVE ===
@@ -72,21 +73,32 @@ This plan is AI-generated and not a substitute for medical advice. Always consul
 Begin:
 `;
 
-  const { success, result, error } = await sendPrompt(prompt);
+  try {
+    const { success, result, error } = await sendPrompt(prompt);
 
-  if (!success) {
+    if (!success) {
+      return {
+        success: false,
+        error: {
+          message: "Failed to generate meal plan.",
+          details: error,
+          code: "PROMPT_FAILURE",
+        },
+      };
+    }
+
+    return {
+      success: true,
+      planText: cleanAIOutput(result),
+    };
+  } catch (err) {
     return {
       success: false,
       error: {
-        message: 'Failed to generate meal plan.',
-        details: error,
-        code: 'PROMPT_FAILURE',
+        message: "Unexpected error during AI meal plan generation.",
+        details: err,
+        code: "UNEXPECTED_ERROR",
       },
     };
   }
-
-  return {
-    success: true,
-    planText: cleanAIOutput(result),
-  };
 };

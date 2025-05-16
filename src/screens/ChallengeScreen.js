@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -7,14 +7,15 @@ import {
   ActivityIndicator,
   Dimensions,
   RefreshControl,
-} from 'react-native';
-import { getChallenges, submitChallenge } from '../api/challengeApi';
-import ChallengeCard from '../components/ChallengeCard';
-import { useTierAccess } from '../hooks/useTierAccess';
-import i18n from '../locales/i18n';
-import colors from '../theme/colors';
-import spacing from '../theme/spacing';
-import typography from '../theme/typography';
+} from "react-native";
+
+import { getChallenges, submitChallenge } from "../api/challengeApi";
+import ChallengeCard from "../components/ChallengeCard";
+import { useTierAccess } from "../hooks/useTierAccess";
+import i18n from "../locales/i18n";
+import colors from "../theme/colors";
+import spacing from "../theme/spacing";
+import typography from "../theme/typography";
 
 const PAGE_SIZE = 10;
 
@@ -23,33 +24,29 @@ const ChallengeScreen = () => {
   const [displayedChallenges, setDisplayedChallenges] = useState([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState('');
-  const [submittedId, setSubmittedId] = useState(null);
+  const [error, setError] = useState("");
   const [page, setPage] = useState(1);
-  const { locked } = useTierAccess('Free');
+  const { locked } = useTierAccess("Free");
 
-  const loadChallenges = async () => {
+  const loadChallenges = useCallback(async () => {
     try {
       setLoading(true);
-      setError('');
+      setError("");
       const data = await getChallenges();
       setChallenges(data);
       setDisplayedChallenges(data.slice(0, PAGE_SIZE));
-    } catch (err) {
-      console.error(err);
-      setError(i18n.t('challenge.errorLoad'));
+    } catch {
+      setError(i18n.t("challenge.errorLoad"));
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   const handleEnter = async (challengeId) => {
     try {
       await submitChallenge(challengeId);
-      setSubmittedId(challengeId);
-    } catch (err) {
-      console.error(err);
-      setError(i18n.t('challenge.submitFail'));
+    } catch {
+      setError(i18n.t("challenge.submitFail"));
     }
   };
 
@@ -59,7 +56,10 @@ const ChallengeScreen = () => {
     const start = page * PAGE_SIZE;
     const end = start + PAGE_SIZE;
     if (start >= challenges.length) return;
-    setDisplayedChallenges((prev) => [...prev, ...challenges.slice(start, end)]);
+    setDisplayedChallenges((prev) => [
+      ...prev,
+      ...challenges.slice(start, end),
+    ]);
     setPage(nextPage);
   };
 
@@ -67,16 +67,16 @@ const ChallengeScreen = () => {
     setRefreshing(true);
     setPage(1);
     loadChallenges().finally(() => setRefreshing(false));
-  }, []);
+  }, [loadChallenges]);
 
   useEffect(() => {
     loadChallenges();
-  }, []);
+  }, [loadChallenges]);
 
   if (locked) {
     return (
       <View style={styles.lockedContainer}>
-        <Text style={styles.lockedText}>{i18n.t('challenge.locked')}</Text>
+        <Text style={styles.lockedText}>{i18n.t("challenge.locked")}</Text>
       </View>
     );
   }
@@ -86,28 +86,28 @@ const ChallengeScreen = () => {
       challenge={item}
       progress={item.progress || {}}
       onEnter={() => handleEnter(item.id)}
-      onView={() => setSubmittedId(item.id)}
+      onView={() => {}}
     />
   );
 
-  const screenHeight = Dimensions.get('window').height;
+  const screenHeight = Dimensions.get("window").height;
 
   return (
     <View style={[styles.container, { minHeight: screenHeight }]}>
-      <Text style={styles.header}>{i18n.t('challenge.header')}</Text>
+      <Text style={styles.header}>{i18n.t("challenge.header")}</Text>
 
       {error ? (
         <Text style={styles.errorText}>{error}</Text>
       ) : loading && !refreshing ? (
         <ActivityIndicator size="large" color={colors.primary} />
       ) : displayedChallenges.length === 0 ? (
-        <Text style={styles.emptyText}>{i18n.t('challenge.noChallenges')}</Text>
+        <Text style={styles.emptyText}>{i18n.t("challenge.noChallenges")}</Text>
       ) : (
         <FlatList
           data={displayedChallenges}
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
-          contentContainerStyle={{ paddingBottom: 40 }}
+          contentContainerStyle={styles.listContent}
           onEndReached={handleLoadMore}
           onEndReachedThreshold={0.5}
           refreshControl={
@@ -136,25 +136,28 @@ const styles = StyleSheet.create({
   },
   errorText: {
     color: colors.error,
-    textAlign: 'center',
+    textAlign: "center",
     marginTop: spacing.lg,
   },
   emptyText: {
     color: colors.textSecondary,
-    textAlign: 'center',
+    textAlign: "center",
     marginTop: spacing.lg,
   },
   lockedContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     backgroundColor: colors.background,
     padding: spacing.xl,
   },
   lockedText: {
     color: colors.textSecondary,
-    textAlign: 'center',
+    textAlign: "center",
     fontSize: 16,
+  },
+  listContent: {
+    paddingBottom: spacing.xl,
   },
 });
 

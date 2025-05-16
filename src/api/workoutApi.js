@@ -1,16 +1,30 @@
 // src/api/workoutApi.js
 
-const BASE_URL = 'https://your-backend-url.com/api/workouts';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+const BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL + "/api/workout";
 const MAX_RETRIES = 2;
 const RETRY_DELAY_MS = 500;
 
 /**
- * Sleep helper for retries
+ * Get auth token safely
+ */
+const getAuthToken = async () => {
+  try {
+    const token = await AsyncStorage.getItem("authToken");
+    return token || "";
+  } catch {
+    return "";
+  }
+};
+
+/**
+ * Sleep helper for retry delays
  */
 const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
 
 /**
- * Unified fetch with retry support
+ * Fetch wrapper with retries
  */
 const fetchWithRetry = async (url, options = {}, retries = MAX_RETRIES) => {
   for (let attempt = 0; attempt <= retries; attempt++) {
@@ -22,7 +36,6 @@ const fetchWithRetry = async (url, options = {}, retries = MAX_RETRIES) => {
       }
       return await res.json();
     } catch (err) {
-      console.error(`Fetch attempt ${attempt + 1} failed:`, err.message);
       if (attempt === retries) {
         return { success: false, error: err.message };
       }
@@ -32,46 +45,43 @@ const fetchWithRetry = async (url, options = {}, retries = MAX_RETRIES) => {
 };
 
 /**
- * Fetches all workouts for a given user
+ * Get user's workout logs
  */
 export const getWorkouts = async (userId) => {
-  try {
-    return await fetchWithRetry(`${BASE_URL}/${userId}`);
-  } catch (err) {
-    console.error('Error fetching workouts:', err);
-    return { success: false, error: err.message };
-  }
+  const token = await getAuthToken();
+  return await fetchWithRetry(`${BASE_URL}/${userId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
 };
 
 /**
- * Saves a workout log for a user
+ * Save a workout log
  */
 export const saveWorkout = async (userId, workoutData) => {
-  try {
-    return await fetchWithRetry(`${BASE_URL}/save`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        userId,
-        ...workoutData,
-      }),
-    });
-  } catch (err) {
-    console.error('Error saving workout:', err);
-    return { success: false, error: err.message };
-  }
+  const token = await getAuthToken();
+  return await fetchWithRetry(`${BASE_URL}/save`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      userId,
+      ...workoutData,
+    }),
+  });
 };
 
 /**
- * Fetches all available AI-generated workout plans
+ * Fetch all AI-generated workout plans
  */
 export const getWorkoutPlans = async () => {
-  try {
-    return await fetchWithRetry(`${BASE_URL}/plans`);
-  } catch (err) {
-    console.error('Error fetching workout plans:', err);
-    return { success: false, error: err.message };
-  }
+  const token = await getAuthToken();
+  return await fetchWithRetry(`${BASE_URL}/plans`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
 };

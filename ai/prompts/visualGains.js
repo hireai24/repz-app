@@ -1,4 +1,4 @@
-import { sendPrompt, cleanAIOutput } from '../../backend/utils/aiUtils.js';
+import { sendPrompt, cleanAIOutput } from "../../backend/utils/aiUtils.js";
 
 /**
  * Analyzes visual progress photos using goal-specific AI logic.
@@ -16,17 +16,22 @@ export const analyzeProgressPhotos = async ({
   view,
   userGoal,
 }) => {
-  if (
-    !weekStart || typeof weekStart !== 'string' ||
-    !weekEnd || typeof weekEnd !== 'string' ||
-    !view || !['Front', 'Side', 'Back'].includes(view) ||
-    !userGoal || typeof userGoal !== 'string'
-  ) {
+  const isValid =
+    typeof weekStart === "string" &&
+    typeof weekEnd === "string" &&
+    typeof view === "string" &&
+    typeof userGoal === "string" &&
+    weekStart.trim() &&
+    weekEnd.trim() &&
+    userGoal.trim() &&
+    ["Front", "Side", "Back"].includes(view);
+
+  if (!isValid) {
     return {
       success: false,
       error: {
-        message: 'Invalid input. Please ensure all fields are valid.',
-        code: 'INVALID_INPUT',
+        message: "Invalid input. Please ensure all fields are valid.",
+        code: "INVALID_INPUT",
       },
     };
   }
@@ -54,21 +59,32 @@ This is an AI-generated summary for motivational use only. Do not use it as a su
 Begin now:
 `;
 
-  const { success, result, error } = await sendPrompt(prompt);
+  try {
+    const { success, result, error } = await sendPrompt(prompt);
 
-  if (!success) {
+    if (!success) {
+      return {
+        success: false,
+        error: {
+          message: "Failed to analyze progress photos.",
+          details: error,
+          code: "PROMPT_FAILURE",
+        },
+      };
+    }
+
+    return {
+      success: true,
+      summary: cleanAIOutput(result),
+    };
+  } catch (err) {
     return {
       success: false,
       error: {
-        message: 'Failed to analyze progress photos.',
-        details: error,
-        code: 'PROMPT_FAILURE',
+        message: "Unexpected error during progress analysis.",
+        details: err,
+        code: "UNEXPECTED_ERROR",
       },
     };
   }
-
-  return {
-    success: true,
-    summary: cleanAIOutput(result),
-  };
 };

@@ -1,24 +1,28 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { format } from 'date-fns';
+import React from "react";
+import PropTypes from "prop-types";
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { format } from "date-fns";
 
-import colors from '../theme/colors';
-import spacing from '../theme/spacing';
-import typography from '../theme/typography';
+import colors from "../theme/colors";
+import spacing from "../theme/spacing";
+import typography from "../theme/typography";
 
 const UserPlanCard = ({ plan, onPress, onDelete }) => {
-  const formattedDate = format(new Date(plan.createdAt), 'dd MMM yyyy');
+  const formattedDate = format(new Date(plan.createdAt), "dd MMM yyyy");
 
   const confirmDelete = () => {
     Alert.alert(
-      'Delete Plan',
+      "Delete Plan",
       `Are you sure you want to delete "${plan.name}"? This action cannot be undone.`,
       [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Delete', style: 'destructive', onPress: () => onDelete(plan.id) },
-      ]
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: () => onDelete(plan.id),
+        },
+      ],
     );
   };
 
@@ -28,7 +32,7 @@ const UserPlanCard = ({ plan, onPress, onDelete }) => {
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={`Open plan ${plan.name}`}
-      testID={`user-plan-${plan.name.toLowerCase().replace(/\s+/g, '-')}`}
+      testID={`user-plan-${plan.name.toLowerCase().replace(/\s+/g, "-")}`}
     >
       <View style={styles.header}>
         <Text style={styles.name}>{plan.name}</Text>
@@ -39,7 +43,7 @@ const UserPlanCard = ({ plan, onPress, onDelete }) => {
           accessibilityLabel={`Delete plan ${plan.name}`}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          <Ionicons name="trash-outline" size={20} color={colors.error || '#E63946'} />
+          <Ionicons name="trash-outline" size={20} color={colors.danger} />
         </TouchableOpacity>
       </View>
 
@@ -47,7 +51,11 @@ const UserPlanCard = ({ plan, onPress, onDelete }) => {
       <Text style={styles.detail}>{plan.exercises?.length || 0} Exercises</Text>
 
       <View style={styles.meta}>
-        <Ionicons name="calendar-outline" size={16} color={colors.textSecondary} />
+        <Ionicons
+          name="calendar-outline"
+          size={16}
+          color={colors.textSecondary}
+        />
         <Text style={styles.date}>{formattedDate}</Text>
       </View>
     </TouchableOpacity>
@@ -74,9 +82,9 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: spacing.xs,
   },
   name: {
@@ -90,7 +98,7 @@ const styles = StyleSheet.create({
   },
   type: {
     color: colors.primary,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: spacing.xs,
   },
   detail: {
@@ -99,8 +107,8 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xs,
   },
   meta: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginTop: spacing.sm,
   },
   date: {

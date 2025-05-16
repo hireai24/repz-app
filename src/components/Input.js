@@ -1,6 +1,9 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { TextInput, View, Text, StyleSheet } from 'react-native';
+import React from "react";
+import PropTypes from "prop-types";
+import { TextInput, View, Text, StyleSheet } from "react-native";
+
+import colors from "../theme/colors";
+import spacing from "../theme/spacing";
 
 const Input = ({
   label,
@@ -8,19 +11,16 @@ const Input = ({
   onChangeText,
   placeholder,
   secureTextEntry = false,
-  keyboardType = 'default',
+  keyboardType = "default",
   editable = true,
   style,
-  textContentType,      // ✅ New prop
-  autoCompleteType,     // ✅ New prop (note: used mostly for legacy Android, still good to include)
+  textContentType,
+  autoCompleteType,
 }) => {
   return (
     <View style={[styles.container, style]}>
       {label && (
-        <Text
-          style={styles.label}
-          accessibilityRole="label"
-        >
+        <Text style={styles.label} accessibilityRole="label">
           {label}
         </Text>
       )}
@@ -29,16 +29,16 @@ const Input = ({
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
-        placeholderTextColor="#555"
+        placeholderTextColor={colors.textSecondary}
         secureTextEntry={secureTextEntry}
         keyboardType={keyboardType}
         editable={editable}
         autoCapitalize="none"
         autoCorrect={false}
         accessibilityLabel={label}
-        testID={`input-${label?.toLowerCase().replace(/\s+/g, '-')}`}
-        textContentType={textContentType}       // ✅ Passed into TextInput
-        autoComplete={autoCompleteType || 'off'} // ✅ (modern replacement for autoCompleteType, React Native uses autoComplete now)
+        testID={`input-${label?.toLowerCase().replace(/\s+/g, "-")}`}
+        textContentType={textContentType}
+        autoComplete={autoCompleteType || "off"}
       />
     </View>
   );
@@ -53,27 +53,27 @@ Input.propTypes = {
   keyboardType: PropTypes.string,
   editable: PropTypes.bool,
   style: PropTypes.object,
-  textContentType: PropTypes.string,   // ✅ Added to propTypes
-  autoCompleteType: PropTypes.string,  // ✅ Added to propTypes
+  textContentType: PropTypes.string,
+  autoCompleteType: PropTypes.string,
 };
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 14,
+    marginBottom: spacing.md,
   },
   label: {
-    color: '#aaa',
+    color: colors.textSecondary,
     fontSize: 13,
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   input: {
-    backgroundColor: '#1a1a1a',
-    color: '#fff',
-    padding: 12,
-    borderRadius: 8,
+    backgroundColor: colors.surface,
+    color: colors.textPrimary,
+    padding: spacing.sm,
+    borderRadius: spacing.borderRadius,
     fontSize: 15,
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: colors.border,
   },
   disabled: {
     opacity: 0.5,

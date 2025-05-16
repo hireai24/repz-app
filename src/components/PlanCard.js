@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import PropTypes from 'prop-types';
+import React, { useState } from "react";
+import PropTypes from "prop-types";
 import {
   View,
   Text,
@@ -9,29 +9,38 @@ import {
   Alert,
   Linking,
   ActivityIndicator,
-} from 'react-native';
-import { useTier } from '../context/TierContext';
-import { purchasePlan } from '../api/marketplaceApi';
+} from "react-native";
 
-const PlanCard = ({ plan, onPress, buyerId, creatorStripeAccountId, isLoading = false }) => {
+import { useTier } from "../context/TierContext";
+import { purchasePlan } from "../api/marketplaceApi";
+import colors from "../theme/colors";
+import spacing from "../theme/spacing";
+
+const PlanCard = ({
+  plan,
+  onPress,
+  buyerId,
+  creatorStripeAccountId,
+  isLoading = false,
+}) => {
   const { tier } = useTier();
-  const isLocked = plan?.tier === 'Pro' || plan?.tier === 'Elite';
+  const isLocked = plan?.tier === "Pro" || plan?.tier === "Elite";
   const [buyLoading, setBuyLoading] = useState(false);
 
   const handleBuy = async () => {
     if (isLocked) {
-      if (tier === 'Free' || (plan.tier === 'Elite' && tier === 'Pro')) {
+      if (tier === "Free" || (plan.tier === "Elite" && tier === "Pro")) {
         return Alert.alert(
-          'Upgrade Required',
-          `You need a ${plan.tier} tier subscription to purchase this plan.`
+          "Upgrade Required",
+          `You need a ${plan.tier} tier subscription to purchase this plan.`,
         );
       }
     }
 
     if (!creatorStripeAccountId) {
       return Alert.alert(
-        'Unavailable',
-        'The creator of this plan has not set up payouts. Please try another plan.'
+        "Unavailable",
+        "The creator of this plan has not set up payouts. Please try another plan.",
       );
     }
 
@@ -48,13 +57,13 @@ const PlanCard = ({ plan, onPress, buyerId, creatorStripeAccountId, isLoading = 
       if (result?.url) {
         Linking.openURL(result.url);
       } else {
-        throw new Error('Invalid response');
+        throw new Error("Invalid checkout URL returned.");
       }
     } catch (err) {
-      console.error('Buy failed:', err);
+      console.error("Buy failed:", err);
       Alert.alert(
-        'Purchase failed',
-        err.message || 'Something went wrong while trying to buy the plan.'
+        "Purchase failed",
+        err.message || "Something went wrong while trying to buy the plan.",
       );
     } finally {
       setBuyLoading(false);
@@ -63,12 +72,15 @@ const PlanCard = ({ plan, onPress, buyerId, creatorStripeAccountId, isLoading = 
 
   if (isLoading) {
     return (
-      <View style={[styles.card, { opacity: 0.5 }]} accessibilityRole="progressbar">
+      <View
+        style={[styles.card, styles.disabled]}
+        accessibilityRole="progressbar"
+      >
         <View style={styles.skeletonImage} />
         <View style={styles.content}>
           <View style={styles.skeletonText} />
-          <View style={[styles.skeletonText, { width: '60%', marginTop: 6 }]} />
-          <View style={[styles.skeletonText, { width: '40%', marginTop: 6 }]} />
+          <View style={[styles.skeletonText, { width: "60%" }]} />
+          <View style={[styles.skeletonText, { width: "40%" }]} />
         </View>
       </View>
     );
@@ -81,11 +93,13 @@ const PlanCard = ({ plan, onPress, buyerId, creatorStripeAccountId, isLoading = 
       disabled={buyLoading}
       accessibilityLabel={`View plan ${plan.name}`}
       accessibilityRole="button"
-      testID={`plan-card-${plan.name.toLowerCase().replace(/\s+/g, '-')}`}
+      testID={`plan-card-${plan.name.toLowerCase().replace(/\s+/g, "-")}`}
     >
       <Image
         source={{
-          uri: plan.thumbnail || 'https://via.placeholder.com/400x200.png?text=PLAN',
+          uri:
+            plan.thumbnail ||
+            "https://via.placeholder.com/400x200.png?text=PLAN",
         }}
         style={styles.image}
         accessible
@@ -101,13 +115,13 @@ const PlanCard = ({ plan, onPress, buyerId, creatorStripeAccountId, isLoading = 
 
         <View style={styles.footer}>
           <Text style={styles.price}>
-            {plan.price === 0 ? 'Free' : `£${plan.price}`}
+            {plan.price === 0 ? "Free" : `£${plan.price}`}
           </Text>
           {isLocked && (
             <Text
               style={[
                 styles.tier,
-                plan.tier === 'Elite' ? styles.elite : styles.pro,
+                plan.tier === "Elite" ? styles.elite : styles.pro,
               ]}
             >
               {plan.tier}
@@ -124,7 +138,7 @@ const PlanCard = ({ plan, onPress, buyerId, creatorStripeAccountId, isLoading = 
             accessibilityLabel="Buy this plan"
           >
             {buyLoading ? (
-              <ActivityIndicator color="#fff" />
+              <ActivityIndicator color={colors.textPrimary} />
             ) : (
               <Text style={styles.buyText}>Buy Now</Text>
             )}
@@ -149,85 +163,84 @@ PlanCard.propTypes = {
   onPress: PropTypes.func.isRequired,
   buyerId: PropTypes.string.isRequired,
   creatorStripeAccountId: PropTypes.string,
-  isLoading: PropTypes.bool, // ✅ New optional prop
+  isLoading: PropTypes.bool,
 };
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#111',
-    borderRadius: 12,
-    overflow: 'hidden',
-    marginBottom: 16,
+    backgroundColor: colors.card,
+    borderRadius: spacing.md,
+    overflow: "hidden",
+    marginBottom: spacing.md,
   },
   image: {
-    width: '100%',
+    width: "100%",
     height: 140,
-    resizeMode: 'cover',
+    resizeMode: "cover",
   },
   content: {
-    padding: 12,
+    padding: spacing.sm,
   },
   title: {
-    color: '#fff',
-    fontWeight: 'bold',
+    color: colors.textPrimary,
+    fontWeight: "bold",
     fontSize: 16,
   },
   author: {
-    color: '#aaa',
+    color: colors.textSecondary,
     fontSize: 13,
     marginTop: 2,
   },
   meta: {
-    color: '#888',
+    color: colors.border,
     fontSize: 12,
     marginTop: 4,
   },
   footer: {
-    marginTop: 10,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    marginTop: spacing.sm,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   price: {
-    color: '#43AA8B',
-    fontWeight: 'bold',
+    color: colors.success,
+    fontWeight: "bold",
   },
   tier: {
-    fontWeight: 'bold',
+    fontWeight: "bold",
     fontSize: 13,
   },
   pro: {
-    color: '#E63946',
+    color: colors.primary,
   },
   elite: {
-    color: '#FFD700',
+    color: colors.pro,
   },
   buyBtn: {
-    marginTop: 10,
-    backgroundColor: '#E63946',
+    marginTop: spacing.sm,
+    backgroundColor: colors.primary,
     paddingVertical: 8,
-    borderRadius: 6,
-    alignItems: 'center',
+    borderRadius: spacing.sm,
+    alignItems: "center",
   },
   buyText: {
-    color: '#fff',
-    fontWeight: 'bold',
+    color: colors.textPrimary,
+    fontWeight: "bold",
   },
   disabled: {
     opacity: 0.6,
   },
-  // Skeleton loading styles
   skeletonImage: {
-    backgroundColor: '#222',
+    backgroundColor: colors.surface,
     height: 140,
-    width: '100%',
+    width: "100%",
   },
   skeletonText: {
     height: 14,
-    backgroundColor: '#222',
-    borderRadius: 6,
+    backgroundColor: colors.surface,
+    borderRadius: spacing.xs,
     marginTop: 8,
-    width: '80%',
+    width: "80%",
   },
 });
 

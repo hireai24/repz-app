@@ -1,16 +1,14 @@
-import React, { useEffect } from 'react';
-import PropTypes from 'prop-types';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  AccessibilityRole,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useTier } from '../context/TierContext';
-import { useNavigation } from '@react-navigation/native';
-import useBounceXP from '../animations/bounceXP';
+import React, { useEffect } from "react";
+import PropTypes from "prop-types";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
+
+import { useTier } from "../context/TierContext";
+import useBounceXP from "../animations/bounceXP";
+import colors from "../theme/colors";
+import spacing from "../theme/spacing";
+import typography from "../theme/typography";
 
 const WorkoutSummaryCard = ({
   volume,
@@ -28,7 +26,7 @@ const WorkoutSummaryCard = ({
 
   useEffect(() => {
     if (xpEarned > 0) triggerBounce();
-  }, [xpEarned, planId]);
+  }, [xpEarned, triggerBounce]); // ✅ FIXED: added missing dependency
 
   return (
     <View style={styles.card} accessibilityRole="summary">
@@ -36,45 +34,55 @@ const WorkoutSummaryCard = ({
 
       {planName && (
         <View style={styles.row}>
-          <Ionicons name="clipboard-outline" size={20} color="#F4A261" />
+          <Ionicons name="clipboard-outline" size={20} color={colors.warning} />
           <Text style={styles.label}>Plan:</Text>
           <Text style={styles.value}>{planName}</Text>
         </View>
       )}
 
       <View style={styles.row}>
-        <Ionicons name="barbell-outline" size={20} color="#FFD166" />
+        <Ionicons name="barbell-outline" size={20} color={colors.secondary} />
         <Text style={styles.label}>Volume:</Text>
         <Text style={styles.value}>{volume.toLocaleString()} kg</Text>
       </View>
 
       <View style={styles.row}>
-        <Ionicons name="flame-outline" size={20} color="#E63946" />
+        <Ionicons name="flame-outline" size={20} color={colors.primary} />
         <Text style={styles.label}>PRs Hit:</Text>
         <Text style={styles.value}>{prCount}</Text>
       </View>
 
       <View style={styles.row}>
-        <Ionicons name="flash-outline" size={20} color="#43AA8B" />
+        <Ionicons name="flash-outline" size={20} color={colors.success} />
         <Text style={styles.label}>XP Earned:</Text>
-        <Text style={[styles.value, { transform: [{ scale }] }]}>+{xpEarned}</Text>
+        <Text style={[styles.value, { transform: [{ scale }] }]}>
+          +{xpEarned}
+        </Text>
       </View>
 
       <View style={styles.row}>
-        <Ionicons name="calendar-outline" size={20} color="#aaa" />
+        <Ionicons
+          name="calendar-outline"
+          size={20}
+          color={colors.textSecondary}
+        />
         <Text style={styles.label}>Streak:</Text>
         <Text style={styles.value}>{streakDays} days</Text>
       </View>
 
       <View style={styles.row}>
-        <Ionicons name="shield-checkmark-outline" size={20} color="#888" />
+        <Ionicons
+          name="shield-checkmark-outline"
+          size={20}
+          color={colors.textSecondary}
+        />
         <Text style={styles.label}>Tier:</Text>
         <Text style={styles.value}>{tier}</Text>
       </View>
 
       <View style={styles.actions}>
         <TouchableOpacity
-          onPress={onShare || (() => navigation.navigate('FormGhost'))}
+          onPress={onShare || (() => navigation.navigate("FormGhost"))}
           style={styles.shareBtn}
           accessibilityRole="button"
           accessibilityLabel="Share your lift"
@@ -84,7 +92,9 @@ const WorkoutSummaryCard = ({
 
         <TouchableOpacity
           onPress={() =>
-            onAdapt ? onAdapt(planId) : navigation.navigate('PlanBuilder', { adaptFrom: planId })
+            onAdapt
+              ? onAdapt(planId)
+              : navigation.navigate("PlanBuilder", { adaptFrom: planId })
           }
           style={styles.adaptBtn}
           accessibilityRole="button"
@@ -110,56 +120,55 @@ WorkoutSummaryCard.propTypes = {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#111',
-    padding: 20,
-    borderRadius: 12,
-    marginTop: 20,
+    backgroundColor: colors.surface,
+    padding: spacing.lg,
+    borderRadius: spacing.borderRadius,
+    marginTop: spacing.md,
   },
   title: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 14,
+    ...typography.heading3,
+    color: colors.textPrimary,
+    marginBottom: spacing.sm,
   },
   row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: spacing.xs,
   },
   label: {
-    color: '#aaa',
-    marginLeft: 8,
+    color: colors.textSecondary,
+    marginLeft: spacing.xs,
     flex: 1,
     fontSize: 14,
   },
   value: {
-    color: '#fff',
-    fontWeight: '600',
+    color: colors.textPrimary,
+    fontWeight: "600",
     fontSize: 14,
   },
   actions: {
-    marginTop: 18,
+    marginTop: spacing.md,
     gap: 10,
   },
   shareBtn: {
-    backgroundColor: '#1a1a1a',
-    padding: 12,
-    borderRadius: 8,
-    alignItems: 'center',
+    backgroundColor: colors.card,
+    padding: spacing.md,
+    borderRadius: spacing.borderRadius,
+    alignItems: "center",
   },
   shareText: {
-    color: '#fff',
-    fontWeight: 'bold',
+    color: colors.textPrimary,
+    fontWeight: "bold",
   },
   adaptBtn: {
-    backgroundColor: '#E63946',
-    padding: 12,
-    borderRadius: 8,
-    alignItems: 'center',
+    backgroundColor: colors.primary,
+    padding: spacing.md,
+    borderRadius: spacing.borderRadius,
+    alignItems: "center",
   },
   adaptText: {
-    color: '#fff',
-    fontWeight: 'bold',
+    color: colors.textPrimary,
+    fontWeight: "bold",
   },
 });
 

@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -9,25 +9,26 @@ import {
   Alert,
   RefreshControl,
   Animated,
-} from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage'; // ✅ NEW
-import { UserContext } from '../context/UserContext';
-import { fetchUserPlans, deleteUserPlan } from '../services/userPlanService';
-import PlanCard from '../components/PlanCard';
-import useFadeIn from '../animations/fadeIn';
-import i18n from '../locales/i18n';
-import colors from '../theme/colors';
-import spacing from '../theme/spacing';
-import typography from '../theme/typography';
+} from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const OFFLINE_PLANS_KEY = 'repz_offline_user_plans'; // ✅ NEW constant
+import { UserContext } from "../context/UserContext";
+import { fetchUserPlans, deleteUserPlan } from "../services/userPlanService";
+import PlanCard from "../components/PlanCard";
+import useFadeIn from "../animations/fadeIn";
+import i18n from "../locales/i18n";
+import colors from "../theme/colors";
+import spacing from "../theme/spacing";
+import typography from "../theme/typography";
+
+const OFFLINE_PLANS_KEY = "repz_offline_user_plans";
 
 const UserPlansScreen = () => {
   const { userId } = useContext(UserContext);
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const fadeAnim = useFadeIn(300);
 
   useEffect(() => {
@@ -39,30 +40,40 @@ const UserPlansScreen = () => {
   const loadPlans = async () => {
     try {
       setLoading(true);
-      setError('');
+      setError("");
       const response = await fetchUserPlans(userId);
 
       if (response.success && Array.isArray(response.plans)) {
         setPlans(response.plans);
-        await AsyncStorage.setItem(OFFLINE_PLANS_KEY, JSON.stringify(response.plans)); // ✅ Save to cache
+        await AsyncStorage.setItem(
+          OFFLINE_PLANS_KEY,
+          JSON.stringify(response.plans),
+        );
       } else {
-        throw new Error(response.error || i18n.t('plans.errorLoading'));
+        throw new Error(response.error || i18n.t("plans.errorLoading"));
       }
     } catch (err) {
-      console.error('Load plans error:', err);
+      console.error("Load plans error:", err);
 
       try {
         const cachedPlans = await AsyncStorage.getItem(OFFLINE_PLANS_KEY);
         if (cachedPlans) {
           const parsed = JSON.parse(cachedPlans);
           setPlans(parsed);
-          setError(i18n.t('plans.offlineMode') || 'Offline mode: showing cached plans.');
+          setError(
+            i18n.t("plans.offlineMode") || "Offline mode: showing cached plans.",
+          );
         } else {
-          setError(i18n.t('plans.errorUnexpected') || 'Unexpected error loading plans.');
+          setError(
+            i18n.t("plans.errorUnexpected") ||
+              "Unexpected error loading plans.",
+          );
         }
       } catch (storageError) {
-        console.error('Failed to load cached plans:', storageError);
-        setError(i18n.t('plans.errorUnexpected') || 'Unexpected error loading plans.');
+        console.error("Failed to load cached plans:", storageError);
+        setError(
+          i18n.t("plans.errorUnexpected") || "Unexpected error loading plans.",
+        );
       }
     } finally {
       setLoading(false);
@@ -77,16 +88,17 @@ const UserPlansScreen = () => {
 
   const confirmDelete = (planId) => {
     Alert.alert(
-      i18n.t('plans.deleteTitle') || 'Delete Plan',
-      i18n.t('plans.deleteConfirm') || 'Are you sure you want to delete this plan?',
+      i18n.t("plans.deleteTitle") || "Delete Plan",
+      i18n.t("plans.deleteConfirm") ||
+        "Are you sure you want to delete this plan?",
       [
-        { text: i18n.t('common.cancel') || 'Cancel', style: 'cancel' },
+        { text: i18n.t("common.cancel") || "Cancel", style: "cancel" },
         {
-          text: i18n.t('common.delete') || 'Delete',
-          style: 'destructive',
+          text: i18n.t("common.delete") || "Delete",
+          style: "destructive",
           onPress: () => handleDelete(planId),
         },
-      ]
+      ],
     );
   };
 
@@ -96,33 +108,50 @@ const UserPlansScreen = () => {
       if (res.success) {
         const updatedPlans = plans.filter((plan) => plan.id !== planId);
         setPlans(updatedPlans);
-        await AsyncStorage.setItem(OFFLINE_PLANS_KEY, JSON.stringify(updatedPlans)); // ✅ Update cache after delete
+        await AsyncStorage.setItem(
+          OFFLINE_PLANS_KEY,
+          JSON.stringify(updatedPlans),
+        );
       } else {
         Alert.alert(
-          i18n.t('common.error'),
-          res.error || i18n.t('plans.deleteFail') || 'Failed to delete plan.'
+          i18n.t("common.error"),
+          res.error || i18n.t("plans.deleteFail") || "Failed to delete plan.",
         );
       }
     } catch (err) {
-      console.error('Delete plan error:', err);
+      console.error("Delete plan error:", err);
       Alert.alert(
-        i18n.t('common.error'),
-        i18n.t('plans.deleteFail') || 'Something went wrong deleting the plan.'
+        i18n.t("common.error"),
+        i18n.t("plans.deleteFail") || "Something went wrong deleting the plan.",
       );
     }
   };
 
   const renderContent = () => {
     if (loading) {
-      return <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 40 }} />;
+      return (
+        <ActivityIndicator
+          size="large"
+          color={colors.primary}
+          style={{ marginTop: 40 }}
+          accessibilityLabel="Loading plans"
+        />
+      );
     }
 
     if (error && plans.length === 0) {
       return (
         <View style={styles.centered}>
           <Text style={styles.errorText}>{error}</Text>
-          <TouchableOpacity onPress={loadPlans} style={styles.retryBtn}>
-            <Text style={styles.retryText}>{i18n.t('common.retry') || 'Retry'}</Text>
+          <TouchableOpacity
+            onPress={loadPlans}
+            style={styles.retryBtn}
+            accessibilityRole="button"
+            accessibilityLabel="Retry loading plans"
+          >
+            <Text style={styles.retryText}>
+              {i18n.t("common.retry") || "Retry"}
+            </Text>
           </TouchableOpacity>
         </View>
       );
@@ -132,10 +161,18 @@ const UserPlansScreen = () => {
       return (
         <View style={styles.centered}>
           <Text style={styles.emptyText}>
-            {i18n.t('plans.empty') || 'No saved plans yet. Create or buy plans to see them here!'}
+            {i18n.t("plans.empty") ||
+              "No saved plans yet. Create or buy plans to see them here!"}
           </Text>
-          <TouchableOpacity onPress={handleRefresh} style={styles.retryBtn}>
-            <Text style={styles.retryText}>{i18n.t('common.tryAgain') || 'Reload'}</Text>
+          <TouchableOpacity
+            onPress={handleRefresh}
+            style={styles.retryBtn}
+            accessibilityRole="button"
+            accessibilityLabel="Reload empty plans"
+          >
+            <Text style={styles.retryText}>
+              {i18n.t("common.tryAgain") || "Reload"}
+            </Text>
           </TouchableOpacity>
         </View>
       );
@@ -145,7 +182,9 @@ const UserPlansScreen = () => {
       <FlatList
         data={plans}
         keyExtractor={(item) => item.id}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+        }
         renderItem={({ item }) => (
           <PlanCard
             plan={item}
@@ -154,7 +193,11 @@ const UserPlansScreen = () => {
             onDelete={() => confirmDelete(item.id)}
           />
         )}
+        initialNumToRender={4}
+        maxToRenderPerBatch={6}
+        removeClippedSubviews={true}
         contentContainerStyle={{ paddingBottom: 40 }}
+        accessibilityLabel="User Plans List"
       />
     );
   };
@@ -162,7 +205,9 @@ const UserPlansScreen = () => {
   return (
     <View style={styles.container}>
       <Animated.View style={{ opacity: fadeAnim }}>
-        <Text style={styles.title}>{i18n.t('plans.title') || 'My Plans'}</Text>
+        <Text style={styles.title}>
+          {i18n.t("plans.title") || "My Plans"}
+        </Text>
         {renderContent()}
       </Animated.View>
     </View>
@@ -182,20 +227,20 @@ const styles = StyleSheet.create({
   },
   centered: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginTop: spacing.xl,
   },
   emptyText: {
     color: colors.textSecondary,
     fontSize: 15,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: spacing.sm,
   },
   errorText: {
-    color: colors.error || '#FF6B6B',
+    color: colors.error,
     fontSize: 15,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: spacing.md,
   },
   retryBtn: {
@@ -205,10 +250,10 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
   },
   retryText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    textAlign: 'center',
+    color: "#fff",
+    fontWeight: "bold",
+    textAlign: "center",
   },
 });
 
-export default UserPlansScreen;
+export default React.memo(UserPlansScreen);
