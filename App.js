@@ -1,16 +1,15 @@
-import 'react-native-get-random-values';
+// ✅ Hermes-safe polyfills for Buffer, process, URL
 import 'react-native-url-polyfill/auto';
 import { Buffer } from 'buffer';
 
 if (typeof global.Buffer === 'undefined') global.Buffer = Buffer;
+
 if (typeof global.process === 'undefined') {
-  global.process = { env: {} };
+  global.process = {
+    env: {},
+    nextTick: setImmediate,
+  };
 }
-if (typeof global.process.nextTick === 'undefined') {
-  global.process.nextTick = setImmediate;
-}
-global.process.env.NODE_ENV = __DEV__ ? 'development' : 'production';
-global.process.browser = true;
 
 import React from "react";
 import { StatusBar } from "expo-status-bar";
@@ -52,6 +51,7 @@ class ErrorBoundary extends React.Component {
         </View>
       );
     }
+
     return this.props.children;
   }
 }
@@ -98,7 +98,9 @@ function RootNavigation() {
 
   const MyAppTheme = {
     dark: colors.background === "#0E0E0E",
-    colors: { ...colors },
+    colors: {
+      ...colors,
+    },
   };
 
   return (

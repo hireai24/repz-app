@@ -2,54 +2,38 @@
   "expo": {
     "name": "REPZ",
     "slug": "repz-app",
-    "owner": "joecompton",
     "version": "1.0.1",
     "orientation": "portrait",
-    "icon": "./src/assets/logo.png",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./src/assets/splash/splash-dark/splash-dark.png",
+      "image": "./assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#000000"
-    },
-    "updates": {
-      "fallbackToCacheTimeout": 0,
-      "url": "https://u.expo.dev/ee573bbd-14f7-47f2-988d-a0da24fac370"
-    },
-    "runtimeVersion": {
-      "policy": "appVersion"
     },
     "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.repz.app",
-      "buildNumber": "2"
+      "buildNumber": "1.0.1",
+      "jsEngine": "hermes"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./src/assets/logo.png",
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#000000"
       },
       "package": "com.repz.app",
-      "versionCode": 2
-    },
-    "web": {
-      "favicon": "./src/assets/logo.png"
+      "versionCode": 1
     },
     "extra": {
       "eas": {
-        "projectId": "ee573bbd-14f7-47f2-988d-a0da24fac370"
+        "projectId": "YOUR_EAS_PROJECT_ID"
       }
     },
-    "plugins": [
-      [
-        "expo-build-properties",
-        {
-          "ios": {
-            "useFrameworks": "static"
-          }
-        }
-      ]
-    ],
-    "jsEngine": "hermes"
+    "plugins": ["expo-build-properties"],
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    }
   }
 }

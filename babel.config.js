@@ -17,12 +17,13 @@ module.exports = function (api) {
       [
         "@babel/plugin-transform-runtime",
         {
-          corejs: false,
+          corejs: 3,
           helpers: true,
           regenerator: true,
           useESModules: false
         }
       ],
+      "@babel/plugin-proposal-optional-catch-binding",
       "react-native-reanimated/plugin" // Must be last
     ]
   };
