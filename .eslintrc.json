@@ -1,0 +1,29 @@
+{
+  "env": {
+    "browser": true,
+    "es2021": true,
+    "node": true,
+    "react-native/react-native": true
+  },
+  "extends": [
+    "eslint:recommended",
+    "plugin:react/recommended",
+    "plugin:react-native/all",
+    "plugin:jsx-a11y/recommended",
+    "plugin:prettier/recommended"
+  ],
+  "parser": "@babel/eslint-parser",
+  "parserOptions": {
+    "requireConfigFile": false,
+    "ecmaVersion": 12,
+    "sourceType": "module",
+    "babelOptions": {
+      "presets": ["babel-preset-expo"]
+    }
+  },
+  "plugins": ["react", "react-native", "unused-imports"],
+  "rules": {
+    "no-console": "warn",
+    "unused-imports/no-unused-imports": "error"
+  }
+}

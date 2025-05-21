@@ -1,0 +1,138 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // === Helper Functions ===
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && request.auth.token.role == 'admin';
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function requestIsOwner() {
+      return isSignedIn() && request.auth.uid == request.resource.data.userId;
+    }
+
+    function resourceIsOwner() {
+      return isSignedIn() && request.auth.uid == resource.data.userId;
+    }
+
+    // === Collection Rules ===
+
+    match /plans/{planId} {
+      allow read: if isSignedIn();
+      allow create: if requestIsOwner() || isAdmin();
+      allow update, delete: if resourceIsOwner() || isAdmin();
+    }
+
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow write: if isOwner(userId) || isAdmin();
+    }
+
+    match /profilePhotos/{photoId} {
+      allow read: if isSignedIn();
+      allow write: if requestIsOwner();
+    }
+
+    match /challenges/{challengeId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    match /xp/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    match /logs/{logId} {
+      allow read: if isSignedIn() && resourceIsOwner();
+      allow create: if requestIsOwner();
+      allow update, delete: if resourceIsOwner();
+    }
+
+    match /leaderboard/{entryId} {
+      allow read: if isSignedIn();
+      allow create: if requestIsOwner();
+      allow update, delete: if resourceIsOwner();
+    }
+
+    match /progressPhotos/{photoId} {
+      allow read: if isSignedIn();
+      allow write: if requestIsOwner();
+    }
+
+    match /formVideos/{videoId} {
+      allow read: if isSignedIn();
+      allow write: if requestIsOwner();
+    }
+
+    match /formAnalysis/{analysisId} {
+      allow read, write: if requestIsOwner();
+    }
+
+    match /mealPlans/{planId} {
+      allow read: if isSignedIn();
+      allow create: if requestIsOwner();
+      allow update, delete: if resourceIsOwner();
+    }
+
+    match /userPlans/{planId} {
+      allow read: if isSignedIn();
+      allow create: if requestIsOwner();
+      allow update, delete: if resourceIsOwner();
+    }
+
+    match /purchases/{purchaseId} {
+      allow read: if isOwner(resource.data.userId);
+      allow write: if requestIsOwner();
+    }
+
+    match /reviews/{reviewId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && !exists(/databases/$(database)/documents/reviews/$(reviewId));
+    }
+
+    // ✅ NEW: Gym Profiles
+    match /gyms/{gymId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn();
+    }
+
+    // ✅ NEW: Partner Finder Slots
+    match /partnerSlots/{slotId} {
+      allow read: if isSignedIn();
+      allow create: if requestIsOwner();
+      allow update, delete: if resourceIsOwner();
+    }
+
+    // ✅ NEW: XP Wager Challenges / Workout Battles
+    match /wagerChallenges/{challengeId} {
+      allow read: if isSignedIn();
+      allow create: if requestIsOwner();
+      allow update, delete: if resourceIsOwner();
+    }
+
+    // ✅ NEW: Daily AI Challenges
+    match /dailyChallenges/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // ✅ NEW: Battle Voting (per challenge)
+    match /votes/{challengeId}/{userId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && request.auth.uid == userId;
+    }
+
+    // ✅ NEW: Battle Stats
+    match /battleStats/{userId} {
+      allow read: if isOwner(userId);
+      allow write: if isOwner(userId);
+    }
+  }
+}

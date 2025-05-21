@@ -1,0 +1,68 @@
+{
+  "expo": {
+    "name": "REPZ",
+    "slug": "repz-app",
+    "owner": "joecompton",
+    "version": "1.0.1",
+    "orientation": "portrait",
+    "icon": "./src/assets/logo.png",
+    "splash": {
+      "image": "./src/assets/splash/splash-dark/splash-dark.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#000000"
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0,
+      "url": "https://u.expo.dev/ee573bbd-14f7-47f2-988d-a0da24fac370"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.repz.app",
+      "buildNumber": "2",
+      "jsEngine": "hermes",
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app uses the camera to record workout form and upload photos.",
+        "NSPhotoLibraryUsageDescription": "This app accesses your gallery to upload before/after progress photos.",
+        "NSMicrophoneUsageDescription": "This app uses the microphone to optionally record audio with video uploads.",
+        "NSLocationWhenInUseUsageDescription": "Location is used to find nearby gyms and training partners."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./src/assets/logo.png",
+        "backgroundColor": "#000000"
+      },
+      "package": "com.repz.app",
+      "versionCode": 2,
+      "permissions": [
+        "CAMERA",
+        "RECORD_AUDIO",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "ACCESS_FINE_LOCATION"
+      ]
+    },
+    "web": {
+      "favicon": "./src/assets/logo.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "ee573bbd-14f7-47f2-988d-a0da24fac370"
+      }
+    },
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static"
+          }
+        }
+      ]
+    ]
+  }
+}
