@@ -1,4 +1,5 @@
 // ✅ Hermes-safe polyfills for Buffer, process, URL
+global.global = global;
 import "react-native-url-polyfill/auto";
 import { Buffer } from "buffer";
 import PropTypes from "prop-types";
