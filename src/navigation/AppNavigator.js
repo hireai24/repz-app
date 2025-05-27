@@ -1,27 +1,23 @@
+// Add Text import
 import React, { useContext } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { NavigationContainer } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
-
 import { AuthContext } from "../context/AuthContext";
-
 import DashboardScreen from "../screens/DashboardScreen";
 import WorkoutLogScreen from "../screens/WorkoutLogScreen";
 import ChallengeScreen from "../screens/ChallengeScreen";
 import MarketplaceScreen from "../screens/MarketplaceScreen";
 import ProfileScreen from "../screens/ProfileScreen";
-
 import PlanBuilderScreen from "../screens/PlanBuilderScreen";
 import FormGhostScreen from "../screens/FormGhostScreen";
 import VisualGainsScreen from "../screens/VisualGainsScreen";
 import UserPlansScreen from "../screens/UserPlansScreen";
-
 import GymDirectoryScreen from "../screens/GymDirectoryScreen";
 import GymProfileScreen from "../screens/GymProfileScreen";
-
-import ChallengeSetupScreen from "../screens/ChallengeSetupScreen"; // ✅ NEW for XP wagers
-import PartnerFinderScreen from "../screens/PartnerFinderScreen";   // ✅ NEW for training matchups
+import ChallengeSetupScreen from "../screens/ChallengeSetupScreen";
+import PartnerFinderScreen from "../screens/PartnerFinderScreen";
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -80,8 +76,7 @@ const TabNavigator = () => (
 const AppNavigator = () => {
   const { authUser, loading } = useContext(AuthContext);
 
-  if (loading || !authUser) return null;
-
+  if (loading || !authUser) return null; // Consider adding a loading screen
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -92,8 +87,8 @@ const AppNavigator = () => {
         <Stack.Screen name="UserPlans" component={UserPlansScreen} />
         <Stack.Screen name="GymDirectory" component={GymDirectoryScreen} />
         <Stack.Screen name="GymProfile" component={GymProfileScreen} />
-        <Stack.Screen name="ChallengeSetup" component={ChallengeSetupScreen} />  {/* ✅ XP Wager */}
-        <Stack.Screen name="PartnerFinder" component={PartnerFinderScreen} />    {/* ✅ Training Partner */}
+        <Stack.Screen name="ChallengeSetup" component={ChallengeSetupScreen} />
+        <Stack.Screen name="PartnerFinder" component={PartnerFinderScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

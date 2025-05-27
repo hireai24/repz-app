@@ -1,15 +1,12 @@
-// backend/controllers/gymController.js 
+// backend/controllers/gymController.js
 import { db } from "../firebase/init.js"; // ✅ FIXED: Added .js extension
 import {
   collection,
   doc,
   addDoc,
-  getDoc,
   getDocs,
   updateDoc,
   deleteDoc,
-  query,
-  where,
   Timestamp,
 } from "firebase/firestore";
 
@@ -29,7 +26,6 @@ export const createGym = async (req, res) => {
     const ref = await addDoc(collection(db, "gyms"), gymData);
     res.status(200).json({ success: true, id: ref.id });
   } catch (err) {
-    console.error("Create gym error:", err);
     res.status(500).json({ success: false, error: err.message });
   }
 };

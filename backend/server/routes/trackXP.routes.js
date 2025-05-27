@@ -15,13 +15,15 @@ router.post("/", async (req, res) => {
     const { userId, source, amount } = req.body;
 
     if (!userId || !source || !amount) {
-      return res.status(400).json({ error: "Missing required XP tracking fields." });
+      return res
+        .status(400)
+        .json({ error: "Missing required XP tracking fields." });
     }
 
     const result = await trackXP(userId, source, amount);
     return res.status(200).json(result);
   } catch (error) {
-    console.error("❌ XP tracking error:", error.message);
+    // TODO: Replace with production logger if required
     return res.status(500).json({ error: "Failed to track XP." });
   }
 });

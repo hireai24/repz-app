@@ -21,9 +21,24 @@
       "presets": ["babel-preset-expo"]
     }
   },
-  "plugins": ["react", "react-native", "unused-imports"],
+  "settings": {
+    "react": {
+      "version": "detect"
+    },
+    "import/resolver": {
+      "node": {
+        "extensions": [".js", ".jsx", ".ts", ".tsx"],
+        "moduleDirectory": ["node_modules", "."]
+      }
+    }
+  },
+  "plugins": ["react", "react-native", "unused-imports", "import"],
   "rules": {
     "no-console": "warn",
-    "unused-imports/no-unused-imports": "error"
+    "unused-imports/no-unused-imports": "error",
+    "react-native/no-inline-styles": "error",
+    "react-native/no-color-literals": "error",
+    "react/prop-types": "warn",
+    "import/no-unresolved": "error"
   }
 }

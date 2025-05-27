@@ -71,8 +71,7 @@ const saveWorkoutLog = async (req, res) => {
       await trackXP(userId, logData);
 
       res.status(200).json({ success: true, logId: logRef.id });
-    } catch (err) {
-      // TODO: Replace with proper logging utility
+    } catch {
       res
         .status(500)
         .json({ success: false, error: "Failed to save workout log." });
@@ -125,8 +124,7 @@ const getUserWorkouts = async (req, res) => {
       }));
 
       res.status(200).json({ success: true, workouts });
-    } catch (err) {
-      // TODO: Replace with logging utility
+    } catch {
       res
         .status(500)
         .json({ success: false, error: "Failed to fetch workouts." });

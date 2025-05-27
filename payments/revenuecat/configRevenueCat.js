@@ -7,7 +7,7 @@ const revenueCatConfig = {
 
   // Product IDs used in RevenueCat dashboard and mobile subscriptions
   offerings: {
-    pro: "repz_pro_monthly",   // Match with RevenueCat Offering ID
+    pro: "repz_pro_monthly", // Match with RevenueCat Offering ID
     elite: "repz_elite_monthly", // Match with RevenueCat Offering ID
   },
 

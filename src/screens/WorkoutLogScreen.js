@@ -54,8 +54,7 @@ const WorkoutLogScreen = () => {
       } else {
         setErrorLoadingPlans(response.error || i18n.t("errors.loadPlans"));
       }
-    } catch (err) {
-      console.error("Failed to load user plans:", err);
+    } catch {
       setErrorLoadingPlans(i18n.t("errors.loadPlans"));
     } finally {
       setLoadingPlans(false);
@@ -120,7 +119,7 @@ const WorkoutLogScreen = () => {
 
   const filtered = searchExercises(filterExercises(exerciseData, {}), search);
   const filteredWorkout = workout.filter((ex) =>
-    dateFilter ? ex.date?.includes(dateFilter.trim()) : true
+    dateFilter ? ex.date?.includes(dateFilter.trim()) : true,
   );
 
   if (!allowed) {
@@ -205,7 +204,7 @@ const WorkoutLogScreen = () => {
         <FlatList
           data={filteredWorkout}
           keyExtractor={(_, index) => `log-${index}`}
-          contentContainerStyle={{ paddingBottom: 100 }}
+          contentContainerStyle={styles.flatListContent}
           renderItem={({ item, index: exIndex }) => (
             <View key={exIndex} style={styles.exerciseBlock}>
               <Text style={styles.exerciseTitle}>{item.name}</Text>
@@ -281,76 +280,90 @@ const WorkoutLogScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: spacing.md, backgroundColor: colors.background },
-  title: { ...typography.h2, color: colors.primary, marginBottom: spacing.md },
-  input: {
-    borderColor: colors.border,
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: spacing.sm,
-    marginVertical: spacing.sm,
-    color: colors.text,
-  },
-  locked: { color: colors.textSecondary, textAlign: "center" },
-  centered: { flex: 1, justifyContent: "center", alignItems: "center" },
-  emptyState: { flex: 1, justifyContent: "center", alignItems: "center" },
-  emptyText: { color: colors.textSecondary },
-  planSelector: { marginBottom: spacing.md },
-  sectionTitle: { ...typography.h4, color: colors.text, marginBottom: spacing.sm },
-  planChip: {
-    backgroundColor: colors.card,
-    borderRadius: 16,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    marginRight: spacing.sm,
-  },
-  planText: { color: colors.text },
-  exerciseBlock: {
-    backgroundColor: colors.card,
-    padding: spacing.md,
-    borderRadius: 12,
-    marginBottom: spacing.md,
-  },
-  exerciseTitle: { ...typography.h4, marginBottom: spacing.sm, color: colors.text },
-  setRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: spacing.sm,
-    justifyContent: "space-between",
-  },
-  setInput: {
-    borderColor: colors.border,
-    borderWidth: 1,
-    borderRadius: 6,
-    padding: spacing.sm,
-    color: colors.text,
-  },
-  prButton: {
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    borderRadius: 6,
-    backgroundColor: colors.border,
-    color: colors.text,
-  },
-  prActive: {
-    backgroundColor: colors.accent,
-    color: "#fff",
-  },
   addSetBtn: {
-    marginTop: spacing.sm,
     alignSelf: "flex-start",
+    marginTop: spacing.sm,
   },
   addSetText: {
     color: colors.primary,
     fontWeight: "bold",
   },
+  centered: { alignItems: "center", flex: 1, justifyContent: "center" },
   challengeToggle: {
-    marginTop: spacing.sm,
     alignSelf: "flex-start",
+    marginTop: spacing.sm,
+  },
+  container: {
+    backgroundColor: colors.background,
+    flex: 1,
+    padding: spacing.md,
+  },
+  emptyState: { alignItems: "center", flex: 1, justifyContent: "center" },
+  emptyText: { color: colors.textSecondary },
+  errorText: { color: colors.error },
+  exerciseBlock: {
+    backgroundColor: colors.card,
+    borderRadius: 12,
+    marginBottom: spacing.md,
+    padding: spacing.md,
+  },
+  exerciseTitle: {
+    ...typography.h4,
+    color: colors.text,
+    marginBottom: spacing.sm,
+  },
+  flatListContent: {
+    paddingBottom: spacing.xl,
+  },
+  input: {
+    borderColor: colors.border,
+    borderRadius: 8,
+    borderWidth: 1,
+    color: colors.text,
+    marginVertical: spacing.sm,
+    padding: spacing.sm,
   },
   loadingText: { color: colors.textSecondary },
-  errorText: { color: colors.error },
+  locked: { color: colors.textSecondary, textAlign: "center" },
+  planChip: {
+    backgroundColor: colors.card,
+    borderRadius: 16,
+    marginRight: spacing.sm,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  planSelector: { marginBottom: spacing.md },
+  planText: { color: colors.text },
+  prActive: {
+    backgroundColor: colors.accent,
+    color: colors.textOnPrimary,
+  },
+  prButton: {
+    backgroundColor: colors.border,
+    borderRadius: 6,
+    color: colors.text,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+  },
+  sectionTitle: {
+    ...typography.h4,
+    color: colors.text,
+    marginBottom: spacing.sm,
+  },
+  setInput: {
+    borderColor: colors.border,
+    borderRadius: 6,
+    borderWidth: 1,
+    color: colors.text,
+    padding: spacing.sm,
+  },
+  setRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: spacing.sm,
+  },
+  title: { ...typography.h2, color: colors.primary, marginBottom: spacing.md },
 });
 
 export default React.memo(WorkoutLogScreen);
-

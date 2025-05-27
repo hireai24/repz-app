@@ -75,7 +75,7 @@ export const getLeaderboard = async (liftType, locationFilter = "global") => {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      }
+      },
     );
   } catch (err) {
     return {
@@ -98,7 +98,7 @@ export const getUserRank = async (userId, liftType) => {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      }
+      },
     );
   } catch (err) {
     return { success: false, error: err?.message || "Rank fetch failed." };

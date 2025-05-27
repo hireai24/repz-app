@@ -16,11 +16,15 @@ router.post("/", async (req, res) => {
       return res.status(400).json({ error: "Missing required fields." });
     }
 
-    const plan = await generateMealPlan(userId, dietaryPreferences, dailyCalories);
-    res.status(200).json({ success: true, plan });
-  } catch (err) {
-    console.error("🔥 Error in /api/meal:", err.message);
-    res.status(500).json({ error: "Failed to generate meal plan." });
+    const plan = await generateMealPlan(
+      userId,
+      dietaryPreferences,
+      dailyCalories,
+    );
+    return res.status(200).json({ success: true, plan });
+  } catch {
+    // No console.log, clean error handling for launch
+    return res.status(500).json({ error: "Failed to generate meal plan." });
   }
 });
 

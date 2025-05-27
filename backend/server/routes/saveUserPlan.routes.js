@@ -21,7 +21,7 @@ router.post("/", async (req, res) => {
     const result = await saveUserPlan(userId, planData, type);
     return res.status(200).json(result);
   } catch (error) {
-    console.error("❌ Error saving user plan:", error.message);
+    // TODO: Replace with production logger if needed
     return res.status(500).json({ error: "Server error saving plan." });
   }
 });

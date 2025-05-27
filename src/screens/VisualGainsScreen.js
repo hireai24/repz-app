@@ -54,8 +54,7 @@ const VisualGainsScreen = () => {
         setSuccessMessage("");
         setter(result.assets[0].uri);
       }
-    } catch (err) {
-      console.error("Image picker error:", err.message);
+    } catch {
       setErrorText(i18n.t("visual.errorUpload"));
     }
   };
@@ -105,11 +104,10 @@ const VisualGainsScreen = () => {
             beforeUrl: beforeUpload.url,
             afterUrl: afterUpload.url,
           }),
-        }
+        },
       );
 
       const data = await res.json();
-
       if (!res.ok) throw new Error(data.error || "Photo analysis failed.");
 
       setFeedback(data.message || i18n.t("visual.noFeedback"));
@@ -127,8 +125,7 @@ const VisualGainsScreen = () => {
         createdAt: new Date().toISOString(),
         isPublic,
       });
-    } catch (error) {
-      console.error("Replicate analysis error:", error.message);
+    } catch {
       setErrorText(i18n.t("visual.errorFallback"));
 
       try {
@@ -152,8 +149,7 @@ const VisualGainsScreen = () => {
         });
 
         setSuccessMessage(i18n.t("visual.fallbackSaved"));
-      } catch (fallbackErr) {
-        console.error("Fallback save failed:", fallbackErr.message);
+      } catch {
         setErrorText(i18n.t("visual.saveFail"));
       }
     } finally {
@@ -230,7 +226,10 @@ const VisualGainsScreen = () => {
       )}
 
       {loading && (
-        <ActivityIndicator color={colors.primary} style={{ marginTop: spacing.md }} />
+        <ActivityIndicator
+          color={colors.primary}
+          style={{ marginTop: spacing.md }}
+        />
       )}
 
       {feedback && (
@@ -245,8 +244,8 @@ const VisualGainsScreen = () => {
         <Switch
           value={isPublic}
           onValueChange={setIsPublic}
-          trackColor={{ false: "#777", true: colors.success }}
-          thumbColor={isPublic ? colors.primary : "#ccc"}
+          trackColor={{ false: colors.border, true: colors.success }}
+          thumbColor={isPublic ? colors.primary : colors.surface}
         />
       </View>
     </ScrollView>
@@ -254,96 +253,21 @@ const VisualGainsScreen = () => {
 };
 
 const styles = StyleSheet.create({
+  analyzeBtn: {
+    alignItems: "center",
+    backgroundColor: colors.primary,
+    borderRadius: 10,
+    marginTop: spacing.md,
+    padding: spacing.md,
+  },
+  analyzeText: {
+    color: colors.textOnPrimary,
+    fontWeight: "bold",
+  },
   container: {
     backgroundColor: colors.background,
     flex: 1,
     padding: spacing.lg,
-  },
-  title: {
-    ...typography.heading2,
-    color: colors.textPrimary,
-    marginBottom: spacing.lg,
-  },
-  viewRow: {
-    flexDirection: "row",
-    justifyContent: "center",
-    marginBottom: spacing.md,
-    gap: spacing.sm,
-  },
-  viewBtn: {
-    backgroundColor: colors.surface,
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: 20,
-  },
-  viewBtnActive: {
-    backgroundColor: colors.primary,
-  },
-  viewText: {
-    color: colors.textSecondary,
-  },
-  viewTextActive: {
-    color: "#fff",
-    fontWeight: "bold",
-  },
-  imageRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: spacing.md,
-    gap: spacing.md,
-  },
-  imageBox: {
-    flex: 1,
-    aspectRatio: 0.8,
-    backgroundColor: colors.surface,
-    borderRadius: 10,
-    justifyContent: "center",
-    alignItems: "center",
-    overflow: "hidden",
-  },
-  image: {
-    width: "100%",
-    height: "100%",
-  },
-  imageText: {
-    color: colors.textSecondary,
-    fontSize: 13,
-  },
-  analyzeBtn: {
-    backgroundColor: colors.primary,
-    padding: spacing.md,
-    borderRadius: 10,
-    alignItems: "center",
-    marginTop: spacing.md,
-  },
-  analyzeText: {
-    color: "#fff",
-    fontWeight: "bold",
-  },
-  resultBlock: {
-    backgroundColor: colors.surface,
-    borderRadius: 10,
-    padding: spacing.md,
-    marginTop: spacing.md,
-  },
-  resultTitle: {
-    ...typography.heading3,
-    color: colors.textPrimary,
-    marginBottom: 6,
-  },
-  resultText: {
-    color: colors.textSecondary,
-    fontSize: 14,
-  },
-  toggleRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginTop: spacing.lg,
-  },
-  toggleLabel: {
-    color: colors.textPrimary,
-    fontSize: 14,
   },
   errorText: {
     color: colors.error,
@@ -351,23 +275,98 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
     textAlign: "center",
   },
+  image: {
+    height: "100%",
+    width: "100%",
+  },
+  imageBox: {
+    alignItems: "center",
+    aspectRatio: 0.8,
+    backgroundColor: colors.surface,
+    borderRadius: 10,
+    flex: 1,
+    justifyContent: "center",
+    overflow: "hidden",
+  },
+  imageRow: {
+    flexDirection: "row",
+    gap: spacing.md,
+    justifyContent: "space-between",
+    marginBottom: spacing.md,
+  },
+  imageText: {
+    color: colors.textSecondary,
+    fontSize: 13,
+  },
+  lockedContainer: {
+    alignItems: "center",
+    backgroundColor: colors.background,
+    flex: 1,
+    justifyContent: "center",
+    padding: spacing.lg,
+  },
+  lockedText: {
+    color: colors.textSecondary,
+    fontSize: 16,
+    textAlign: "center",
+  },
+  resultBlock: {
+    backgroundColor: colors.surface,
+    borderRadius: 10,
+    marginTop: spacing.md,
+    padding: spacing.md,
+  },
+  resultText: {
+    color: colors.textSecondary,
+    fontSize: 14,
+  },
+  resultTitle: {
+    ...typography.heading3,
+    color: colors.textPrimary,
+    marginBottom: 6,
+  },
   successText: {
     color: colors.success,
     fontSize: 13,
     marginTop: spacing.sm,
     textAlign: "center",
   },
-  lockedContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: spacing.lg,
-    backgroundColor: colors.background,
+  title: {
+    ...typography.heading2,
+    color: colors.textPrimary,
+    marginBottom: spacing.lg,
   },
-  lockedText: {
+  toggleLabel: {
+    color: colors.textPrimary,
+    fontSize: 14,
+  },
+  toggleRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: spacing.lg,
+  },
+  viewBtn: {
+    backgroundColor: colors.surface,
+    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+  },
+  viewBtnActive: {
+    backgroundColor: colors.primary,
+  },
+  viewRow: {
+    flexDirection: "row",
+    gap: spacing.sm,
+    justifyContent: "center",
+    marginBottom: spacing.md,
+  },
+  viewText: {
     color: colors.textSecondary,
-    fontSize: 16,
-    textAlign: "center",
+  },
+  viewTextActive: {
+    color: colors.textOnPrimary,
+    fontWeight: "bold",
   },
 });
 

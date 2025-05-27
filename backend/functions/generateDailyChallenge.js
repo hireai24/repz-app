@@ -3,7 +3,10 @@
 import { db } from "../firebase/init.js";
 import { doc, setDoc, Timestamp } from "firebase/firestore";
 import { getUserTier } from "../utils/userUtils.js";
-import { generatePushupsChallenge, generateVolumeChallenge } from "../utils/challengeGenerators.js";
+import {
+  generatePushupsChallenge,
+  generateVolumeChallenge,
+} from "../utils/challengeGenerators.js";
 
 /**
  * Generates a daily AI challenge for the user based on tier and activity.
@@ -43,8 +46,8 @@ const generateDailyChallenge = async (req, res) => {
     await setDoc(doc(db, "dailyChallenges", userId), challengeData);
 
     res.status(200).json({ success: true, challenge: challengeData });
-  } catch (err) {
-    console.error("generateDailyChallenge error:", err);
+  } catch {
+    // Error silenced for production
     res.status(500).json({ error: "Failed to generate challenge." });
   }
 };

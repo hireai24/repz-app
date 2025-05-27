@@ -24,14 +24,15 @@ export const analyzePhotoSimilarity = async (beforeUrl, afterUrl) => {
     return {
       success: true,
       similarity: similarity.toFixed(2),
-      message: similarity > 0.9
-        ? "Minimal visible change detected. Stay consistent!"
-        : similarity < 0.6
-        ? "Significant visual transformation detected! Great job."
-        : "Some visual change detected. Progress is happening!",
+      message:
+        similarity > 0.9
+          ? "Minimal visible change detected. Stay consistent!"
+          : similarity < 0.6
+            ? "Significant visual transformation detected! Great job."
+            : "Some visual change detected. Progress is happening!",
     };
   } catch (err) {
-    console.error("Replicate photo analysis error:", err);
+    // Error silenced for production
     return {
       success: false,
       error: err.message || "Replicate photo comparison failed.",

@@ -72,14 +72,17 @@ const PlanBuilderScreen = () => {
 
     try {
       const token = await getAuthToken();
-      const res = await fetch(`${process.env.EXPO_PUBLIC_API_BASE_URL}/api/openai`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      const res = await fetch(
+        `${process.env.EXPO_PUBLIC_API_BASE_URL}/api/openai`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ messages }),
         },
-        body: JSON.stringify({ messages }),
-      });
+      );
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
@@ -88,7 +91,10 @@ const PlanBuilderScreen = () => {
       const splitByDays = text.split(/Day \d+ -/).filter(Boolean);
       const structured = {};
       splitByDays.forEach((section, idx) => {
-        structured[`Day ${idx + 1}`] = section.trim().split("\n").filter(Boolean);
+        structured[`Day ${idx + 1}`] = section
+          .trim()
+          .split("\n")
+          .filter(Boolean);
       });
 
       setPlan(structured);
@@ -103,8 +109,7 @@ const PlanBuilderScreen = () => {
         })),
         createdAt: new Date().toISOString(),
       });
-    } catch (err) {
-      console.error("Plan error:", err.message);
+    } catch {
       setError(i18n.t("plan.error") || "Plan generation failed.");
     }
 
@@ -131,8 +136,12 @@ const PlanBuilderScreen = () => {
               key={g}
               onPress={() => setGoal(g)}
               style={[styles.option, goal === g && styles.optionActive]}
+              accessibilityRole="button"
+              accessibilityState={{ selected: goal === g }}
             >
-              <Text style={goal === g ? styles.optionTextActive : styles.optionText}>
+              <Text
+                style={goal === g ? styles.optionTextActive : styles.optionText}
+              >
                 {g}
               </Text>
             </TouchableOpacity>
@@ -146,8 +155,14 @@ const PlanBuilderScreen = () => {
               key={s}
               onPress={() => setSplit(s)}
               style={[styles.option, split === s && styles.optionActive]}
+              accessibilityRole="button"
+              accessibilityState={{ selected: split === s }}
             >
-              <Text style={split === s ? styles.optionTextActive : styles.optionText}>
+              <Text
+                style={
+                  split === s ? styles.optionTextActive : styles.optionText
+                }
+              >
                 {s}
               </Text>
             </TouchableOpacity>
@@ -161,8 +176,12 @@ const PlanBuilderScreen = () => {
               key={n}
               onPress={() => setDays(n)}
               style={[styles.option, days === n && styles.optionActive]}
+              accessibilityRole="button"
+              accessibilityState={{ selected: days === n }}
             >
-              <Text style={days === n ? styles.optionTextActive : styles.optionText}>
+              <Text
+                style={days === n ? styles.optionTextActive : styles.optionText}
+              >
                 {n} {i18n.t("plan.daysShort")}
               </Text>
             </TouchableOpacity>
@@ -172,9 +191,10 @@ const PlanBuilderScreen = () => {
         {error !== "" && <Text style={styles.errorText}>{error}</Text>}
 
         <TouchableOpacity
-          style={[styles.generateBtn, loading && { opacity: 0.6 }]}
+          style={[styles.generateBtn, loading && styles.disabledGenerateBtn]}
           onPress={generatePlan}
           disabled={loading}
+          accessibilityRole="button"
         >
           <Text style={styles.generateText}>
             {loading ? i18n.t("plan.generating") : i18n.t("plan.generate")}
@@ -189,7 +209,10 @@ const PlanBuilderScreen = () => {
                 <Text style={styles.workoutText}>{workout.join(", ")}</Text>
               </View>
             ))}
-            <TouchableOpacity style={styles.startBtn}>
+            <TouchableOpacity
+              style={styles.startBtn}
+              accessibilityRole="button"
+            >
               <Text style={styles.startText}>{i18n.t("plan.startToday")}</Text>
             </TouchableOpacity>
           </View>
@@ -199,7 +222,7 @@ const PlanBuilderScreen = () => {
           <ActivityIndicator
             size="large"
             color={colors.primary}
-            style={{ marginTop: spacing.lg }}
+            style={styles.loadingIndicator}
           />
         )}
       </Animated.View>
@@ -210,65 +233,8 @@ const PlanBuilderScreen = () => {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: colors.background,
-    padding: spacing.lg,
     flex: 1,
-  },
-  title: {
-    ...typography.heading2,
-    color: colors.textPrimary,
-    marginBottom: spacing.md,
-  },
-  label: {
-    ...typography.label,
-    color: colors.textSecondary,
-    marginTop: spacing.lg,
-    marginBottom: spacing.sm,
-  },
-  optionsRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: spacing.sm,
-  },
-  option: {
-    backgroundColor: colors.surface,
-    padding: spacing.sm,
-    borderRadius: 8,
-    marginRight: spacing.sm,
-    marginBottom: spacing.sm,
-  },
-  optionActive: {
-    backgroundColor: colors.primary,
-  },
-  optionText: {
-    color: colors.textSecondary,
-  },
-  optionTextActive: {
-    color: colors.textPrimary,
-    fontWeight: "bold",
-  },
-  errorText: {
-    color: colors.error,
-    marginTop: spacing.sm,
-    marginBottom: spacing.sm,
-    fontSize: 13,
-    textAlign: "center",
-  },
-  generateBtn: {
-    backgroundColor: colors.primary,
-    padding: spacing.md,
-    borderRadius: 8,
-    marginTop: spacing.lg,
-  },
-  generateText: {
-    color: "#fff",
-    fontWeight: "bold",
-    textAlign: "center",
-  },
-  planBox: {
-    backgroundColor: colors.surface,
-    padding: spacing.md,
-    borderRadius: 10,
-    marginTop: spacing.xl,
+    padding: spacing.lg,
   },
   dayBlock: {
     marginBottom: spacing.md,
@@ -278,32 +244,95 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: spacing.xs,
   },
-  workoutText: {
-    color: colors.textPrimary,
-    fontSize: 14,
+  disabledGenerateBtn: {
+    opacity: 0.6,
   },
-  startBtn: {
-    backgroundColor: colors.success,
-    padding: spacing.md,
-    borderRadius: 8,
-    marginTop: spacing.md,
-  },
-  startText: {
+  errorText: {
+    color: colors.error,
+    fontSize: 13,
+    marginBottom: spacing.sm,
+    marginTop: spacing.sm,
     textAlign: "center",
-    color: "#000",
+  },
+  generateBtn: {
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+    marginTop: spacing.lg,
+    padding: spacing.md,
+  },
+  generateText: {
+    color: colors.textOnPrimary,
     fontWeight: "bold",
+    textAlign: "center",
+  },
+  label: {
+    ...typography.label,
+    color: colors.textSecondary,
+    marginBottom: spacing.sm,
+    marginTop: spacing.lg,
+  },
+  loadingIndicator: {
+    marginTop: spacing.lg,
   },
   lockedContainer: {
+    alignItems: "center",
+    backgroundColor: colors.background,
     flex: 1,
     justifyContent: "center",
-    alignItems: "center",
     padding: spacing.lg,
-    backgroundColor: colors.background,
   },
   lockedText: {
     color: colors.textSecondary,
     fontSize: 16,
     textAlign: "center",
+  },
+  option: {
+    backgroundColor: colors.surface,
+    borderRadius: 8,
+    marginBottom: spacing.sm,
+    marginRight: spacing.sm,
+    padding: spacing.sm,
+  },
+  optionActive: {
+    backgroundColor: colors.primary,
+  },
+  optionText: {
+    color: colors.textSecondary,
+  },
+  optionTextActive: {
+    color: colors.textOnPrimary,
+    fontWeight: "bold",
+  },
+  optionsRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: spacing.sm,
+  },
+  planBox: {
+    backgroundColor: colors.surface,
+    borderRadius: 10,
+    marginTop: spacing.xl,
+    padding: spacing.md,
+  },
+  startBtn: {
+    backgroundColor: colors.success,
+    borderRadius: 8,
+    marginTop: spacing.md,
+    padding: spacing.md,
+  },
+  startText: {
+    color: colors.textOnSuccess,
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+  title: {
+    ...typography.heading2,
+    color: colors.textPrimary,
+    marginBottom: spacing.md,
+  },
+  workoutText: {
+    color: colors.textPrimary,
+    fontSize: 14,
   },
 });
 

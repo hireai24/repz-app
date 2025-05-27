@@ -42,38 +42,38 @@ ExerciseCard.propTypes = {
 };
 
 const styles = StyleSheet.create({
+  add: {
+    color: colors.primary,
+    fontSize: 24,
+    fontWeight: "bold",
+  },
   card: {
-    backgroundColor: colors.surface,
-    flexDirection: "row",
     alignItems: "center",
-    padding: 12,
+    backgroundColor: colors.surface,
     borderRadius: 10,
+    flexDirection: "row",
     marginRight: 12,
     minWidth: 200,
-  },
-  icon: {
-    width: 40,
-    height: 40,
-    borderRadius: 8,
-    marginRight: 12,
+    padding: 12,
   },
   details: {
     flex: 1,
   },
-  name: {
-    color: colors.textPrimary,
-    fontWeight: "600",
-    fontSize: 16,
+  icon: {
+    borderRadius: 8,
+    height: 40,
+    marginRight: 12,
+    width: 40,
   },
   meta: {
     color: colors.textSecondary,
     fontSize: 12,
     marginTop: 2,
   },
-  add: {
-    color: colors.primary,
-    fontSize: 24,
-    fontWeight: "bold",
+  name: {
+    color: colors.textPrimary,
+    fontSize: 16,
+    fontWeight: "600",
   },
 });
 

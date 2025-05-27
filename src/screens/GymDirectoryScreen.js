@@ -1,6 +1,12 @@
-// src/screens/GymDirectoryScreen.js
 import React, { useEffect, useState } from "react";
-import { View, FlatList, ActivityIndicator, Text, StyleSheet } from "react-native";
+import {
+  View,
+  FlatList,
+  ActivityIndicator,
+  Text,
+  StyleSheet,
+} from "react-native";
+
 import { getGyms } from "../api/gymApi";
 import GymCard from "../components/GymCard";
 import colors from "../theme/colors";
@@ -14,9 +20,13 @@ const GymDirectoryScreen = () => {
   const loadGyms = async () => {
     try {
       const res = await getGyms();
-      if (res.success) setGyms(res.gyms || []);
-    } catch (err) {
-      console.error("Failed to load gyms", err);
+      if (res.success && Array.isArray(res.gyms)) {
+        setGyms(res.gyms);
+      } else {
+        setGyms([]);
+      }
+    } catch {
+      setGyms([]);
     } finally {
       setLoading(false);
     }
@@ -36,7 +46,7 @@ const GymDirectoryScreen = () => {
           data={gyms}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => <GymCard gym={item} />}
-          contentContainerStyle={{ paddingBottom: 100 }}
+          contentContainerStyle={styles.listContent}
         />
       )}
     </View>
@@ -45,14 +55,17 @@ const GymDirectoryScreen = () => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     backgroundColor: colors.background,
+    flex: 1,
     padding: spacing.lg,
   },
   header: {
     ...typography.heading2,
     color: colors.textPrimary,
     marginBottom: spacing.md,
+  },
+  listContent: {
+    paddingBottom: spacing.xxxl,
   },
 });
 

@@ -39,7 +39,8 @@ export const generateWorkoutPlan = async ({
     return {
       success: false,
       error: {
-        message: "Invalid input. Required: goal, availableDays, preferredSplit, experienceLevel.",
+        message:
+          "Invalid input. Required: goal, availableDays, preferredSplit, experienceLevel.",
         code: "INVALID_INPUT",
       },
     };
@@ -81,15 +82,18 @@ Begin plan now:
 `;
 
   try {
-    const res = await fetch(`${process.env.EXPO_PUBLIC_API_BASE_URL}/api/openai`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+    const res = await fetch(
+      `${process.env.EXPO_PUBLIC_API_BASE_URL}/api/openai`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          messages: [{ role: "user", content }],
+        }),
       },
-      body: JSON.stringify({
-        messages: [{ role: "user", content }],
-      }),
-    });
+    );
 
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "AI call failed");

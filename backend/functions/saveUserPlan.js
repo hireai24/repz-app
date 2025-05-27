@@ -1,5 +1,4 @@
 import { collection, addDoc, Timestamp } from "firebase/firestore";
-
 import { db } from "../firebase/init.js";
 import { verifyUser } from "../utils/authMiddleware.js";
 
@@ -53,7 +52,7 @@ const saveUserPlan = async (req, res) => {
       planId: docRef.id,
     });
   } catch (err) {
-    console.error("🔥 Failed to save user plan:", err.message);
+    // Logging removed for production (no-console)
     return res.status(500).json({
       success: false,
       error: err.message || "Unknown error saving user plan.",
@@ -61,4 +60,5 @@ const saveUserPlan = async (req, res) => {
   }
 };
 
+// Export as middleware chain
 export default [verifyUser, saveUserPlan];

@@ -1,9 +1,14 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+import PropTypes from "prop-types";
 import { Appearance } from "react-native";
 import lightColors from "../theme/lightColors";
 import darkColors from "../theme/colors"; // your current colors.js is dark mode
 
-const ThemeContext = createContext();
+const ThemeContext = createContext({
+  theme: "dark",
+  toggleTheme: () => {},
+  colors: darkColors,
+});
 
 export const ThemeProvider = ({ children }) => {
   const colorScheme = Appearance.getColorScheme();
@@ -19,7 +24,9 @@ export const ThemeProvider = ({ children }) => {
     const listener = Appearance.addChangeListener(({ colorScheme }) => {
       setTheme(colorScheme || "dark");
     });
-    return () => listener.remove();
+    return () => {
+      if (listener && typeof listener.remove === "function") listener.remove();
+    };
   }, []);
 
   return (
@@ -27,6 +34,10 @@ export const ThemeProvider = ({ children }) => {
       {children}
     </ThemeContext.Provider>
   );
+};
+
+ThemeProvider.propTypes = {
+  children: PropTypes.node.isRequired,
 };
 
 export const useTheme = () => useContext(ThemeContext);

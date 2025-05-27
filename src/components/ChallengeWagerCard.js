@@ -1,6 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { Text, StyleSheet, TouchableOpacity } from "react-native";
 import colors from "../theme/colors";
 import typography from "../theme/typography";
 import spacing from "../theme/spacing";
@@ -13,7 +13,6 @@ const ChallengeWagerCard = ({ challenge, onPress }) => {
     xp,
     xpPot,
     status,
-    creatorName,
     opponents = [],
     winnerId,
     userId,
@@ -46,24 +45,17 @@ const ChallengeWagerCard = ({ challenge, onPress }) => {
   return (
     <TouchableOpacity style={styles.card} onPress={onPress}>
       <Text style={styles.title}>{title || "XP Challenge"}</Text>
-
       <Text style={styles.detail}>
         💪 {i18n.t("challengeWager.selectExercise")}: {exercise}
       </Text>
-
-      <Text style={styles.detail}>
-        🧩 Type: {type ? type.toUpperCase() : "N/A"}
-      </Text>
-
+      <Text style={styles.detail}>🧩 Type: {type?.toUpperCase() || "N/A"}</Text>
       <Text style={styles.detail}>
         ⚔️ {i18n.t("challengeWager.opponents")}:{" "}
         {opponents.length > 0 ? opponents.join(", ") : "-"}
       </Text>
-
       <Text style={styles.detail}>
         🎯 {i18n.t("challengeWager.wagerAmount")}: {xp} XP
       </Text>
-
       <Text style={styles.detail}>💰 Pot: {xpPot || xp} XP</Text>
 
       {expiresAt && <Text style={styles.countdown}>{getCountdown()}</Text>}
@@ -100,7 +92,7 @@ ChallengeWagerCard.propTypes = {
     xp: PropTypes.number,
     xpPot: PropTypes.number,
     status: PropTypes.string,
-    creatorName: PropTypes.string,
+    creatorName: PropTypes.string, // still included in shape, even though unused
     opponents: PropTypes.arrayOf(PropTypes.string),
     winnerId: PropTypes.string,
     userId: PropTypes.string,
@@ -116,47 +108,47 @@ ChallengeWagerCard.propTypes = {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.surface,
-    padding: spacing.md,
     borderRadius: 10,
     marginBottom: spacing.md,
-  },
-  title: {
-    ...typography.heading4,
-    color: colors.textPrimary,
-    marginBottom: 6,
-  },
-  detail: {
-    color: colors.textSecondary,
-    fontSize: 14,
-    marginBottom: 4,
-  },
-  verified: {
-    color: colors.accentBlue,
-    fontWeight: "600",
-    fontSize: 13,
-    marginBottom: 4,
-  },
-  flagged: {
-    color: colors.warning,
-    fontWeight: "600",
-    fontSize: 13,
-    marginBottom: 4,
+    padding: spacing.md,
   },
   countdown: {
     color: colors.warning,
     fontSize: 13,
     marginBottom: 4,
   },
-  status: {
-    marginTop: spacing.sm,
-    fontWeight: "bold",
+  detail: {
     color: colors.textSecondary,
+    fontSize: 14,
+    marginBottom: 4,
   },
-  winner: {
-    color: colors.success,
+  flagged: {
+    color: colors.warning,
+    fontSize: 13,
+    fontWeight: "600",
+    marginBottom: 4,
   },
   loser: {
     color: colors.error,
+  },
+  status: {
+    color: colors.textSecondary,
+    fontWeight: "bold",
+    marginTop: spacing.sm,
+  },
+  title: {
+    ...typography.heading4,
+    color: colors.textPrimary,
+    marginBottom: 6,
+  },
+  verified: {
+    color: colors.accentBlue,
+    fontSize: 13,
+    fontWeight: "600",
+    marginBottom: 4,
+  },
+  winner: {
+    color: colors.success,
   },
 });
 

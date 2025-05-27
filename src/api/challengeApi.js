@@ -21,7 +21,10 @@ export const getChallenges = async () => {
       ...doc.data(),
     }));
   } catch (error) {
-    console.error("❌ Failed to fetch challenges:", error);
+    if (process.env.NODE_ENV !== "production") {
+      // eslint-disable-next-line no-console
+      console.error("❌ Failed to fetch challenges:", error);
+    }
     throw new Error("Could not load challenges.");
   }
 };
@@ -46,7 +49,10 @@ export const submitChallenge = async (challengeId) => {
 
     return { success: true };
   } catch (error) {
-    console.error("❌ Failed to submit challenge entry:", error);
+    if (process.env.NODE_ENV !== "production") {
+      // eslint-disable-next-line no-console
+      console.error("❌ Failed to submit challenge entry:", error);
+    }
     throw new Error("Challenge entry failed.");
   }
 };
@@ -62,7 +68,10 @@ export const getWagerChallenge = async (id) => {
     if (!snap.exists()) throw new Error("Challenge not found");
     return { id: snap.id, ...snap.data() };
   } catch (error) {
-    console.error("❌ Failed to fetch wager challenge:", error);
+    if (process.env.NODE_ENV !== "production") {
+      // eslint-disable-next-line no-console
+      console.error("❌ Failed to fetch wager challenge:", error);
+    }
     throw new Error("Could not load wager challenge.");
   }
 };
@@ -79,7 +88,10 @@ export const getWagerChallenges = async () => {
       ...doc.data(),
     }));
   } catch (error) {
-    console.error("❌ Failed to fetch wager challenges:", error);
+    if (process.env.NODE_ENV !== "production") {
+      // eslint-disable-next-line no-console
+      console.error("❌ Failed to fetch wager challenges:", error);
+    }
     throw new Error("Could not load wager challenges.");
   }
 };

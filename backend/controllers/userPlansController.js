@@ -49,8 +49,7 @@ const addUserPlan = async (req, res) => {
       });
 
       res.status(200).json({ success: true });
-    } catch (err) {
-      // TODO: Replace with logging utility
+    } catch {
       res
         .status(500)
         .json({ success: false, error: "Failed to add user plan." });
@@ -77,8 +76,7 @@ const getUserPlans = async (req, res) => {
       }));
 
       res.status(200).json({ success: true, plans });
-    } catch (err) {
-      // TODO: Replace with logging utility
+    } catch {
       res
         .status(500)
         .json({ success: false, error: "Failed to fetch user plans." });

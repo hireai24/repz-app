@@ -15,7 +15,9 @@ import {
   addDoc,
   Timestamp,
 } from "firebase/firestore";
-import { db } from "../firebase/firebaseClient"; // ✅ FIXED: Now using frontend-safe Firebase client
+import PropTypes from "prop-types";
+
+import { db } from "../firebase/firebaseClient";
 import colors from "../theme/colors";
 import spacing from "../theme/spacing";
 import typography from "../theme/typography";
@@ -29,7 +31,7 @@ const LiveChatThread = ({ challengeId }) => {
   useEffect(() => {
     const q = query(
       collection(db, "challengeChats", challengeId, "messages"),
-      orderBy("createdAt", "asc")
+      orderBy("createdAt", "asc"),
     );
 
     const unsub = onSnapshot(q, (snapshot) => {
@@ -59,10 +61,15 @@ const LiveChatThread = ({ challengeId }) => {
         data={messages}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <Text style={styles.message}>
+          <Text
+            style={styles.message}
+            accessibilityLabel={`Message from ${item.sender}`}
+          >
             <Text style={styles.sender}>{item.sender}:</Text> {item.text}
           </Text>
         )}
+        accessibilityRole="list"
+        accessibilityLabel="Live chat messages"
       />
       <View style={styles.inputRow}>
         <TextInput
@@ -70,8 +77,14 @@ const LiveChatThread = ({ challengeId }) => {
           value={text}
           onChangeText={setText}
           style={styles.input}
+          accessibilityLabel="Type your message"
         />
-        <TouchableOpacity onPress={sendMessage} style={styles.sendButton}>
+        <TouchableOpacity
+          onPress={sendMessage}
+          style={styles.sendButton}
+          accessibilityRole="button"
+          accessibilityLabel="Send chat message"
+        >
           <Text style={styles.sendText}>Send</Text>
         </TouchableOpacity>
       </View>
@@ -79,43 +92,47 @@ const LiveChatThread = ({ challengeId }) => {
   );
 };
 
+LiveChatThread.propTypes = {
+  challengeId: PropTypes.string.isRequired,
+};
+
 const styles = StyleSheet.create({
   container: {
-    marginTop: spacing.lg,
-    borderTopWidth: 1,
     borderTopColor: colors.border,
-    paddingTop: spacing.sm,
+    borderTopWidth: 1,
+    marginTop: spacing.lg,
     maxHeight: 200,
+    paddingTop: spacing.sm,
+  },
+  input: {
+    backgroundColor: colors.inputBackground,
+    borderRadius: 6,
+    flex: 1,
+    marginRight: spacing.sm,
+    padding: spacing.sm,
+  },
+  inputRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    marginTop: spacing.sm,
   },
   message: {
     ...typography.body,
-    paddingVertical: spacing.xs,
     paddingHorizontal: spacing.sm,
-  },
-  sender: {
-    fontWeight: "bold",
-    color: colors.primary,
-  },
-  inputRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: spacing.sm,
-  },
-  input: {
-    flex: 1,
-    backgroundColor: "#f4f4f4",
-    padding: spacing.sm,
-    borderRadius: 6,
-    marginRight: spacing.sm,
+    paddingVertical: spacing.xs,
   },
   sendButton: {
     backgroundColor: colors.primary,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
     borderRadius: 6,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
   },
   sendText: {
-    color: "#fff",
+    color: colors.white,
+    fontWeight: "bold",
+  },
+  sender: {
+    color: colors.primary,
     fontWeight: "bold",
   },
 });

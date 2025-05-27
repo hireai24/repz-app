@@ -72,13 +72,18 @@ const ChallengeSetupScreen = () => {
       });
 
       if (res.success) {
-        Alert.alert("✅ Challenge Created", "Waiting for opponent(s) to accept.");
+        Alert.alert(
+          "✅ Challenge Created",
+          "Waiting for opponent(s) to accept.",
+        );
         navigation.goBack();
       } else {
-        Alert.alert("Error", res.error?.message || "Could not create challenge.");
+        Alert.alert(
+          "Error",
+          (res.error && res.error.message) || "Could not create challenge.",
+        );
       }
-    } catch (err) {
-      console.error("Challenge creation error:", err);
+    } catch {
       Alert.alert("Error", "Something went wrong.");
     } finally {
       setSubmitting(false);
@@ -129,7 +134,7 @@ const ChallengeSetupScreen = () => {
         <Switch
           value={winnerTakesAll}
           onValueChange={setWinnerTakesAll}
-          trackColor={{ false: "#666", true: colors.primary }}
+          trackColor={{ false: colors.gray, true: colors.primary }}
         />
       </View>
 
@@ -138,7 +143,7 @@ const ChallengeSetupScreen = () => {
         <Switch
           value={representGym}
           onValueChange={setRepresentGym}
-          trackColor={{ false: "#666", true: colors.accentBlue }}
+          trackColor={{ false: colors.gray, true: colors.accentBlue }}
         />
       </View>
 
@@ -148,7 +153,7 @@ const ChallengeSetupScreen = () => {
         disabled={!canSubmit()}
       >
         {submitting ? (
-          <ActivityIndicator color="#fff" />
+          <ActivityIndicator color={colors.white} />
         ) : (
           <Text style={styles.submitText}>
             {i18n.t("challengeSetup.submit") || "Create Challenge"}
@@ -159,37 +164,47 @@ const ChallengeSetupScreen = () => {
   );
 };
 
+// Add prop-types for future-proofing and warnings removal if this becomes a child component
+ChallengeSetupScreen.propTypes = {};
+
 const styles = StyleSheet.create({
   container: {
-    padding: spacing.lg,
     backgroundColor: colors.background,
     flexGrow: 1,
+    padding: spacing.lg,
+  },
+  disabledBtn: {
+    backgroundColor: colors.disabled,
+  },
+  input: {
+    backgroundColor: colors.surface,
+    borderRadius: 8,
+    color: colors.textPrimary,
+    marginBottom: spacing.md,
+    padding: spacing.md,
+  },
+  submitBtn: {
+    alignItems: "center",
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+    padding: spacing.md,
+  },
+  submitText: {
+    color: colors.white,
+    fontWeight: "bold",
+  },
+  textArea: {
+    backgroundColor: colors.surface,
+    borderRadius: 8,
+    color: colors.textPrimary,
+    height: 120,
+    marginBottom: spacing.md,
+    padding: spacing.md,
+    textAlignVertical: "top",
   },
   title: {
     ...typography.heading2,
     color: colors.textPrimary,
-    marginBottom: spacing.md,
-  },
-  input: {
-    backgroundColor: colors.surface,
-    color: colors.textPrimary,
-    padding: spacing.md,
-    borderRadius: 8,
-    marginBottom: spacing.md,
-  },
-  textArea: {
-    backgroundColor: colors.surface,
-    color: colors.textPrimary,
-    padding: spacing.md,
-    borderRadius: 8,
-    marginBottom: spacing.md,
-    height: 120,
-    textAlignVertical: "top",
-  },
-  toggleRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
     marginBottom: spacing.md,
   },
   toggleLabel: {
@@ -197,18 +212,11 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "500",
   },
-  submitBtn: {
-    backgroundColor: colors.primary,
-    padding: spacing.md,
-    borderRadius: 8,
+  toggleRow: {
     alignItems: "center",
-  },
-  disabledBtn: {
-    backgroundColor: "#444",
-  },
-  submitText: {
-    color: "#fff",
-    fontWeight: "bold",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: spacing.md,
   },
 });
 

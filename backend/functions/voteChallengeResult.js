@@ -1,4 +1,3 @@
-// ✅ FINAL WORKING VERSION
 import { db } from "../firebase/init.js";
 import { doc, setDoc } from "firebase/firestore";
 
@@ -12,7 +11,9 @@ export const submitVote = async (req, res) => {
   const { voterId, votedFor } = req.body;
 
   if (!challengeId || !voterId || !votedFor) {
-    return res.status(400).json({ success: false, error: "Missing parameters." });
+    return res
+      .status(400)
+      .json({ success: false, error: "Missing parameters." });
   }
 
   try {
@@ -25,8 +26,10 @@ export const submitVote = async (req, res) => {
     });
 
     return res.status(200).json({ success: true, message: "Vote submitted." });
-  } catch (error) {
-    console.error("🔥 Vote submission failed:", error.message);
-    return res.status(500).json({ success: false, error: "Failed to submit vote." });
+  } catch {
+    // No noisy logs in production
+    return res
+      .status(500)
+      .json({ success: false, error: "Failed to submit vote." });
   }
 };

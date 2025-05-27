@@ -1,5 +1,5 @@
-// src/context/AuthContext.js
 import React, { createContext, useState, useEffect, useMemo } from "react";
+import PropTypes from "prop-types";
 import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
@@ -7,7 +7,7 @@ import {
 } from "firebase/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import { auth } from "../firebase/firebaseClient"; // ✅ fixed import path
+import { auth } from "../firebase/firebaseClient";
 
 export const AuthContext = createContext();
 
@@ -77,8 +77,12 @@ export const AuthProvider = ({ children }) => {
       loading,
       authError,
     }),
-    [authUser, userToken, loading, authError]
+    [authUser, userToken, loading, authError],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};
+
+AuthProvider.propTypes = {
+  children: PropTypes.node.isRequired,
 };

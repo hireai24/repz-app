@@ -119,56 +119,56 @@ WorkoutSummaryCard.propTypes = {
 };
 
 const styles = StyleSheet.create({
+  actions: {
+    gap: 10,
+    marginTop: spacing.md,
+  },
+  adaptBtn: {
+    alignItems: "center",
+    backgroundColor: colors.primary,
+    borderRadius: spacing.borderRadius,
+    padding: spacing.md,
+  },
+  adaptText: {
+    color: colors.textPrimary,
+    fontWeight: "bold",
+  },
   card: {
     backgroundColor: colors.surface,
-    padding: spacing.lg,
     borderRadius: spacing.borderRadius,
     marginTop: spacing.md,
+    padding: spacing.lg,
+  },
+  label: {
+    color: colors.textSecondary,
+    flex: 1,
+    fontSize: 14,
+    marginLeft: spacing.xs,
+  },
+  row: {
+    alignItems: "center",
+    flexDirection: "row",
+    marginBottom: spacing.xs,
+  },
+  shareBtn: {
+    alignItems: "center",
+    backgroundColor: colors.card,
+    borderRadius: spacing.borderRadius,
+    padding: spacing.md,
+  },
+  shareText: {
+    color: colors.textPrimary,
+    fontWeight: "bold",
   },
   title: {
     ...typography.heading3,
     color: colors.textPrimary,
     marginBottom: spacing.sm,
   },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: spacing.xs,
-  },
-  label: {
-    color: colors.textSecondary,
-    marginLeft: spacing.xs,
-    flex: 1,
-    fontSize: 14,
-  },
   value: {
     color: colors.textPrimary,
-    fontWeight: "600",
     fontSize: 14,
-  },
-  actions: {
-    marginTop: spacing.md,
-    gap: 10,
-  },
-  shareBtn: {
-    backgroundColor: colors.card,
-    padding: spacing.md,
-    borderRadius: spacing.borderRadius,
-    alignItems: "center",
-  },
-  shareText: {
-    color: colors.textPrimary,
-    fontWeight: "bold",
-  },
-  adaptBtn: {
-    backgroundColor: colors.primary,
-    padding: spacing.md,
-    borderRadius: spacing.borderRadius,
-    alignItems: "center",
-  },
-  adaptText: {
-    color: colors.textPrimary,
-    fontWeight: "bold",
+    fontWeight: "600",
   },
 });
 

@@ -43,15 +43,15 @@ TierBadge.propTypes = {
 
 const styles = StyleSheet.create({
   badge: {
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-    borderRadius: 6,
     alignSelf: "flex-start",
+    borderRadius: 6,
     marginLeft: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
   },
   text: {
-    fontWeight: "bold",
     fontSize: 12,
+    fontWeight: "bold",
     letterSpacing: 1,
   },
 });

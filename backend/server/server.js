@@ -1,3 +1,5 @@
+// backend/server/server.js
+
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
@@ -19,8 +21,8 @@ import challengeWagerRoutes from "./routes/challengeWager.routes.js";
 import openaiRoutes from "./routes/openai.routes.js";
 import photoAnalysisRoutes from "./routes/photoAnalysis.routes.js";
 
-// ✅ NEW: Admin Dashboard Routes
-import adminDashboardRoutes from "./admin/dashboard/index.js";
+// ✅ FIXED: Corrected Admin Dashboard route path
+import adminDashboardRoutes from "../admin/dashboard/index.js";
 
 dotenv.config();
 const app = express();
@@ -52,5 +54,10 @@ app.get("/", (_, res) => res.send("✅ REPZ Backend API is live."));
 
 // === START SERVER ===
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  if (process.env.NODE_ENV !== "production") {
+    // eslint-disable-next-line no-console
+    console.log(`🚀 Server running on http://localhost:${PORT}`);
+  }
 });
+
+export default app; // (Optional: for serverless/testing)

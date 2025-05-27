@@ -4,8 +4,9 @@ import React, {
   useState,
   useEffect,
   useMemo,
+  useCallback,
 } from "react";
-
+import PropTypes from "prop-types";
 import { AuthContext } from "./AuthContext";
 
 export const TierContext = createContext();
@@ -19,50 +20,56 @@ export const TierProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchTier = async () => {
-      if (!authUser || !userToken) {
-        setTier("Free");
-        setLoading(false);
-        return;
-      }
+  const fetchTier = useCallback(async () => {
+    if (!authUser || !userToken) {
+      setTier("Free");
+      setLoading(false);
+      return;
+    }
 
-      try {
-        const res = await fetch(
-          `${BASE_URL}/users/entitlements/${authUser.uid}`,
-          {
-            headers: {
-              Authorization: `Bearer ${userToken}`,
-            },
+    try {
+      const res = await fetch(
+        `${BASE_URL}/users/entitlements/${authUser.uid}`,
+        {
+          headers: {
+            Authorization: `Bearer ${userToken}`,
           },
-        );
+        },
+      );
 
-        if (!res.ok) {
-          const errText = await res.text();
-          throw new Error(errText || "Failed to fetch entitlements");
-        }
-
-        const { access } = await res.json();
-
-        if (access?.elite) setTier("Elite");
-        else if (access?.pro) setTier("Pro");
-        else setTier("Free");
-
-        setError(null);
-      } catch {
-        setTier("Free");
-        setError("Failed to determine subscription tier.");
-      } finally {
-        setLoading(false);
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(errText || "Failed to fetch entitlements");
       }
-    };
 
-    fetchTier();
+      const { access } = await res.json();
+
+      if (access?.elite) setTier("Elite");
+      else if (access?.pro) setTier("Pro");
+      else setTier("Free");
+
+      setError(null);
+    } catch {
+      setTier("Free");
+      setError("Failed to determine subscription tier.");
+    } finally {
+      setLoading(false);
+    }
   }, [authUser, userToken]);
+
+  useEffect(() => {
+    fetchTier();
+  }, [fetchTier]);
 
   const hasAccess = (requiredTier) => {
     const levels = { Free: 0, Pro: 1, Elite: 2 };
     return levels[tier] >= levels[requiredTier];
+  };
+
+  const refreshTier = async () => {
+    setLoading(true);
+    setError(null);
+    await fetchTier();
   };
 
   const value = useMemo(
@@ -71,33 +78,14 @@ export const TierProvider = ({ children }) => {
       hasAccess,
       loading,
       error,
-      refreshTier: () => {
-        setLoading(true);
-        setError(null);
-        setTimeout(() => {
-          if (authUser && userToken) {
-            fetch(`${BASE_URL}/users/entitlements/${authUser.uid}`, {
-              headers: { Authorization: `Bearer ${userToken}` },
-            })
-              .then((res) => res.json())
-              .then(({ access }) => {
-                if (access?.elite) setTier("Elite");
-                else if (access?.pro) setTier("Pro");
-                else setTier("Free");
-              })
-              .catch(() => {
-                setError("Failed to refresh tier.");
-              })
-              .finally(() => setLoading(false));
-          } else {
-            setTier("Free");
-            setLoading(false);
-          }
-        }, 500);
-      },
+      refreshTier,
     }),
-    [tier, hasAccess, loading, error],
+    [tier, hasAccess, loading, error, refreshTier],
   );
 
   return <TierContext.Provider value={value}>{children}</TierContext.Provider>;
+};
+
+TierProvider.propTypes = {
+  children: PropTypes.node.isRequired,
 };

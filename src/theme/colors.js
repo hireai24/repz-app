@@ -5,9 +5,13 @@ const darkColors = {
 
   textPrimary: "#FFFFFF",
   textSecondary: "#A9A9A9",
+  textTertiary: "#888888",
+  textOnPrimary: "#FFFFFF",
 
   white: "#FFFFFF",
+  black: "#000000",
   gray: "#CCCCCC",
+  gold: "#FFD700",
 
   primary: "#E63946",
   secondary: "#FFD166",
@@ -15,10 +19,13 @@ const darkColors = {
   warning: "#FF9F1C",
   danger: "#EF476F",
 
+  successBackground: "#153f2f",
+  inputBackground: "#2A2A2A",
+
   accentBlue: "#118AB2",
   streakGlow: "#F77F00",
 
-  disabled: "#333333",
+  disabled: "#444444",
   border: "#444444",
 
   free: "#666666",
@@ -42,15 +49,22 @@ const lightColors = {
 
   textPrimary: "#000000",
   textSecondary: "#444444",
+  textTertiary: "#888888",
+  textOnPrimary: "#FFFFFF",
 
   white: "#FFFFFF",
+  black: "#000000",
   gray: "#555555",
+  gold: "#FFD700",
 
   primary: "#E63946",
   secondary: "#FFD166",
   success: "#2A9D8F",
   warning: "#F4A261",
   danger: "#E76F51",
+
+  successBackground: "#DCF5ED",
+  inputBackground: "#f4f4f4",
 
   accentBlue: "#118AB2",
   streakGlow: "#F77F00",
@@ -75,7 +89,7 @@ const lightColors = {
 const colors = {
   dark: darkColors,
   light: lightColors,
-  ...darkColors, // fallback default is dark
+  ...darkColors, // default theme fallback
 };
 
 export default colors;

@@ -16,8 +16,8 @@ const LAST_DATE_KEY = "repz_last_workout_date";
 const getFormattedUTCDate = (date = new Date()) =>
   format(
     new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())),
-    "yyyy-MM-dd"
- );
+    "yyyy-MM-dd",
+  );
 
 /**
  * Tracks user's workout streak and handles streak milestone logic.
@@ -38,7 +38,7 @@ const useStreakTracker = (userId, onMilestone, applyStreakBonus) => {
       const q = query(
         logsRef,
         where("userId", "==", userId),
-        where("date", ">=", Timestamp.fromDate(oneWeekAgo))
+        where("date", ">=", Timestamp.fromDate(oneWeekAgo)),
       );
 
       const snapshot = await getDocs(q);
@@ -51,7 +51,7 @@ const useStreakTracker = (userId, onMilestone, applyStreakBonus) => {
                 ? getFormattedUTCDate(new Date(ts.seconds * 1000))
                 : null;
             })
-            .filter(Boolean)
+            .filter(Boolean),
         ),
       ]
         .sort()
@@ -69,7 +69,7 @@ const useStreakTracker = (userId, onMilestone, applyStreakBonus) => {
 
       const previousStreak = parseInt(
         (await AsyncStorage.getItem(STREAK_KEY)) || "0",
-        10
+        10,
       );
 
       if (
@@ -89,7 +89,7 @@ const useStreakTracker = (userId, onMilestone, applyStreakBonus) => {
       try {
         const fallback = parseInt(
           (await AsyncStorage.getItem(STREAK_KEY)) || "0",
-          10
+          10,
         );
         const lastDate = await AsyncStorage.getItem(LAST_DATE_KEY);
         const today = getFormattedUTCDate();

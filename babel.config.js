@@ -11,8 +11,8 @@ module.exports = function (api) {
           blacklist: null,
           whitelist: null,
           safe: false,
-          allowUndefined: true
-        }
+          allowUndefined: true,
+        },
       ],
       [
         "@babel/plugin-transform-runtime",
@@ -20,11 +20,11 @@ module.exports = function (api) {
           corejs: 3,
           helpers: true,
           regenerator: true,
-          useESModules: false
-        }
+          useESModules: false,
+        },
       ],
       "@babel/plugin-proposal-optional-catch-binding",
-      "react-native-reanimated/plugin" // Must be last
-    ]
+      "react-native-reanimated/plugin", // Must be last
+    ],
   };
 };

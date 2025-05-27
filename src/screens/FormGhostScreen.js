@@ -46,8 +46,7 @@ const FormGhostScreen = () => {
         setVideoUri(result.assets[0].uri);
         analyzeUploadedVideo(result.assets[0].uri);
       }
-    } catch (err) {
-      console.error("Video picker error:", err);
+    } catch {
       setErrorText(i18n.t("form.uploadError"));
     }
   };
@@ -68,7 +67,11 @@ const FormGhostScreen = () => {
 
       if (!uploaded?.url) throw new Error("Upload failed");
 
-      const result = await uploadFormVideo(userProfile.id, uploaded.url, "Squat");
+      const result = await uploadFormVideo(
+        userProfile.id,
+        uploaded.url,
+        "Squat",
+      );
 
       if (result?.results?.length > 0) {
         setAnalysis(result.results);
@@ -88,11 +91,10 @@ const FormGhostScreen = () => {
         setErrorText(i18n.t("form.noFeedback"));
       }
     } catch (err) {
-      console.error("Video analysis error:", err);
       setErrorText(
         i18n.t("form.error") ||
-        err.message ||
-        "Something went wrong during analysis."
+          err.message ||
+          "Something went wrong during analysis.",
       );
     } finally {
       setLoading(false);
@@ -187,10 +189,67 @@ const FormGhostScreen = () => {
 };
 
 const styles = StyleSheet.create({
+  analysisBlock: {
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    marginTop: spacing.md,
+    padding: spacing.md,
+  },
+  confirmationText: {
+    color: colors.success,
+    fontSize: 13,
+    marginTop: spacing.sm,
+    textAlign: "center",
+  },
   container: {
     backgroundColor: colors.background,
     flex: 1,
     padding: spacing.lg,
+  },
+  cta: {
+    alignItems: "center",
+    backgroundColor: colors.primary,
+    borderRadius: 10,
+    marginTop: spacing.lg,
+    padding: spacing.md,
+  },
+  ctaText: {
+    color: colors.white,
+    fontWeight: "bold",
+  },
+  emptyState: {
+    color: colors.textSecondary,
+    fontSize: 14,
+    marginTop: spacing.md,
+    textAlign: "center",
+  },
+  errorText: {
+    color: colors.error,
+    fontSize: 13,
+    marginTop: 10,
+    textAlign: "center",
+  },
+  lockedContainer: {
+    alignItems: "center",
+    backgroundColor: colors.background,
+    flex: 1,
+    justifyContent: "center",
+    padding: spacing.lg,
+  },
+  lockedText: {
+    color: colors.textSecondary,
+    fontSize: 16,
+    textAlign: "center",
+  },
+  subTitle: {
+    color: colors.success,
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  thumbnail: {
+    height: "100%",
+    width: "100%",
   },
   title: {
     ...typography.heading2,
@@ -198,75 +257,18 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   uploadBox: {
-    backgroundColor: colors.surface,
+    alignItems: "center",
     aspectRatio: 1.6,
-    width: "100%",
+    backgroundColor: colors.surface,
     borderRadius: 12,
     justifyContent: "center",
-    alignItems: "center",
     marginBottom: spacing.md,
     overflow: "hidden",
+    width: "100%",
   },
   uploadText: {
-    color: "#888",
+    color: colors.textTertiary,
     fontSize: 14,
-  },
-  thumbnail: {
-    width: "100%",
-    height: "100%",
-  },
-  analysisBlock: {
-    backgroundColor: colors.surface,
-    borderRadius: 12,
-    padding: spacing.md,
-    marginTop: spacing.md,
-  },
-  subTitle: {
-    color: colors.success,
-    fontWeight: "bold",
-    fontSize: 16,
-    marginBottom: 10,
-  },
-  cta: {
-    marginTop: spacing.lg,
-    backgroundColor: colors.primary,
-    padding: spacing.md,
-    borderRadius: 10,
-    alignItems: "center",
-  },
-  ctaText: {
-    color: "#fff",
-    fontWeight: "bold",
-  },
-  errorText: {
-    color: colors.error,
-    marginTop: 10,
-    fontSize: 13,
-    textAlign: "center",
-  },
-  confirmationText: {
-    color: colors.success,
-    fontSize: 13,
-    textAlign: "center",
-    marginTop: spacing.sm,
-  },
-  lockedContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: spacing.lg,
-    backgroundColor: colors.background,
-  },
-  lockedText: {
-    color: colors.textSecondary,
-    fontSize: 16,
-    textAlign: "center",
-  },
-  emptyState: {
-    color: colors.textSecondary,
-    fontSize: 14,
-    textAlign: "center",
-    marginTop: spacing.md,
   },
 });
 

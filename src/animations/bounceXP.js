@@ -14,8 +14,8 @@ const useBounceXP = () => {
           setReduceMotionEnabled(result);
         }
       })
-      .catch((error) => {
-        console.error("Accessibility info error:", error);
+      .catch(() => {
+        // Silent fail – AccessibilityInfo not available or error occurred
       });
 
     return () => {

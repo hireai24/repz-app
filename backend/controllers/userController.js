@@ -68,9 +68,10 @@ const upsertUserProfile = async (req, res) => {
 
       await setDoc(userRef, profile, { merge: true });
       res.status(200).json({ success: true });
-    } catch (err) {
-      // TODO: Replace with logging utility
-      res.status(500).json({ success: false, error: err.message });
+    } catch {
+      res
+        .status(500)
+        .json({ success: false, error: "Failed to update profile." });
     }
   });
 };
@@ -107,9 +108,8 @@ const getUserProfile = async (req, res) => {
           profilePicture: data.profilePicture || "",
         },
       });
-    } catch (err) {
-      // TODO: Replace with logging utility
-      res.status(500).json({ success: false, error: err.message });
+    } catch {
+      res.status(500).json({ success: false, error: "Failed to get profile." });
     }
   });
 };
@@ -140,9 +140,10 @@ const uploadProgressPhoto = async (req, res) => {
       });
 
       res.status(200).json({ success: true, photoId: docRef.id });
-    } catch (err) {
-      // TODO: Replace with logging utility
-      res.status(500).json({ success: false, error: err.message });
+    } catch {
+      res
+        .status(500)
+        .json({ success: false, error: "Failed to upload photo." });
     }
   });
 };
@@ -172,9 +173,10 @@ const getProgressPhotos = async (req, res) => {
       }));
 
       res.status(200).json({ success: true, photos });
-    } catch (err) {
-      // TODO: Replace with logging utility
-      res.status(500).json({ success: false, error: err.message });
+    } catch {
+      res
+        .status(500)
+        .json({ success: false, error: "Failed to fetch photos." });
     }
   });
 };
@@ -212,9 +214,10 @@ const checkEntitlements = async (req, res) => {
       };
 
       res.status(200).json({ success: true, access });
-    } catch (err) {
-      // TODO: Replace with logging utility
-      res.status(500).json({ success: false, error: err.message });
+    } catch {
+      res
+        .status(500)
+        .json({ success: false, error: "Failed to check entitlements." });
     }
   });
 };
@@ -246,9 +249,10 @@ const resetPassword = async (req, res) => {
     }
 
     res.status(200).json({ success: true });
-  } catch (err) {
-    // TODO: Replace with logging utility
-    res.status(500).json({ success: false, error: err.message });
+  } catch {
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to send reset email." });
   }
 };
 

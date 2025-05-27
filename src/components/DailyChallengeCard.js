@@ -1,5 +1,3 @@
-// src/components/DailyChallengeCard.js
-
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import PropTypes from "prop-types";
@@ -43,40 +41,40 @@ DailyChallengeCard.propTypes = {
 };
 
 const styles = StyleSheet.create({
+  button: {
+    alignSelf: "flex-start",
+    backgroundColor: colors.primary,
+    borderRadius: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+  },
+  buttonText: {
+    color: colors.white,
+    fontWeight: "600",
+  },
   card: {
     backgroundColor: colors.surface,
     borderRadius: 12,
-    padding: spacing.md,
     marginBottom: spacing.md,
+    padding: spacing.md,
   },
   completedCard: {
-    backgroundColor: colors.successBackground || "#153f2f",
+    backgroundColor: colors.successBackground,
   },
-  title: {
-    ...typography.heading4,
-    color: colors.textPrimary,
-    marginBottom: 4,
+  completedText: {
+    color: colors.success,
+    fontSize: 14,
+    fontWeight: "bold",
   },
   desc: {
     color: colors.textSecondary,
     fontSize: 14,
     marginBottom: spacing.sm,
   },
-  completedText: {
-    color: colors.success,
-    fontWeight: "bold",
-    fontSize: 14,
-  },
-  button: {
-    backgroundColor: colors.primary,
-    borderRadius: 6,
-    paddingVertical: 8,
-    alignSelf: "flex-start",
-    paddingHorizontal: 14,
-  },
-  buttonText: {
-    color: "#fff",
-    fontWeight: "600",
+  title: {
+    ...typography.heading4,
+    color: colors.textPrimary,
+    marginBottom: 4,
   },
 });
 

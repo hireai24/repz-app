@@ -1,3 +1,5 @@
+// backend/admin/dashboard/reviewChallenges.js
+
 import express from "express";
 import {
   collection,
@@ -5,11 +7,11 @@ import {
   updateDoc,
   doc,
   where,
-  query
+  query,
 } from "firebase/firestore";
 
-import { db } from "../../backend/firebase/init.js";
-import { verifyAdmin } from "../../backend/utils/authMiddleware.js";
+import { db } from "../../firebase/init.js";
+import { verifyAdmin } from "../../utils/authMiddleware.js";
 
 const router = express.Router();
 
@@ -21,19 +23,16 @@ router.get("/flagged", verifyAdmin, async (req, res) => {
 
     const flagged = snapshot.docs.map((doc) => ({
       id: doc.id,
-      ...doc.data()
+      ...doc.data(),
     }));
 
-    // TODO: Add pagination + filters for large datasets
-
-    if (process.env.NODE_ENV !== "production") {
-      console.log(`[ADMIN] Retrieved ${flagged.length} flagged challenges.`);
-    }
+    // Pagination + filters: TODO for future
 
     res.status(200).json({ success: true, flagged });
   } catch (err) {
-    console.error("[reviewChallenges.js] GET /flagged error:", err.message);
-    res.status(500).json({ success: false, error: "Failed to fetch flagged challenges." });
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to fetch flagged challenges." });
   }
 });
 
@@ -41,13 +40,14 @@ router.get("/flagged", verifyAdmin, async (req, res) => {
 router.post("/moderate", verifyAdmin, async (req, res) => {
   const { challengeId, action } = req.body;
 
-  const isValidId = typeof challengeId === "string" && /^[a-zA-Z0-9_-]{10,}$/.test(challengeId);
+  const isValidId =
+    typeof challengeId === "string" && /^[a-zA-Z0-9_-]{10,}$/.test(challengeId);
   const isValidAction = ["approve", "remove"].includes(action);
 
   if (!isValidId || !isValidAction) {
     return res.status(400).json({
       success: false,
-      error: "Invalid or missing challengeId or action."
+      error: "Invalid or missing challengeId or action.",
     });
   }
 
@@ -60,17 +60,14 @@ router.post("/moderate", verifyAdmin, async (req, res) => {
       await updateDoc(docRef, { flagged: false });
     }
 
-    if (process.env.NODE_ENV !== "production") {
-      console.log(`[ADMIN] Challenge ${challengeId} ${action}d by ${req.user?.uid || "unknown admin"}`);
-    }
-
     res.status(200).json({
       success: true,
-      message: `Challenge ${action}d successfully.`
+      message: `Challenge ${action}d successfully.`,
     });
   } catch (err) {
-    console.error("[reviewChallenges.js] POST /moderate error:", err.message);
-    res.status(500).json({ success: false, error: "Failed to moderate challenge." });
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to moderate challenge." });
   }
 });
 

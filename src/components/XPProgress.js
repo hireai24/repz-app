@@ -53,28 +53,28 @@ XPProgress.propTypes = {
 };
 
 const styles = StyleSheet.create({
+  barBackground: {
+    backgroundColor: colors.border,
+    borderRadius: spacing.xs,
+    height: 12,
+    overflow: "hidden",
+    width: "100%",
+  },
+  barFill: {
+    backgroundColor: colors.primary,
+    borderRadius: spacing.xs,
+    height: "100%",
+  },
   container: {
     backgroundColor: colors.surface,
-    padding: spacing.md,
     borderRadius: spacing.borderRadius,
     marginTop: spacing.xs,
+    padding: spacing.md,
   },
   levelText: {
     ...typography.smallBold,
     color: colors.textPrimary,
     marginBottom: spacing.xs,
-  },
-  barBackground: {
-    width: "100%",
-    height: 12,
-    backgroundColor: colors.border,
-    borderRadius: spacing.xs,
-    overflow: "hidden",
-  },
-  barFill: {
-    height: "100%",
-    backgroundColor: colors.primary,
-    borderRadius: spacing.xs,
   },
   xpText: {
     ...typography.small,

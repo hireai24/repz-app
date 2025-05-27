@@ -95,17 +95,20 @@ Expert Cues:
 `;
 
   try {
-    const res = await fetch(`${process.env.EXPO_PUBLIC_API_BASE_URL}/api/openai`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        // Optionally include Authorization if needed:
-        // Authorization: `Bearer ${token}`,
+    const res = await fetch(
+      `${process.env.EXPO_PUBLIC_API_BASE_URL}/api/openai`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          // Optionally include Authorization if needed:
+          // Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          messages: [{ role: "user", content: prompt }],
+        }),
       },
-      body: JSON.stringify({
-        messages: [{ role: "user", content: prompt }],
-      }),
-    });
+    );
 
     const data = await res.json();
 

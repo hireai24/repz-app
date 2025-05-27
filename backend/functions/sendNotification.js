@@ -9,7 +9,7 @@ const EXPO_ENDPOINT = "https://exp.host/--/api/v2/push/send";
 
 /**
  * Send a push notification to a user by their Firestore ID.
- * 
+ *
  * @param {string} userId - Firestore user ID
  * @param {Object} message - Notification content
  * @param {string} message.title - Notification title
@@ -47,7 +47,7 @@ export const sendNotification = async (userId, message) => {
     const response = await fetch(EXPO_ENDPOINT, {
       method: "POST",
       headers: {
-        "Accept": "application/json",
+        Accept: "application/json",
         "Accept-Encoding": "gzip, deflate",
         "Content-Type": "application/json",
       },
@@ -58,12 +58,14 @@ export const sendNotification = async (userId, message) => {
 
     if (result?.data?.status === "ok") {
       return { success: true };
-    } else {
-      console.warn("Expo push failed", result);
-      return { success: false, error: result?.data?.message || "Unknown error" };
     }
-  } catch (err) {
-    console.error("sendNotification error:", err);
+    // No console.warn, return clean error for production
+    return {
+      success: false,
+      error: result?.data?.message || "Unknown error",
+    };
+  } catch {
+    // No console.error, just return the error for production
     return { success: false, error: "Internal server error" };
   }
 };

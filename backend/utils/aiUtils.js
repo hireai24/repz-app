@@ -19,20 +19,12 @@ let aiUsageCounter = 0;
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // === Send Prompt to OpenAI with Retry and Fallback ===
-export const sendPrompt = async (
-  prompt,
-  model = "gpt-3.5-turbo",
-  verbose = false,
-) => {
+export const sendPrompt = async (prompt, model = "gpt-3.5-turbo") => {
   const maxRetries = 3;
   let retryDelay = 1000; // 1 second
 
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
-      if (verbose) {
-        console.log(`🔁 OpenAI request attempt #${attempt + 1}`);
-      }
-
       const response = await openai.createChatCompletion({
         model,
         messages: [{ role: "user", content: prompt }],
@@ -47,13 +39,6 @@ export const sendPrompt = async (
     } catch (err) {
       const isLast = attempt === maxRetries - 1;
 
-      if (verbose || isLast) {
-        console.error(
-          `❌ OpenAI error (attempt ${attempt + 1}):`,
-          err?.response?.data || err?.message,
-        );
-      }
-
       if (isLast) {
         return {
           success: false,
@@ -66,7 +51,6 @@ export const sendPrompt = async (
       }
 
       retryDelay *= 2;
-      if (verbose) console.log(`⏳ Retrying in ${retryDelay / 1000}s...`);
       await wait(retryDelay);
     }
   }

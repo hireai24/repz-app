@@ -1,7 +1,6 @@
 import express from "express";
 import Stripe from "stripe";
 import { doc, updateDoc, addDoc, collection } from "firebase/firestore";
-
 import { db } from "../../backend/firebase/init.js";
 
 const router = express.Router();
@@ -17,7 +16,7 @@ if (!endpointSecret || !process.env.STRIPE_SECRET_KEY) {
   );
 }
 
-// Stripe raw body parser
+// Stripe requires the raw body for webhook verification
 router.post(
   "/",
   express.raw({ type: "application/json" }),
@@ -28,7 +27,10 @@ router.post(
     try {
       event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
     } catch (err) {
-      console.error("❌ Stripe signature verification failed:", err.message);
+      if (process.env.NODE_ENV !== "production") {
+        // eslint-disable-next-line no-console
+        console.error("❌ Stripe signature verification failed:", err.message);
+      }
       return res
         .status(400)
         .json({ success: false, error: `Webhook Error: ${err.message}` });
@@ -54,9 +56,12 @@ router.post(
               subscriptionStart: new Date().toISOString(),
             });
 
-            console.log(
-              `✅ Subscription activated for ${userId} (${tier || "Pro"})`,
-            );
+            if (process.env.NODE_ENV !== "production") {
+              // eslint-disable-next-line no-console
+              console.log(
+                `✅ Subscription activated for ${userId} (${tier || "Pro"})`,
+              );
+            }
           }
 
           if (mode === "payment") {
@@ -69,19 +74,6 @@ router.post(
               throw new Error("Missing purchase metadata for payment.");
             }
 
-            // OPTIONAL: Add idempotency safeguard for sessionId
-            // Example: check if purchase with this sessionId already exists
-            /*
-            const purchasesRef = collection(db, 'purchases');
-            const duplicateCheck = query(purchasesRef, where('sessionId', '==', sessionId));
-            const duplicateSnapshot = await getDocs(duplicateCheck);
-
-            if (!duplicateSnapshot.empty) {
-              console.warn(`⚠️ Duplicate purchase detected for session ${sessionId}. Skipping.`);
-              break;
-            }
-            */
-
             await addDoc(collection(db, "purchases"), {
               userId: buyerId,
               planId,
@@ -91,9 +83,12 @@ router.post(
               purchasedAt: new Date(),
             });
 
-            console.log(
-              `✅ Plan ${planId} purchased by ${buyerId} for £${amountPaid}`,
-            );
+            if (process.env.NODE_ENV !== "production") {
+              // eslint-disable-next-line no-console
+              console.log(
+                `✅ Plan ${planId} purchased by ${buyerId} for £${amountPaid}`,
+              );
+            }
           }
 
           break;
@@ -103,10 +98,13 @@ router.post(
           const userId = data.object.metadata?.userId;
 
           if (!userId) {
-            console.warn(
-              "⚠️ Subscription cancellation webhook missing userId.",
-            );
-            break; // Don't throw — missing metadata should not crash webhook handler
+            if (process.env.NODE_ENV !== "production") {
+              // eslint-disable-next-line no-console
+              console.warn(
+                "⚠️ Subscription cancellation webhook missing userId.",
+              );
+            }
+            break;
           }
 
           await updateDoc(doc(db, "users", userId), {
@@ -114,19 +112,28 @@ router.post(
             tier: "Free",
           });
 
-          console.log(`⚠️ Subscription cancelled for ${userId}`);
+          if (process.env.NODE_ENV !== "production") {
+            // eslint-disable-next-line no-console
+            console.log(`⚠️ Subscription cancelled for ${userId}`);
+          }
           break;
         }
 
         default:
-          console.log(`⚙️ Received unhandled event type: ${type}`);
+          if (process.env.NODE_ENV !== "production") {
+            // eslint-disable-next-line no-console
+            console.log(`⚙️ Received unhandled event type: ${type}`);
+          }
       }
 
       return res
         .status(200)
         .json({ success: true, message: "✅ Webhook processed successfully." });
     } catch (err) {
-      console.error("🔥 Error processing webhook:", err.message);
+      if (process.env.NODE_ENV !== "production") {
+        // eslint-disable-next-line no-console
+        console.error("🔥 Error processing webhook:", err.message);
+      }
       return res.status(500).json({
         success: false,
         error: err.message || "Internal webhook error.",

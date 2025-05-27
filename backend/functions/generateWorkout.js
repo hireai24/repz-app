@@ -1,8 +1,10 @@
+// backend/functions/generateWorkout.js
+
 import { collection, addDoc } from "firebase/firestore";
 
 import { db } from "../firebase/init.js";
-import { parseAIWorkoutPlan } from "../utils/planUtils.js"; // ✅ Renamed for clarity
-import { generateWorkoutPlan } from "../../ai/prompts/workoutPlanner.js";
+import { parseAIWorkoutPlan } from "../utils/planUtils.js";
+import { generateWorkoutPlan } from "../ai/prompts/workoutPlanner.js";
 
 /**
  * Generates and saves a structured workout plan tied to the user.
@@ -68,7 +70,7 @@ const generateWorkout = async (
       throw new Error(error || "AI failed to return a workout plan.");
     }
 
-    const structuredPlan = parseAIWorkoutPlan(planText); // ✅ Now safe and named correctly
+    const structuredPlan = parseAIWorkoutPlan(planText);
 
     const docRef = await addDoc(collection(db, "userPlans"), {
       userId,
@@ -89,7 +91,6 @@ const generateWorkout = async (
       workoutPlan: structuredPlan,
     };
   } catch (err) {
-    console.error("🔥 Error generating workout plan:", err.message);
     return {
       success: false,
       error: err.message || "Unknown error generating workout.",

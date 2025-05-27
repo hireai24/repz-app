@@ -3,14 +3,9 @@ import path from "path";
 import { createCanvas, Image } from "canvas";
 import * as tf from "@tensorflow/tfjs"; // ✅ Pure JS version
 import * as poseDetection from "@tensorflow-models/pose-detection";
-import { fileURLToPath } from "url";
 
 const FRAME_DIR = "./challengeFrames";
 let detector;
-
-// Fix __dirname for ES modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 /**
  * Main evaluation logic for a challenge video.
@@ -18,14 +13,18 @@ const __dirname = path.dirname(__filename);
  */
 export const evaluateForm = async (videoPath) => {
   try {
-    if (!fs.existsSync(FRAME_DIR)) fs.mkdirSync(FRAME_DIR);
+    if (!fs.existsSync(FRAME_DIR)) {
+      fs.mkdirSync(FRAME_DIR);
+    }
 
     await extractFrames(videoPath, FRAME_DIR);
 
     if (!detector) {
       detector = await poseDetection.createDetector(
         poseDetection.SupportedModels.MoveNet,
-        { modelType: poseDetection.movenet.modelType.SINGLEPOSE_LIGHTNING }
+        {
+          modelType: poseDetection.movenet.modelType.SINGLEPOSE_LIGHTNING,
+        },
       );
     }
 
@@ -52,8 +51,8 @@ export const evaluateForm = async (videoPath) => {
         const isValid = isPoseValid(pose);
         if (isValid) passCount++;
         else failCount++;
-      } catch (err) {
-        console.warn("Pose estimation error on frame:", file, err.message);
+      } catch {
+        // Pose estimation error silenced for production
       } finally {
         input.dispose();
       }
@@ -69,8 +68,8 @@ export const evaluateForm = async (videoPath) => {
     if (passRatio > 0.7) return "pass";
     if (passRatio < 0.4) return "fail";
     return "flagged";
-  } catch (err) {
-    console.error("evaluateForm error:", err.message);
+  } catch {
+    // Main error silenced for production
     return "flagged";
   }
 };
@@ -82,14 +81,11 @@ const extractFrames = (videoPath, outDir) => {
   return new Promise((resolve, reject) => {
     import("fluent-ffmpeg").then((ffmpegModule) => {
       const ffmpeg = ffmpegModule.default;
-      ffmpeg(videoPath)
-        .on("end", resolve)
-        .on("error", reject)
-        .screenshots({
-          count: 10,
-          folder: outDir,
-          filename: "frame-%i.png",
-        });
+      ffmpeg(videoPath).on("end", resolve).on("error", reject).screenshots({
+        count: 10,
+        folder: outDir,
+        filename: "frame-%i.png",
+      });
     });
   });
 };

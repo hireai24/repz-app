@@ -5,17 +5,26 @@ import React, {
   useMemo,
   useContext,
 } from "react";
-import {
-  doc,
-  onSnapshot,
-  updateDoc,
-  increment,
-} from "firebase/firestore";
+import PropTypes from "prop-types";
+import { doc, onSnapshot, updateDoc, increment } from "firebase/firestore";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { db } from "../firebase/firebaseClient"; // ✅ FIXED IMPORT
 import { AuthContext } from "./AuthContext";
 
-export const XPContext = createContext();
+// Provide default values for safer consumption outside provider (prevents undefined errors)
+export const XPContext = createContext({
+  totalXP: 0,
+  currentXP: 0,
+  xpToNext: 100,
+  level: 1,
+  addXP: () => {},
+  resetXP: () => {},
+  addPlanXP: () => {},
+  applyWagerXP: () => {},
+  applyStreakBonus: () => {},
+  xpError: null,
+});
+
 const XP_STORAGE_KEY = "repz_total_xp";
 
 const calculateLevel = (xp) => {
@@ -58,13 +67,13 @@ export const XPProvider = ({ children }) => {
         try {
           const savedXP = parseInt(
             (await AsyncStorage.getItem(XP_STORAGE_KEY)) || "0",
-            10
+            10,
           );
           setTotalXP(savedXP);
         } catch {
           setXpError("Failed to restore saved XP.");
         }
-      }
+      },
     );
 
     return () => unsubscribe();
@@ -133,7 +142,7 @@ export const XPProvider = ({ children }) => {
 
   const { level, currentXP, xpToNext } = useMemo(
     () => calculateLevel(totalXP),
-    [totalXP]
+    [totalXP],
   );
 
   const value = useMemo(
@@ -149,8 +158,12 @@ export const XPProvider = ({ children }) => {
       applyStreakBonus,
       xpError,
     }),
-    [totalXP, currentXP, xpToNext, level, xpError]
+    [totalXP, currentXP, xpToNext, level, xpError],
   );
 
   return <XPContext.Provider value={value}>{children}</XPContext.Provider>;
+};
+
+XPProvider.propTypes = {
+  children: PropTypes.node.isRequired,
 };

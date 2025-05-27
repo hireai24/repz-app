@@ -32,19 +32,16 @@ import spacing from "../theme/spacing";
 import typography from "../theme/typography";
 import colors from "../theme/colors";
 import i18n from "../locales/i18n";
-import { db } from "../firebase/firebaseClient"; // ✅ FIXED IMPORT
+import { db } from "../firebase/firebaseClient";
+
+import defaultAvatar from "../assets/avatars/avatar1.png";
 
 const STREAK_MILESTONES = [3, 7, 14];
 
 const DashboardScreen = () => {
   const { userProfile, userId } = useContext(UserContext);
-  const {
-    xp,
-    level,
-    xpToNext,
-    addXP,
-    applyStreakBonus
-  } = useContext(XPContext);
+  const { xp, level, xpToNext, addXP, applyStreakBonus } =
+    useContext(XPContext);
   const { triggerBounce, scale } = useBounceXP();
   const fadeAnim = useFadeIn(200);
   const { allowed } = useTierAccess("Free");
@@ -59,8 +56,9 @@ const DashboardScreen = () => {
   const [error, setError] = useState("");
 
   const name = userProfile?.username || i18n.t("dashboard.defaultName");
-  const avatar =
-    userProfile?.profilePicture || require("../assets/avatars/avatar1.png");
+  const avatar = userProfile?.profilePicture
+    ? { uri: userProfile.profilePicture }
+    : defaultAvatar;
 
   const nextWorkout = i18n.t("dashboard.nextWorkoutTitle");
   const challenge = {
@@ -79,10 +77,7 @@ const DashboardScreen = () => {
       const userSnap = await getDoc(docRef);
       const lastTrophy = userSnap.data()?.lastTrophyShown || 0;
 
-      if (
-        STREAK_MILESTONES.includes(streak) &&
-        streak > lastTrophy
-      ) {
+      if (STREAK_MILESTONES.includes(streak) && streak > lastTrophy) {
         setCurrentMilestone(streak);
         setShowTrophy(true);
         await updateDoc(docRef, { lastTrophyShown: streak });
@@ -90,8 +85,8 @@ const DashboardScreen = () => {
       }
     };
 
-    checkMilestone().catch(console.error);
-  }, [userId, streak]);
+    checkMilestone();
+  }, [userId, streak, applyStreakBonus]);
 
   const loadPlans = useCallback(async () => {
     if (!userId) return;
@@ -119,8 +114,8 @@ const DashboardScreen = () => {
       if (snap.exists()) {
         setDailyChallenge(snap.data());
       }
-    } catch (err) {
-      console.warn("Failed to fetch daily challenge", err);
+    } catch {
+      // Silent fail in production
     }
   }, [userId]);
 
@@ -130,14 +125,14 @@ const DashboardScreen = () => {
       await updateDoc(doc(db, "dailyChallenges", userId), { completed: true });
       await addXP(dailyChallenge.xp || 50);
       setDailyChallenge((prev) => ({ ...prev, completed: true }));
-    } catch (err) {
-      console.warn("Error completing daily challenge", err);
+    } catch {
+      // Silent fail in production
     }
   };
 
   useEffect(() => {
     triggerBounce();
-  }, [xp]);
+  }, [xp, triggerBounce]);
 
   useEffect(() => {
     loadPlans();
@@ -147,7 +142,7 @@ const DashboardScreen = () => {
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     Promise.all([loadPlans(), loadDailyChallenge()]).finally(() =>
-      setRefreshing(false)
+      setRefreshing(false),
     );
   }, [loadPlans, loadDailyChallenge]);
 
@@ -192,7 +187,9 @@ const DashboardScreen = () => {
         )}
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{i18n.t("dashboard.nextWorkout")}</Text>
+          <Text style={styles.sectionTitle}>
+            {i18n.t("dashboard.nextWorkout")}
+          </Text>
           <TouchableOpacity
             style={styles.card}
             onPress={() => navigation.navigate("WorkoutLog")}
@@ -202,7 +199,9 @@ const DashboardScreen = () => {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{i18n.t("dashboard.challenges")}</Text>
+          <Text style={styles.sectionTitle}>
+            {i18n.t("dashboard.challenges")}
+          </Text>
           <ChallengeCard challenge={challenge} progress={{}} />
         </View>
 
@@ -233,7 +232,9 @@ const DashboardScreen = () => {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{i18n.t("dashboard.gymsNearby")}</Text>
+          <Text style={styles.sectionTitle}>
+            {i18n.t("dashboard.gymsNearby")}
+          </Text>
           <TouchableOpacity
             style={styles.card}
             onPress={() => navigation.navigate("GymDirectory")}
@@ -257,7 +258,9 @@ const DashboardScreen = () => {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{i18n.t("dashboard.proTools")}</Text>
+          <Text style={styles.sectionTitle}>
+            {i18n.t("dashboard.proTools")}
+          </Text>
           <View style={styles.toolRow}>
             <TouchableOpacity
               style={styles.toolButton}
@@ -330,32 +333,82 @@ const DashboardScreen = () => {
 };
 
 const styles = StyleSheet.create({
+  avatar: {
+    borderRadius: 999,
+    height: 52,
+    width: 52,
+  },
+  card: {
+    backgroundColor: colors.surface,
+    borderRadius: 8,
+    padding: spacing.md,
+  },
+  cardText: {
+    ...typography.body,
+    color: colors.textPrimary,
+  },
+  centered: {
+    alignItems: "center",
+    backgroundColor: colors.background,
+    flex: 1,
+    justifyContent: "center",
+  },
   container: {
     backgroundColor: colors.background,
-    padding: spacing.lg,
     flex: 1,
+    padding: spacing.lg,
+  },
+  emptyText: {
+    color: colors.textSecondary,
+    fontSize: 14,
+    marginTop: spacing.md,
+    textAlign: "center",
+  },
+  errorText: {
+    color: colors.error,
+    fontSize: 14,
+    marginTop: spacing.md,
+    textAlign: "center",
   },
   header: {
-    flexDirection: "row",
     alignItems: "center",
+    flexDirection: "row",
     marginBottom: spacing.md,
   },
   headerText: {
-    marginLeft: spacing.md,
     flex: 1,
+    marginLeft: spacing.md,
   },
-  welcome: {
-    ...typography.body,
+  input: {
+    backgroundColor: colors.surface,
+    borderRadius: 8,
+    color: colors.textPrimary,
+    padding: spacing.md,
+  },
+  locked: {
     color: colors.textSecondary,
+    fontSize: 16,
+    padding: spacing.lg,
+    textAlign: "center",
   },
   name: {
     ...typography.heading2,
     color: colors.textPrimary,
   },
-  avatar: {
-    width: 52,
-    height: 52,
-    borderRadius: 999,
+  navBar: {
+    borderTopColor: colors.surface,
+    borderTopWidth: 1,
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginTop: spacing.sm,
+    paddingVertical: spacing.md,
+  },
+  navIcon: {
+    color: colors.primary,
+    fontSize: 22,
+  },
+  planListContent: {
+    paddingBottom: spacing.lg,
   },
   section: {
     marginBottom: spacing.xl,
@@ -365,75 +418,25 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     marginBottom: spacing.sm,
   },
-  card: {
+  toolButton: {
     backgroundColor: colors.surface,
-    padding: spacing.md,
     borderRadius: 8,
-  },
-  cardText: {
-    ...typography.body,
-    color: colors.textPrimary,
-  },
-  input: {
-    backgroundColor: colors.surface,
-    color: colors.textPrimary,
-    padding: spacing.md,
-    borderRadius: 8,
-  },
-  navBar: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    paddingVertical: spacing.md,
-    borderTopColor: colors.surface,
-    borderTopWidth: 1,
-    marginTop: spacing.sm,
-  },
-  navIcon: {
-    color: colors.primary,
-    fontSize: 22,
-  },
-  locked: {
-    color: colors.textSecondary,
-    padding: spacing.lg,
-    fontSize: 16,
-    textAlign: "center",
-  },
-  centered: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: colors.background,
-  },
-  emptyText: {
-    color: colors.textSecondary,
-    textAlign: "center",
-    fontSize: 14,
-    marginTop: spacing.md,
-  },
-  errorText: {
-    color: colors.error,
-    textAlign: "center",
-    fontSize: 14,
-    marginTop: spacing.md,
+    marginBottom: spacing.sm,
+    marginRight: spacing.sm,
+    padding: spacing.sm,
   },
   toolRow: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: spacing.sm,
   },
-  toolButton: {
-    backgroundColor: colors.surface,
-    padding: spacing.sm,
-    borderRadius: 8,
-    marginRight: spacing.sm,
-    marginBottom: spacing.sm,
-  },
   toolText: {
     color: colors.textPrimary,
     fontSize: 13,
   },
-  planListContent: {
-    paddingBottom: spacing.lg,
+  welcome: {
+    ...typography.body,
+    color: colors.textSecondary,
   },
 });
 

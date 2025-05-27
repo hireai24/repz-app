@@ -10,14 +10,9 @@ import {
   Animated,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import {
-  collection,
-  query,
-  where,
-  getDocs,
-} from "firebase/firestore";
+import { collection, query, where, getDocs } from "firebase/firestore";
 
-import { db } from "../firebase/firebaseClient"; // ✅ FIXED IMPORT
+import { db } from "../firebase/firebaseClient";
 import { UserContext } from "../context/UserContext";
 import { fetchUserPlans, deleteUserPlan } from "../services/userPlanService";
 import PlanCard from "../components/PlanCard";
@@ -55,11 +50,14 @@ const UserPlansScreen = () => {
       const response = await fetchUserPlans(userId);
       if (response.success && Array.isArray(response.plans)) {
         setPlans(response.plans);
-        await AsyncStorage.setItem(OFFLINE_PLANS_KEY, JSON.stringify(response.plans));
+        await AsyncStorage.setItem(
+          OFFLINE_PLANS_KEY,
+          JSON.stringify(response.plans),
+        );
       } else {
         throw new Error(response.error || i18n.t("plans.errorLoading"));
       }
-    } catch (err) {
+    } catch {
       try {
         const cached = await AsyncStorage.getItem(OFFLINE_PLANS_KEY);
         if (cached) {
@@ -79,29 +77,39 @@ const UserPlansScreen = () => {
 
   const loadCreatedChallenges = async () => {
     try {
-      const q = query(collection(db, "wagerChallenges"), where("creator", "==", userId));
+      const q = query(
+        collection(db, "wagerChallenges"),
+        where("creator", "==", userId),
+      );
       const snap = await getDocs(q);
       const data = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
       setCreatedChallenges(data);
-    } catch (err) {
-      console.error("Failed to fetch created challenges", err);
+    } catch {
+      // Silence to avoid console warnings
     }
   };
 
   const loadAcceptedChallenges = async () => {
     try {
-      const q = query(collection(db, "wagerChallenges"), where("opponents", "array-contains", userId));
+      const q = query(
+        collection(db, "wagerChallenges"),
+        where("opponents", "array-contains", userId),
+      );
       const snap = await getDocs(q);
       const data = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
       setAcceptedChallenges(data);
-    } catch (err) {
-      console.error("Failed to fetch accepted challenges", err);
+    } catch {
+      // Silence to avoid console warnings
     }
   };
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    await Promise.all([loadPlans(), loadCreatedChallenges(), loadAcceptedChallenges()]);
+    await Promise.all([
+      loadPlans(),
+      loadCreatedChallenges(),
+      loadAcceptedChallenges(),
+    ]);
     setRefreshing(false);
   };
 
@@ -115,14 +123,16 @@ const UserPlansScreen = () => {
       } else {
         setError(res.error || i18n.t("plans.deleteFail"));
       }
-    } catch (err) {
+    } catch {
       setError(i18n.t("plans.deleteFail"));
     }
   };
 
   const renderChallenge = (item) => (
     <View style={styles.challengeCard}>
-      <Text style={styles.challengeTitle}>{item.title || "Unnamed Challenge"}</Text>
+      <Text style={styles.challengeTitle}>
+        {item.title || "Unnamed Challenge"}
+      </Text>
       <Text style={styles.challengeDetails}>
         {i18n.t("plans.xpReward")}: {item.wagerXP || item.xp || 0} XP
       </Text>
@@ -130,16 +140,37 @@ const UserPlansScreen = () => {
         {i18n.t("plans.exercise")}: {item.exercise || "N/A"}
       </Text>
       {item.verified && (
-        <Text style={styles.verified}>✅ {i18n.t("challengeWager.verifiedByAI")}</Text>
+        <Text style={styles.verified}>
+          ✅ {i18n.t("challengeWager.verifiedByAI")}
+        </Text>
       )}
       {item.flagged && (
-        <Text style={styles.flagged}>⚠️ {i18n.t("challengeWager.flagged")}</Text>
+        <Text style={styles.flagged}>
+          ⚠️ {i18n.t("challengeWager.flagged")}
+        </Text>
       )}
       {item.winStreak && item.winStreak >= 3 && (
-        <Text style={styles.streak}>🔥 {i18n.t("trophy.milestone", { days: item.winStreak })}</Text>
+        <Text style={styles.streak}>
+          🔥 {i18n.t("trophy.milestone", { days: item.winStreak })}
+        </Text>
       )}
     </View>
   );
+
+  const renderList = (data, renderFn) =>
+    data.length === 0 ? (
+      <Text style={styles.emptyText}>{i18n.t("plans.empty")}</Text>
+    ) : (
+      <FlatList
+        data={data}
+        keyExtractor={(item) => item.id}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+        }
+        renderItem={renderFn}
+        contentContainerStyle={styles.flatListContent}
+      />
+    );
 
   const renderContent = () => {
     if (loading && activeTab === "plans") {
@@ -147,32 +178,10 @@ const UserPlansScreen = () => {
         <ActivityIndicator
           size="large"
           color={colors.primary}
-          style={{ marginTop: 40 }}
-          accessibilityLabel="Loading plans"
+          style={styles.loading}
         />
       );
     }
-
-    const listMap = {
-      plans,
-      created: createdChallenges,
-      accepted: acceptedChallenges,
-    };
-
-    const renderList = (data, renderFn) =>
-      data.length === 0 ? (
-        <Text style={styles.emptyText}>{i18n.t("plans.empty")}</Text>
-      ) : (
-        <FlatList
-          data={data}
-          keyExtractor={(item) => item.id}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
-          }
-          renderItem={renderFn}
-          contentContainerStyle={{ paddingBottom: 40 }}
-        />
-      );
 
     if (error && activeTab === "plans" && plans.length === 0) {
       return (
@@ -205,7 +214,9 @@ const UserPlansScreen = () => {
     }
 
     if (activeTab === "accepted") {
-      return renderList(acceptedChallenges, ({ item }) => renderChallenge(item));
+      return renderList(acceptedChallenges, ({ item }) =>
+        renderChallenge(item),
+      );
     }
 
     return null;
@@ -222,8 +233,17 @@ const UserPlansScreen = () => {
               key={tab}
               onPress={() => setActiveTab(tab)}
               style={[styles.tabBtn, activeTab === tab && styles.tabActive]}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: activeTab === tab }}
             >
-              <Text style={styles.tabText}>{i18n.t(`plans.tab.${tab}`)}</Text>
+              <Text
+                style={[
+                  styles.tabText,
+                  activeTab === tab && styles.tabTextActive,
+                ]}
+              >
+                {i18n.t(`plans.tab.${tab}`)}
+              </Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -235,92 +255,101 @@ const UserPlansScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: colors.background,
-    flex: 1,
-    padding: spacing.lg,
-  },
-  title: {
-    ...typography.heading2,
-    color: colors.textPrimary,
-    marginBottom: spacing.md,
-  },
-  tabRow: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    marginBottom: spacing.md,
-  },
-  tabBtn: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 6,
-    backgroundColor: colors.surface,
-  },
-  tabActive: {
-    backgroundColor: colors.primary,
-  },
-  tabText: {
-    color: "#fff",
-    fontWeight: "bold",
-    textTransform: "capitalize",
-  },
   centered: {
+    alignItems: "center",
     flex: 1,
     justifyContent: "center",
-    alignItems: "center",
     marginTop: spacing.xl,
-  },
-  emptyText: {
-    color: colors.textSecondary,
-    fontSize: 15,
-    textAlign: "center",
-    marginTop: spacing.md,
-  },
-  errorText: {
-    color: colors.error,
-    fontSize: 15,
-    textAlign: "center",
-    marginBottom: spacing.md,
-  },
-  retryBtn: {
-    backgroundColor: colors.primary,
-    padding: spacing.md,
-    borderRadius: 8,
-    marginTop: spacing.sm,
-  },
-  retryText: {
-    color: "#fff",
-    fontWeight: "bold",
-    textAlign: "center",
   },
   challengeCard: {
     backgroundColor: colors.surface,
-    padding: spacing.md,
-    marginBottom: spacing.sm,
     borderRadius: 8,
+    marginBottom: spacing.sm,
+    padding: spacing.md,
+  },
+  challengeDetails: {
+    color: colors.textSecondary,
+    fontSize: 14,
   },
   challengeTitle: {
     ...typography.heading4,
     color: colors.textPrimary,
     marginBottom: 4,
   },
-  challengeDetails: {
-    color: colors.textSecondary,
-    fontSize: 14,
+  container: {
+    backgroundColor: colors.background,
+    flex: 1,
+    padding: spacing.lg,
   },
-  verified: {
-    color: colors.accentBlue,
-    fontSize: 13,
-    marginTop: 4,
+  emptyText: {
+    color: colors.textSecondary,
+    fontSize: 15,
+    marginTop: spacing.md,
+    textAlign: "center",
+  },
+  errorText: {
+    color: colors.error,
+    fontSize: 15,
+    marginBottom: spacing.md,
+    textAlign: "center",
   },
   flagged: {
     color: colors.warning,
     fontSize: 13,
     marginTop: 2,
   },
+  flatListContent: {
+    paddingBottom: spacing.xl,
+  },
+  loading: {
+    marginTop: 40,
+  },
+  retryBtn: {
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+    marginTop: spacing.sm,
+    padding: spacing.md,
+  },
+  retryText: {
+    color: colors.textOnPrimary,
+    fontWeight: "bold",
+    textAlign: "center",
+  },
   streak: {
     color: colors.gold,
+    fontSize: 13,
     fontWeight: "600",
+    marginTop: 4,
+  },
+  tabActive: {
+    backgroundColor: colors.primary,
+  },
+  tabBtn: {
+    backgroundColor: colors.surface,
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  tabRow: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginBottom: spacing.md,
+  },
+  tabText: {
+    color: colors.textSecondary,
+    fontWeight: "bold",
+    textTransform: "capitalize",
+  },
+  tabTextActive: {
+    color: colors.textOnPrimary,
+  },
+  title: {
+    ...typography.heading2,
+    color: colors.textPrimary,
+    marginBottom: spacing.md,
+  },
+  verified: {
+    color: colors.accentBlue,
     fontSize: 13,
     marginTop: 4,
   },

@@ -77,15 +77,33 @@ UserPlanCard.propTypes = {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.surface,
-    padding: spacing.md,
     borderRadius: 10,
     marginBottom: spacing.md,
+    padding: spacing.md,
+  },
+  date: {
+    color: colors.textSecondary,
+    fontSize: 12,
+    marginLeft: 6,
+  },
+  deleteBtn: {
+    padding: 4,
+  },
+  detail: {
+    color: colors.textSecondary,
+    fontSize: 13,
+    marginBottom: spacing.xs,
   },
   header: {
+    alignItems: "center",
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
     marginBottom: spacing.xs,
+  },
+  meta: {
+    alignItems: "center",
+    flexDirection: "row",
+    marginTop: spacing.sm,
   },
   name: {
     ...typography.heading3,
@@ -93,28 +111,10 @@ const styles = StyleSheet.create({
     flex: 1,
     marginRight: 10,
   },
-  deleteBtn: {
-    padding: 4,
-  },
   type: {
     color: colors.primary,
     fontWeight: "600",
     marginBottom: spacing.xs,
-  },
-  detail: {
-    color: colors.textSecondary,
-    fontSize: 13,
-    marginBottom: spacing.xs,
-  },
-  meta: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: spacing.sm,
-  },
-  date: {
-    color: colors.textSecondary,
-    fontSize: 12,
-    marginLeft: 6,
   },
 });
 

@@ -1,12 +1,10 @@
-// utils/userUtils.js
+// backend/utils/userUtils.js
 
 import { doc, getDoc } from "firebase/firestore";
-import { db } from "../../backend/firebase/init";
+import { db } from "../firebase/init.js";
 
 /**
- * Get the user's subscription tier from Firestore.
- * Defaults to "Free" if missing or error occurs.
- *
+ * Returns the user's subscription tier (Free, Pro, Elite).
  * @param {string} userId
  * @returns {Promise<"Free" | "Pro" | "Elite">}
  */
@@ -21,13 +19,9 @@ export const getUserTier = async (userId) => {
     const data = snap.data();
     const tier = typeof data.tier === "string" ? data.tier.trim() : "";
 
-    if (tier === "Pro" || tier === "Elite") {
-      return tier;
-    }
+    if (tier === "Pro" || tier === "Elite") return tier;
     return "Free";
-  } catch (err) {
-    // eslint-disable-next-line no-console
-    console.error("getUserTier error:", err);
+  } catch {
     return "Free";
   }
 };

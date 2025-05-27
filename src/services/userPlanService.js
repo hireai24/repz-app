@@ -7,8 +7,15 @@ const RETRY_DELAY = 400;
 
 /**
  * Retry wrapper with exponential backoff
+ * @param {Function} fn - Function returning a promise
+ * @param {number} retries
+ * @param {number} delay
  */
-const retryWithBackoff = async (fn, retries = MAX_RETRIES, delay = RETRY_DELAY) => {
+const retryWithBackoff = async (
+  fn,
+  retries = MAX_RETRIES,
+  delay = RETRY_DELAY,
+) => {
   try {
     return await fn();
   } catch (err) {
@@ -21,6 +28,7 @@ const retryWithBackoff = async (fn, retries = MAX_RETRIES, delay = RETRY_DELAY) 
 /**
  * Get all plans owned by a specific user, with retry and local caching.
  * @param {string} userId
+ * @returns {Promise<{success: boolean, plans?: Array, cached?: boolean, error?: string}>}
  */
 export const fetchUserPlans = async (userId) => {
   const cacheKey = USER_PLANS_CACHE_KEY(userId);
@@ -34,6 +42,7 @@ export const fetchUserPlans = async (userId) => {
 
     return response;
   } catch (err) {
+    // eslint-disable-next-line no-console
     console.warn("⚠️ Failed to fetch user plans, falling back to cache.");
 
     try {
@@ -46,6 +55,7 @@ export const fetchUserPlans = async (userId) => {
         };
       }
     } catch (cacheErr) {
+      // eslint-disable-next-line no-console
       console.error("❌ Failed to load cached user plans:", cacheErr);
     }
 
@@ -59,6 +69,7 @@ export const fetchUserPlans = async (userId) => {
 /**
  * Save a user-created or AI-generated plan.
  * @param {Object} planData - Should include userId, name, exercises, type, etc.
+ * @returns {Promise}
  */
 export const saveNewUserPlan = async (planData) => {
   return retryWithBackoff(() => saveUserPlan(planData));

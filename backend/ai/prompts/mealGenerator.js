@@ -44,7 +44,8 @@ export const generateMealPlan = async ({
     return {
       success: false,
       error: {
-        message: "Invalid input. Please check all fields for correct types and values.",
+        message:
+          "Invalid input. Please check all fields for correct types and values.",
         code: "INVALID_INPUT",
       },
     };
@@ -77,15 +78,18 @@ Begin:
 `;
 
   try {
-    const res = await fetch(`${process.env.EXPO_PUBLIC_API_BASE_URL}/api/openai`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+    const res = await fetch(
+      `${process.env.EXPO_PUBLIC_API_BASE_URL}/api/openai`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          messages: [{ role: "user", content }],
+        }),
       },
-      body: JSON.stringify({
-        messages: [{ role: "user", content }],
-      }),
-    });
+    );
 
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "AI call failed");

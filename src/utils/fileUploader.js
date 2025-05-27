@@ -1,7 +1,6 @@
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
 import * as FileSystem from "expo-file-system";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
 import { storage } from "../firebase/firebaseClient"; // ✅ CORRECTED PATH
 
 const allowedTypes = [
@@ -13,6 +12,15 @@ const allowedTypes = [
 const maxSizeMB = 10;
 const maxRetries = 3;
 
+/**
+ * Upload a file (image or video) to Firebase Storage.
+ * @param {Object} params
+ * @param {string} params.uri - Local file URI
+ * @param {string} params.type - 'image' or 'video'
+ * @param {string} params.userId - User ID for file path
+ * @param {string} params.pathPrefix - Path prefix in storage bucket
+ * @param {function} [params.onProgress] - Progress callback (0–1)
+ */
 export const uploadFile = async ({
   uri,
   type = "image",
@@ -67,12 +75,12 @@ export const uploadFile = async ({
           "state_changed",
           (snapshot) => {
             if (onProgress && typeof onProgress === "function") {
-              const progress =
-                snapshot.bytesTransferred / snapshot.totalBytes;
+              const progress = snapshot.bytesTransferred / snapshot.totalBytes;
               onProgress(progress);
             }
           },
           (error) => {
+            // eslint-disable-next-line no-console
             console.warn(`Upload attempt ${attempt + 1} failed:`, error);
             attempt++;
             if (attempt >= maxRetries) {
@@ -82,10 +90,11 @@ export const uploadFile = async ({
           async () => {
             const url = await getDownloadURL(uploadTask.snapshot.ref);
             resolve({ url, path: filePath });
-          }
+          },
         );
       });
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error("Upload retry failed:", err.message);
       attempt++;
     }
@@ -94,6 +103,10 @@ export const uploadFile = async ({
   throw new Error("Upload failed after all retries.");
 };
 
+/**
+ * Quick upload utility for user profile images.
+ * Reads userId from AsyncStorage.
+ */
 export const uploadImageAsync = async (uri) => {
   try {
     const raw = await AsyncStorage.getItem("repz_user_profile");
@@ -111,6 +124,7 @@ export const uploadImageAsync = async (uri) => {
 
     return url;
   } catch (err) {
+    // eslint-disable-next-line no-console
     console.error("uploadImageAsync failed:", err.message || err);
     return null;
   }

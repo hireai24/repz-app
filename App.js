@@ -1,6 +1,7 @@
 // ✅ Hermes-safe polyfills for Buffer, process, URL
 import "react-native-url-polyfill/auto";
 import { Buffer } from "buffer";
+import PropTypes from "prop-types";
 
 if (typeof global.Buffer === "undefined") global.Buffer = Buffer;
 if (typeof global.process === "undefined") {
@@ -14,7 +15,7 @@ import React from "react";
 import { StatusBar } from "expo-status-bar";
 import { NavigationContainer } from "@react-navigation/native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { ActivityIndicator, View, Text } from "react-native";
+import { ActivityIndicator, View, Text, StyleSheet } from "react-native";
 
 import AppNavigator from "./src/navigation/AppNavigator";
 import AuthNavigator from "./src/navigation/AuthNavigator";
@@ -28,6 +29,7 @@ import { ThemeProvider, useTheme } from "./src/context/ThemeContext";
 
 import "./src/locales/i18n";
 import "./src/styles/globalStyles";
+import themeColors from "./src/theme/colors";
 
 // ✅ Error fallback UI
 class ErrorBoundary extends React.Component {
@@ -41,21 +43,15 @@ class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, info) {
-    console.error("App crashed:", error, info);
+    // eslint-disable-next-line no-console
+    console.error("App crashed:", error, info); // Retain for production debugging
   }
 
   render() {
     if (this.state.hasError) {
       return (
-        <View
-          style={{
-            flex: 1,
-            justifyContent: "center",
-            alignItems: "center",
-            backgroundColor: "#000",
-          }}
-        >
-          <Text style={{ color: "#fff" }}>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>
             Something went wrong. Please restart the app.
           </Text>
         </View>
@@ -65,6 +61,10 @@ class ErrorBoundary extends React.Component {
     return this.props.children;
   }
 }
+
+ErrorBoundary.propTypes = {
+  children: PropTypes.node.isRequired,
+};
 
 export default function App() {
   return (
@@ -96,12 +96,12 @@ function RootNavigation() {
     return (
       <View
         accessibilityLabel="Loading Screen"
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: colors.background,
-        }}
+        style={[
+          styles.loadingContainer,
+          {
+            backgroundColor: colors.background,
+          },
+        ]}
       >
         <ActivityIndicator size="large" color={colors.primary} />
       </View>
@@ -122,3 +122,23 @@ function RootNavigation() {
     </NavigationContainer>
   );
 }
+
+const styles = StyleSheet.create({
+  errorContainer: {
+    alignItems: "center",
+    backgroundColor: themeColors.black,
+    flex: 1,
+    justifyContent: "center",
+  },
+  errorText: {
+    color: themeColors.white,
+    fontSize: 16,
+    paddingHorizontal: 20,
+    textAlign: "center",
+  },
+  loadingContainer: {
+    alignItems: "center",
+    flex: 1,
+    justifyContent: "center",
+  },
+});

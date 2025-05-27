@@ -1,3 +1,5 @@
+// backend/admin/dashboard/highlightPlans.js
+
 import express from "express";
 import {
   collection,
@@ -9,8 +11,8 @@ import {
   limit,
 } from "firebase/firestore";
 
-import { db } from "../../backend/firebase/init.js";
-import { verifyAdmin } from "../../backend/utils/authMiddleware.js";
+import { db } from "../../firebase/init.js";
+import { verifyAdmin } from "../../utils/authMiddleware.js";
 
 const router = express.Router();
 
@@ -22,15 +24,16 @@ router.get("/top", verifyAdmin, async (req, res) => {
     const snapshot = await getDocs(q);
 
     const topPlans = snapshot.docs
-      .map((doc) => ({ id: doc.id, ...doc.data() }))
+      .map((docItem) => ({ id: docItem.id, ...docItem.data() }))
       .filter((p) => p.sales >= 5 || p.rating >= 4.5)
       .sort((a, b) => b.sales + b.rating - (a.sales + a.rating))
       .slice(0, 10);
 
     res.status(200).json({ success: true, topPlans });
-  } catch (err) {
-    console.error("[highlightPlans.js] GET /top error:", err.message);
-    res.status(500).json({ success: false, error: "Failed to fetch top plans." });
+  } catch {
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to fetch top plans." });
   }
 });
 
@@ -38,21 +41,24 @@ router.get("/top", verifyAdmin, async (req, res) => {
 router.post("/feature", verifyAdmin, async (req, res) => {
   const { planId } = req.body;
 
-  const isValidId = typeof planId === "string" && /^[a-zA-Z0-9_-]{10,}$/.test(planId);
+  const isValidId =
+    typeof planId === "string" && /^[a-zA-Z0-9_-]{10,}$/.test(planId);
   if (!isValidId) {
-    return res.status(400).json({ success: false, error: "Invalid or missing planId." });
+    return res
+      .status(400)
+      .json({ success: false, error: "Invalid or missing planId." });
   }
 
   try {
     const planRef = doc(db, "plans", planId);
     await updateDoc(planRef, { featured: true });
 
-    res.status(200).json({ success: true, message: "Plan featured successfully." });
-  } catch (err) {
-    console.error("[highlightPlans.js] POST /feature error:", err.message);
+    res
+      .status(200)
+      .json({ success: true, message: "Plan featured successfully." });
+  } catch {
     res.status(500).json({ success: false, error: "Failed to feature plan." });
   }
 });
 
 export default router;
-

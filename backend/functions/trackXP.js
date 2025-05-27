@@ -1,14 +1,7 @@
-// backend/functions/trackXP.js
-import {
-  doc,
-  getDoc,
-  setDoc,
-  updateDoc,
-  increment,
-} from "firebase/firestore";
+import { doc, getDoc, setDoc, updateDoc, increment } from "firebase/firestore";
 
 import { db } from "../firebase/init.js";
-import calculateStreak from "../utils/streakUtils.js"; // ✅ Fixed import
+import calculateStreak from "../utils/streakUtils.js";
 import { calculateWorkoutXP } from "../../src/utils/xpCalculator.js";
 
 /**
@@ -31,19 +24,20 @@ const trackXP = async (userId, data, mode = "workout") => {
       : { xp: 0, streak: 0, lastWorkout: null };
 
     const nowISO = new Date().toISOString();
-    let totalXP = 0;
-    let updatedData = {};
 
     if (mode === "workout") {
-      if (!data || !Array.isArray(data.exercises) || data.exercises.length === 0) {
+      if (
+        !data ||
+        !Array.isArray(data.exercises) ||
+        data.exercises.length === 0
+      ) {
         return { success: false, error: "Workout log must include exercises." };
       }
 
       const { total, breakdown } = calculateWorkoutXP(data);
       const { updatedStreak, isNewDay } = calculateStreak(existing.lastWorkout);
 
-      totalXP = total;
-      updatedData = {
+      const updatedData = {
         streak: isNewDay ? updatedStreak : existing.streak,
         lastWorkout: nowISO,
       };
@@ -69,11 +63,14 @@ const trackXP = async (userId, data, mode = "workout") => {
       };
     }
 
-    // Battle XP logic
     if (mode === "battle") {
       const { xpAmount = 0, won = false } = data;
+
       if (!won || xpAmount <= 0) {
-        return { success: false, error: "Battle reward invalid or not earned." };
+        return {
+          success: false,
+          error: "Battle reward invalid or not earned.",
+        };
       }
 
       const statsRef = doc(db, "battleStats", userId);
@@ -113,9 +110,9 @@ const trackXP = async (userId, data, mode = "workout") => {
     }
 
     return { success: false, error: "Unsupported XP tracking mode." };
-  } catch (err) {
-    console.error("🔥 XP tracking failed:", err.message);
-    return { success: false, error: err.message || "XP tracking failed." };
+  } catch {
+    // No console.error or noisy logs
+    return { success: false, error: "XP tracking failed." };
   }
 };
 

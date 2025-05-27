@@ -17,7 +17,7 @@ import spacing from "../theme/spacing";
 import typography from "../theme/typography";
 
 const PartnerFinderScreen = () => {
-  const { userProfile, currentGym } = useContext(UserContext);
+  const { currentGym } = useContext(UserContext); // ✅ removed unused userProfile
   const [slots, setSlots] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -83,7 +83,7 @@ const PartnerFinderScreen = () => {
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
-          contentContainerStyle={{ paddingBottom: spacing.xl }}
+          contentContainerStyle={styles.listContent}
         />
       )}
     </View>
@@ -96,15 +96,18 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: spacing.lg,
   },
+  error: {
+    color: colors.error,
+    marginTop: spacing.lg,
+    textAlign: "center",
+  },
+  listContent: {
+    paddingBottom: spacing.xl,
+  },
   title: {
     ...typography.heading2,
     color: colors.textPrimary,
     marginBottom: spacing.md,
-  },
-  error: {
-    color: colors.error,
-    textAlign: "center",
-    marginTop: spacing.lg,
   },
 });
 

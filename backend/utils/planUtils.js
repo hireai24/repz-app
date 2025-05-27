@@ -4,6 +4,8 @@ import { db } from "../firebase/init.js";
 
 /**
  * Converts a single workout log into a formatted object for smart plan usage.
+ * @param {Object} log - The workout log object.
+ * @returns {Object|null}
  */
 const formatWorkoutToPlan = (log) => {
   if (!log || !Array.isArray(log.exercises)) return null;
@@ -30,12 +32,16 @@ const formatWorkoutToPlan = (log) => {
 
 /**
  * Compiles multiple workout logs into a clean weekly array.
+ * @param {Array} logs
+ * @returns {Array}
  */
 const compileWeeklyPlan = (logs = []) =>
   logs.map(formatWorkoutToPlan).filter(Boolean);
 
 /**
  * Saves a user plan to Firestore.
+ * @param {Object} plan
+ * @returns {Promise<string>} - The new document ID.
  */
 const saveUserPlanToFirestore = async (plan) => {
   if (
@@ -43,13 +49,16 @@ const saveUserPlanToFirestore = async (plan) => {
     typeof plan.userId !== "string" ||
     !Array.isArray(plan.exercises)
   ) {
-    throw new Error("Missing or invalid plan: userId and exercises are required.");
+    throw new Error(
+      "Missing or invalid plan: userId and exercises are required.",
+    );
   }
 
-  const validExercises = plan.exercises.filter((ex) =>
-    typeof ex.name === "string" &&
-    typeof ex.sets === "number" &&
-    typeof ex.reps === "number"
+  const validExercises = plan.exercises.filter(
+    (ex) =>
+      typeof ex.name === "string" &&
+      typeof ex.sets === "number" &&
+      typeof ex.reps === "number",
   );
 
   const docRef = await addDoc(collection(db, "userPlans"), {
@@ -68,9 +77,14 @@ const saveUserPlanToFirestore = async (plan) => {
 
 /**
  * Parses AI-generated workout plans (GPT text) into structured format.
+ * @param {string} text
+ * @returns {Array}
  */
 const parseAIWorkoutPlan = (text = "") => {
-  const blocks = text.split(/\n(?=Day \d+)/).map((block) => block.trim()).filter(Boolean);
+  const blocks = text
+    .split(/\n(?=Day \d+)/)
+    .map((block) => block.trim())
+    .filter(Boolean);
 
   return blocks.map((block) => {
     const [header, ...lines] = block.split("\n");
@@ -96,5 +110,5 @@ export {
   formatWorkoutToPlan,
   compileWeeklyPlan,
   saveUserPlanToFirestore,
-  parseAIWorkoutPlan, // ✅ For use in AI-generated plans
+  parseAIWorkoutPlan, // For use in AI-generated plans
 };

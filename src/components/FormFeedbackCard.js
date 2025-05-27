@@ -20,10 +20,10 @@ const getColor = (color) => {
 };
 
 const getEmojiForScore = (score) => {
-  if (score >= 9) return "🏆"; // Amazing
-  if (score >= 7) return "💪"; // Good
-  if (score >= 5) return "👍"; // Okay
-  return "⚠️"; // Needs work
+  if (score >= 9) return "🏆";
+  if (score >= 7) return "💪";
+  if (score >= 5) return "👍";
+  return "⚠️";
 };
 
 const FormFeedbackCard = ({ rep }) => {
@@ -68,20 +68,25 @@ FormFeedbackCard.propTypes = {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.surface,
-    padding: spacing.md,
-    borderRadius: spacing.borderRadius,
-    marginBottom: spacing.md,
     borderLeftWidth: 4,
-    shadowColor: colors.overlayDark, // ⬅️ now themed
+    borderRadius: spacing.borderRadius,
+    elevation: 4,
+    marginBottom: spacing.md,
+    padding: spacing.md,
+    shadowColor: colors.overlayDark,
+    shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.15,
     shadowRadius: 6,
-    shadowOffset: { width: 0, height: 3 },
-    elevation: 4,
+  },
+  feedbackText: {
+    ...typography.small,
+    color: colors.textSecondary,
+    marginTop: spacing.xs,
   },
   headerRow: {
+    alignItems: "center",
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
     marginBottom: spacing.xs,
   },
   repText: {
@@ -91,11 +96,6 @@ const styles = StyleSheet.create({
   scoreText: {
     ...typography.smallBold,
     color: colors.success,
-  },
-  feedbackText: {
-    ...typography.small,
-    color: colors.textSecondary,
-    marginTop: spacing.xs,
   },
 });
 

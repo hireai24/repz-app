@@ -82,9 +82,7 @@ const MarketplaceScreen = () => {
   if (locked) {
     return (
       <View style={styles.lockedContainer}>
-        <Text style={styles.lockedText}>
-          {i18n.t("marketplace.locked")}
-        </Text>
+        <Text style={styles.lockedText}>{i18n.t("marketplace.locked")}</Text>
       </View>
     );
   }
@@ -128,22 +126,16 @@ const MarketplaceScreen = () => {
         <View style={styles.emptyState}>
           <Text style={styles.errorText}>{errorText}</Text>
           <TouchableOpacity style={styles.retryButton} onPress={loadPlans}>
-            <Text style={styles.retryButtonText}>
-              {i18n.t("common.retry")}
-            </Text>
+            <Text style={styles.retryButtonText}>{i18n.t("common.retry")}</Text>
           </TouchableOpacity>
         </View>
       ) : plans.length === 0 ? (
         <View style={styles.emptyState}>
-          <Text style={styles.emptyText}>
-            {i18n.t("common.noData")}
-          </Text>
-          <Text style={styles.hintText}>
-            {i18n.t("marketplace.hint")}
-          </Text>
+          <Text style={styles.emptyText}>{i18n.t("common.noData")}</Text>
+          <Text style={styles.hintText}>{i18n.t("marketplace.hint")}</Text>
         </View>
       ) : (
-        <Animated.View style={{ opacity: fadeAnim, flex: 1 }}>
+        <Animated.View style={[styles.animatedList, { opacity: fadeAnim }]}>
           <FlatList
             data={plans}
             keyExtractor={(item) => item.id}
@@ -166,29 +158,37 @@ const MarketplaceScreen = () => {
 };
 
 const styles = StyleSheet.create({
+  animatedList: {
+    flex: 1,
+  },
   container: {
     backgroundColor: colors.background,
     flex: 1,
     padding: spacing.lg,
   },
-  title: {
-    ...typography.heading2,
-    color: colors.textPrimary,
-    marginBottom: spacing.md,
+  emptyState: {
+    alignItems: "center",
+    marginTop: 40,
   },
-  filtersRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    marginBottom: spacing.md,
-    gap: 12,
+  emptyText: {
+    color: colors.textSecondary,
+    fontSize: 15,
+    marginBottom: 6,
+    textAlign: "center",
+  },
+  errorText: {
+    color: colors.error,
+    fontSize: 14,
+    marginBottom: 10,
+    textAlign: "center",
   },
   filterChip: {
-    minWidth: screenWidth * 0.24,
+    alignItems: "center",
     backgroundColor: colors.surface,
+    borderRadius: 20,
+    minWidth: screenWidth * 0.24,
     paddingHorizontal: 14,
     paddingVertical: 10,
-    borderRadius: 20,
-    alignItems: "center",
   },
   filterChipActive: {
     backgroundColor: colors.primary,
@@ -201,54 +201,50 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     fontWeight: "bold",
   },
-  lockedContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: colors.background,
-    padding: spacing.xl,
-  },
-  lockedText: {
-    color: colors.textSecondary,
-    textAlign: "center",
-    fontSize: 16,
-  },
-  emptyState: {
-    marginTop: 40,
-    alignItems: "center",
-  },
-  emptyText: {
-    color: colors.textSecondary,
-    fontSize: 15,
-    textAlign: "center",
-    marginBottom: 6,
+  filtersRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
+    marginBottom: spacing.md,
   },
   hintText: {
     color: colors.textSecondary,
     fontSize: 13,
-  },
-  errorText: {
-    color: colors.error,
-    fontSize: 14,
     textAlign: "center",
-    marginBottom: 10,
   },
-  retryButton: {
-    backgroundColor: colors.primary,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 8,
-    marginTop: 10,
-  },
-  retryButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
+  listContent: {
+    paddingBottom: spacing.xl,
   },
   loadingIndicator: {
     marginTop: spacing.lg,
   },
-  listContent: {
-    paddingBottom: spacing.xl,
+  lockedContainer: {
+    alignItems: "center",
+    backgroundColor: colors.background,
+    flex: 1,
+    justifyContent: "center",
+    padding: spacing.xl,
+  },
+  lockedText: {
+    color: colors.textSecondary,
+    fontSize: 16,
+    textAlign: "center",
+  },
+  retryButton: {
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+    marginTop: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  retryButtonText: {
+    color: colors.white,
+    fontWeight: "bold",
+  },
+  title: {
+    ...typography.heading2,
+    color: colors.textPrimary,
+    marginBottom: spacing.md,
   },
 });
 

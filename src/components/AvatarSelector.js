@@ -55,7 +55,7 @@ const AvatarSelector = ({ selectedAvatar, onSelect }) => {
         </TouchableOpacity>
       );
     });
-  }, [validAvatars, selectedAvatar, handleAvatarSelect]);
+  }, [validAvatars, selectedAvatar]);
 
   return (
     <View style={styles.container}>
@@ -88,6 +88,30 @@ AvatarSelector.propTypes = {
 };
 
 const styles = StyleSheet.create({
+  avatar: {
+    borderRadius: 999,
+    height: "100%",
+    width: "100%",
+  },
+  avatarRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+  },
+  avatarSelected: {
+    borderColor: colors.primaryRed,
+  },
+  avatarWrap: {
+    alignItems: "center",
+    backgroundColor: colors.darkGray,
+    borderColor: colors.transparent,
+    borderRadius: 999,
+    borderWidth: 2,
+    height: 64,
+    justifyContent: "center",
+    overflow: "hidden",
+    width: 64,
+  },
   container: {
     marginTop: 20,
   },
@@ -97,37 +121,13 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     marginBottom: 10,
   },
-  avatarRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-  },
-  avatarWrap: {
-    width: 64,
-    height: 64,
-    borderRadius: 999,
-    overflow: "hidden",
-    borderWidth: 2,
-    borderColor: "transparent",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: colors.darkGray,
-  },
-  avatar: {
-    width: "100%",
-    height: "100%",
-    borderRadius: 999,
-  },
-  avatarSelected: {
-    borderColor: colors.primaryRed,
-  },
   uploadSlot: {
     alignItems: "center",
     justifyContent: "center",
   },
   uploadText: {
-    fontSize: 10,
     color: colors.white,
+    fontSize: 10,
     marginTop: 4,
   },
 });

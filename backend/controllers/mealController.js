@@ -54,10 +54,6 @@ const saveMealPlan = async (req, res) => {
 
       return res.status(200).json({ success: true, mealPlanId: docRef.id });
     } catch (err) {
-      console.error("🔥 Error saving meal plan:", {
-        message: err.message,
-        stack: err.stack,
-      });
       return res.status(500).json({
         success: false,
         error: "Failed to save meal plan.",
@@ -88,7 +84,7 @@ const getUserMealPlans = async (req, res) => {
         plansRef,
         where("userId", "==", userId),
         orderBy("createdAt", "desc"),
-        limit(limitCount)
+        limit(limitCount),
       );
 
       const snapshot = await getDocs(q);
@@ -99,10 +95,6 @@ const getUserMealPlans = async (req, res) => {
 
       return res.status(200).json({ success: true, plans });
     } catch (err) {
-      console.error("🔥 Error fetching user meal plans:", {
-        message: err.message,
-        stack: err.stack,
-      });
       return res.status(500).json({
         success: false,
         error: "Failed to fetch meal plans.",

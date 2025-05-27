@@ -11,7 +11,8 @@ const useTierAccess = (requiredTier = "Free") => {
   const { userProfile } = useContext(UserContext);
 
   const access = useMemo(() => {
-    const userTier = typeof userProfile?.tier === "string" ? userProfile.tier : "Free";
+    const userTier =
+      typeof userProfile?.tier === "string" ? userProfile.tier : "Free";
     const userLevel = tierLevels[userTier] ?? 0;
     const requiredLevel = tierLevels[requiredTier] ?? 0;
     const allowed = userLevel >= requiredLevel;

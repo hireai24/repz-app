@@ -26,8 +26,8 @@ const verifyUser = async (req, res, next) => {
     const decodedToken = await admin.auth().verifyIdToken(token);
     req.user = decodedToken;
     next();
-  } catch (err) {
-    console.error("❌ Auth verification failed:", err.message);
+  } catch {
+    // Error detail intentionally omitted for production safety
     return res
       .status(403)
       .json({ success: false, error: "Invalid or expired auth token." });

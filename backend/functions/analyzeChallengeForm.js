@@ -1,35 +1,37 @@
+// backend/functions/analyzeChallengeForm.js
+
 import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
 import { tmpdir } from "os";
 import { v4 as uuidv4 } from "uuid";
-import ffmpeg from "fluent-ffmpeg";
 import fetch from "node-fetch";
 import admin from "firebase-admin";
-import { initializeApp, cert } from "firebase-admin/app";
-import { getFirestore } from "firebase-admin/firestore";
 
 import { evaluateForm } from "../utils/analyzeFormUtils.js";
 
-// === Resolve secure Firebase Admin key path ===
+// === Resolve Firebase key location ===
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const keyPath = path.resolve(__dirname, "../secure/firebase-admin-key.json");
 
-// === Load and parse key from file ===
+// === Load key ===
 if (!fs.existsSync(keyPath)) {
   throw new Error("❌ Firebase Admin key file not found: " + keyPath);
 }
 const serviceAccount = JSON.parse(fs.readFileSync(keyPath, "utf-8"));
 
-// === Initialize Firebase Admin SDK ===
+// === Initialize admin app if not already ===
 if (!admin.apps.length) {
-  initializeApp({ credential: cert(serviceAccount) });
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+  });
 }
-const db = getFirestore();
+
+const db = admin.firestore();
 
 /**
- * Downloads video from a URL to a temporary file.
+ * Download video from a URL to a temp file.
  */
 const downloadVideoToTemp = async (videoUrl) => {
   const tempFilename = path.join(tmpdir(), `form-${uuidv4()}.mp4`);
@@ -46,8 +48,7 @@ const downloadVideoToTemp = async (videoUrl) => {
 };
 
 /**
- * Analyzes a challenge submission video using TensorFlow form model.
- * Updates Firestore with verdict and flags if needed.
+ * Analyze a challenge video and update verdict in Firestore.
  */
 const analyzeChallengeForm = async (req, res) => {
   try {
@@ -80,11 +81,10 @@ const analyzeChallengeForm = async (req, res) => {
       .doc(userId)
       .set(updateData, { merge: true });
 
-    fs.unlinkSync(localPath); // 🧼 Clean up video file
+    fs.unlinkSync(localPath);
 
     return res.status(200).json({ success: true, verdict });
   } catch (err) {
-    console.error("🔥 Form analysis failed:", err.message || err);
     return res.status(500).json({
       success: false,
       error: "Internal server error.",

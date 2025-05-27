@@ -61,22 +61,22 @@ const styles = StyleSheet.create({
   container: {
     marginBottom: spacing.md,
   },
+  disabled: {
+    opacity: 0.5,
+  },
+  input: {
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderRadius: spacing.borderRadius,
+    borderWidth: 1,
+    color: colors.textPrimary,
+    fontSize: 15,
+    padding: spacing.sm,
+  },
   label: {
     color: colors.textSecondary,
     fontSize: 13,
     marginBottom: spacing.xs,
-  },
-  input: {
-    backgroundColor: colors.surface,
-    color: colors.textPrimary,
-    padding: spacing.sm,
-    borderRadius: spacing.borderRadius,
-    fontSize: 15,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  disabled: {
-    opacity: 0.5,
   },
 });
 

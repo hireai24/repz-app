@@ -1,14 +1,16 @@
 import { startOfDay, differenceInDays, parseISO, isValid } from "date-fns";
 
 /**
- * Calculates workout streaks based on the last workout date.
- * - Returns updated streak count and whether today is a new workout day.
- * - Used to trigger XP bonuses, badge streaks, and motivational messaging.
+ * Calculates the new workout streak and whether today counts as a new workout day.
+ * - If today = last workout day, streak doesn't increment, not a new day.
+ * - If yesterday = last workout day, streak increments, is a new day.
+ * - If gap > 1 day, streak resets to 1, is a new day.
  *
  * @param {string|null} lastWorkoutDateStr - ISO string of last workout date
+ * @param {number} [currentStreak=0] - Existing streak value (optional)
  * @returns {Object} - { updatedStreak, isNewDay }
  */
-const calculateStreak = (lastWorkoutDateStr = null) => {
+const calculateStreak = (lastWorkoutDateStr = null, currentStreak = 0) => {
   const today = startOfDay(new Date());
 
   if (!lastWorkoutDateStr || typeof lastWorkoutDateStr !== "string") {
@@ -31,19 +33,20 @@ const calculateStreak = (lastWorkoutDateStr = null) => {
   const diffInDays = differenceInDays(today, last);
 
   if (diffInDays === 0) {
+    // Already logged today – do not increment streak
     return {
-      updatedStreak: 0,
+      updatedStreak: currentStreak,
       isNewDay: false,
     };
   }
-
   if (diffInDays === 1) {
+    // Consecutive day – increment streak
     return {
-      updatedStreak: 1,
+      updatedStreak: currentStreak + 1,
       isNewDay: true,
     };
   }
-
+  // Missed days – reset streak to 1
   return {
     updatedStreak: 1,
     isNewDay: true,

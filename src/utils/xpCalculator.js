@@ -9,12 +9,7 @@
  * @returns {Object} { total, breakdown: { baseXP, prBonus, streakBonus, challengeBoost } }
  */
 export const calculateWorkoutXP = (input = {}) => {
-  const {
-    volume = 0,
-    prCount = 0,
-    streak = 0,
-    challenge = false,
-  } = input;
+  const { volume = 0, prCount = 0, streak = 0, challenge = false } = input;
 
   // Validate and sanitize inputs
   const safeVolume = Number.isFinite(volume) ? Math.max(0, volume) : 0;
@@ -24,7 +19,7 @@ export const calculateWorkoutXP = (input = {}) => {
 
   // XP formula
   const baseXP = Math.floor(safeVolume / 200); // 1 XP per 200kg of volume
-  const prBonus = safePRs * 10;                // 10 XP per PR
+  const prBonus = safePRs * 10; // 10 XP per PR
   const streakBonus = safeStreak > 5 ? 15 : safeStreak * 2; // Max 15 XP for streak
   const challengeBoost = isChallenge ? 25 : 0; // 25 XP for challenge workout
 

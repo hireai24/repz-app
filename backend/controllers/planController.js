@@ -74,11 +74,7 @@ const uploadPlan = async (req, res) => {
 
       const docRef = await addDoc(collection(db, "plans"), planData);
       return res.status(200).json({ success: true, planId: docRef.id });
-    } catch (err) {
-      console.error("🔥 Error uploading plan:", {
-        message: err.message,
-        stack: err.stack,
-      });
+    } catch {
       return res.status(500).json({
         success: false,
         error: "Failed to upload plan.",
@@ -100,7 +96,7 @@ const getMarketplacePlans = async (req, res) => {
       plansRef,
       where("isPublic", "==", true),
       orderBy("createdAt", "desc"),
-      limit(limitCount)
+      limit(limitCount),
     );
 
     const snapshot = await getDocs(q);
@@ -110,11 +106,7 @@ const getMarketplacePlans = async (req, res) => {
     }));
 
     return res.status(200).json({ success: true, plans });
-  } catch (err) {
-    console.error("🔥 Error fetching marketplace plans:", {
-      message: err.message,
-      stack: err.stack,
-    });
+  } catch {
     return res.status(500).json({
       success: false,
       error: "Failed to fetch marketplace plans.",
@@ -147,11 +139,7 @@ const getPlanById = async (req, res) => {
       success: true,
       plan: { id: snapshot.id, ...snapshot.data() },
     });
-  } catch (err) {
-    console.error("🔥 Error fetching plan by ID:", {
-      message: err.message,
-      stack: err.stack,
-    });
+  } catch {
     return res.status(500).json({
       success: false,
       error: "Failed to fetch plan.",
@@ -178,7 +166,9 @@ const updatePlan = async (req, res) => {
       const planSnap = await getDoc(docRef);
 
       if (!planSnap.exists()) {
-        return res.status(404).json({ success: false, error: "Plan not found." });
+        return res
+          .status(404)
+          .json({ success: false, error: "Plan not found." });
       }
 
       const planData = planSnap.data();
@@ -190,11 +180,7 @@ const updatePlan = async (req, res) => {
 
       await updateDoc(docRef, updates);
       return res.status(200).json({ success: true });
-    } catch (err) {
-      console.error("🔥 Error updating plan:", {
-        message: err.message,
-        stack: err.stack,
-      });
+    } catch {
       return res.status(500).json({
         success: false,
         error: "Failed to update plan.",
@@ -230,11 +216,7 @@ const deletePlan = async (req, res) => {
 
       await deleteDoc(docRef);
       return res.status(200).json({ success: true });
-    } catch (err) {
-      console.error("🔥 Error deleting plan:", {
-        message: err.message,
-        stack: err.stack,
-      });
+    } catch {
       return res.status(500).json({
         success: false,
         error: "Failed to delete plan.",
@@ -243,10 +225,4 @@ const deletePlan = async (req, res) => {
   });
 };
 
-export {
-  uploadPlan,
-  getMarketplacePlans,
-  getPlanById,
-  updatePlan,
-  deletePlan,
-};
+export { uploadPlan, getMarketplacePlans, getPlanById, updatePlan, deletePlan };

@@ -15,14 +15,18 @@ router.post("/", async (req, res) => {
     const { userId } = req.body;
 
     if (!userId) {
-      return res.status(400).json({ error: "Missing userId for weekly summary." });
+      return res
+        .status(400)
+        .json({ error: "Missing userId for weekly summary." });
     }
 
     const summary = await weeklySummary(userId);
     return res.status(200).json({ success: true, summary });
   } catch (error) {
-    console.error("❌ Weekly summary error:", error.message);
-    return res.status(500).json({ error: "Failed to generate weekly summary." });
+    // TODO: Replace with production logger if required
+    return res
+      .status(500)
+      .json({ error: "Failed to generate weekly summary." });
   }
 });
 

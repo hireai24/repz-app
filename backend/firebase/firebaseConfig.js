@@ -1,26 +1,21 @@
-// backend/firebase/firebaseConfig.js
-
 import dotenv from "dotenv";
 dotenv.config();
 
-// Required Firebase env vars
-const requiredEnvVars = [
+// ✅ Validate required Firebase environment variables
+[
   "FIREBASE_API_KEY",
   "FIREBASE_AUTH_DOMAIN",
   "FIREBASE_PROJECT_ID",
   "FIREBASE_STORAGE_BUCKET",
   "FIREBASE_MESSAGING_SENDER_ID",
   "FIREBASE_APP_ID",
-];
-
-// Warn if any required variables are missing
-requiredEnvVars.forEach((key) => {
+].forEach((key) => {
   if (!process.env[key]) {
-    console.warn(`⚠️ Warning: Missing required Firebase env variable: ${key}`);
+    throw new Error(`❌ Missing required Firebase env variable: ${key}`);
   }
 });
 
-// Construct config from environment
+// ✅ Construct Firebase config from environment
 const firebaseConfig = {
   apiKey: process.env.FIREBASE_API_KEY,
   authDomain: process.env.FIREBASE_AUTH_DOMAIN,

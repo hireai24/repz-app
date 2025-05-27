@@ -56,29 +56,29 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     marginBottom: spacing.sm,
   },
-  options: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: spacing.sm,
-  },
   option: {
-    padding: spacing.sm,
     backgroundColor: colors.surface,
+    borderColor: colors.border,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: colors.border,
     margin: spacing.xs,
-  },
-  selected: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
+    padding: spacing.sm,
   },
   optionText: {
     color: colors.textPrimary,
   },
   optionTextSelected: {
-    color: "#fff",
+    color: colors.white,
     fontWeight: "bold",
+  },
+  options: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: spacing.sm,
+  },
+  selected: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
 });
 

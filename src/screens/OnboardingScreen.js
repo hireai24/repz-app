@@ -11,11 +11,12 @@ import {
   TouchableWithoutFeedback,
   Animated,
   Alert,
+  Image,
 } from "react-native";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 
-import { auth, db } from "../firebase/firebaseClient"; // ✅ FIXED PATH
+import { auth, db } from "../firebase/firebaseClient";
 import { AuthContext } from "../context/AuthContext";
 import { UserContext } from "../context/UserContext";
 import AvatarSelector from "../components/AvatarSelector";
@@ -24,6 +25,9 @@ import colors from "../theme/colors";
 import spacing from "../theme/spacing";
 import typography from "../theme/typography";
 import i18n from "../locales/i18n";
+
+import defaultAvatar from "../assets/avatars/avatar1.png";
+import logoImage from "../assets/logo.png";
 
 const goals = ["Fat Loss", "Muscle Gain", "Strength", "Athletic"];
 
@@ -34,10 +38,7 @@ const OnboardingScreen = () => {
   const [username, setUsername] = useState("");
   const [gym, setGym] = useState("");
   const [goal, setGoal] = useState(null);
-  const [avatar, setAvatar] = useState(
-    require("../assets/avatars/avatar1.png")
-  );
-
+  const [avatar, setAvatar] = useState(defaultAvatar);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -49,13 +50,10 @@ const OnboardingScreen = () => {
   const validateInputs = () => {
     const newErrors = {};
     if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
-      newErrors.email =
-        i18n.t("onboarding.invalidEmail") || "Invalid email address";
+      newErrors.email = i18n.t("onboarding.invalidEmail");
     }
     if (!password || password.length < 6) {
-      newErrors.password =
-        i18n.t("onboarding.invalidPassword") ||
-        "Password must be at least 6 characters";
+      newErrors.password = i18n.t("onboarding.invalidPassword");
     }
     if (!username) newErrors.username = i18n.t("onboarding.required");
     if (!goal) newErrors.goal = i18n.t("onboarding.required");
@@ -68,22 +66,20 @@ const OnboardingScreen = () => {
 
     try {
       setLoading(true);
-
       const userCred = await createUserWithEmailAndPassword(
         auth,
         email,
-        password
+        password,
       );
       const userId = userCred.user.uid;
 
-      const tier = "Free";
       const userData = {
         id: userId,
         email,
         username,
         gym,
         goal,
-        tier,
+        tier: "Free",
         avatar,
         createdAt: new Date().toISOString(),
       };
@@ -93,11 +89,10 @@ const OnboardingScreen = () => {
       signIn();
 
       Alert.alert(
-        i18n.t("onboarding.successTitle") || "Welcome!",
-        i18n.t("onboarding.successMessage") || "Your account has been created."
+        i18n.t("onboarding.successTitle"),
+        i18n.t("onboarding.successMessage"),
       );
     } catch (err) {
-      console.error("Sign up error:", err);
       setErrors({ general: err.message || i18n.t("common.error") });
     } finally {
       setLoading(false);
@@ -107,20 +102,17 @@ const OnboardingScreen = () => {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <ScrollView contentContainerStyle={styles.container}>
-        <Animated.Image
-          source={require("../assets/logo.png")}
-          style={[styles.logo, { opacity: logoFade }]}
-          resizeMode="contain"
-        />
+        <Animated.View style={{ opacity: logoFade }}>
+          <Image source={logoImage} style={styles.logo} resizeMode="contain" />
+        </Animated.View>
 
-        <Animated.View style={{ opacity: formFade, width: "100%" }}>
+        <Animated.View style={[styles.formWrapper, { opacity: formFade }]}>
           <Text style={styles.title}>{i18n.t("onboarding.welcome")}</Text>
 
           {errors.general && (
             <Text style={styles.errorText}>{errors.general}</Text>
           )}
 
-          {/* Email */}
           <Text style={styles.label}>Email</Text>
           <TextInput
             style={styles.input}
@@ -134,7 +126,6 @@ const OnboardingScreen = () => {
           />
           {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
 
-          {/* Password */}
           <Text style={styles.label}>{i18n.t("onboarding.password")}</Text>
           <TextInput
             style={styles.input}
@@ -149,7 +140,6 @@ const OnboardingScreen = () => {
             <Text style={styles.errorText}>{errors.password}</Text>
           )}
 
-          {/* Username */}
           <Text style={styles.label}>{i18n.t("onboarding.username")}</Text>
           <TextInput
             style={styles.input}
@@ -163,7 +153,6 @@ const OnboardingScreen = () => {
             <Text style={styles.errorText}>{errors.username}</Text>
           )}
 
-          {/* Gym */}
           <Text style={styles.label}>{i18n.t("onboarding.gym")}</Text>
           <TextInput
             style={styles.input}
@@ -174,7 +163,6 @@ const OnboardingScreen = () => {
             accessibilityLabel="gym"
           />
 
-          {/* Goal selection */}
           <Text style={styles.label}>{i18n.t("onboarding.goalPrompt")}</Text>
           <View style={styles.optionRow}>
             {goals.map((g) => (
@@ -198,19 +186,17 @@ const OnboardingScreen = () => {
           </View>
           {errors.goal && <Text style={styles.errorText}>{errors.goal}</Text>}
 
-          {/* Avatar selector */}
           <Text style={styles.label}>{i18n.t("onboarding.selectAvatar")}</Text>
           <AvatarSelector selectedAvatar={avatar} onSelect={setAvatar} />
 
-          {/* CTA Button */}
           <TouchableOpacity
-            style={[styles.cta, loading && { opacity: 0.7 }]}
+            style={[styles.cta, loading && styles.ctaLoading]}
             onPress={handleContinue}
             disabled={loading}
             accessibilityRole="button"
           >
             {loading ? (
-              <ActivityIndicator color="#fff" />
+              <ActivityIndicator color={colors.textOnPrimary} />
             ) : (
               <Text style={styles.ctaText}>{i18n.t("onboarding.start")}</Text>
             )}
@@ -223,67 +209,20 @@ const OnboardingScreen = () => {
 
 const styles = StyleSheet.create({
   container: {
-    padding: spacing.lg,
-    backgroundColor: colors.background,
     alignItems: "center",
-  },
-  logo: {
-    width: "50%",
-    height: undefined,
-    aspectRatio: 1,
-    marginBottom: spacing.md,
-  },
-  title: {
-    ...typography.heading1,
-    color: colors.textPrimary,
-    marginBottom: spacing.lg,
-    textAlign: "center",
-  },
-  label: {
-    color: colors.textSecondary,
-    alignSelf: "flex-start",
-    marginTop: spacing.md,
-    fontSize: 15,
-    fontWeight: "500",
-  },
-  input: {
-    backgroundColor: colors.surface,
-    color: colors.textPrimary,
-    width: "100%",
-    padding: spacing.md,
-    borderRadius: 8,
-    marginTop: 6,
-  },
-  optionRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-    marginTop: 10,
-  },
-  option: {
-    padding: spacing.sm,
-    borderRadius: 8,
-    backgroundColor: colors.surface,
-    marginRight: 10,
-    marginBottom: 10,
-  },
-  optionActive: {
-    backgroundColor: colors.primary,
-  },
-  optionText: {
-    color: colors.textSecondary,
-  },
-  optionTextActive: {
-    color: "#fff",
-    fontWeight: "bold",
+    backgroundColor: colors.background,
+    padding: spacing.lg,
   },
   cta: {
-    marginTop: spacing.xl,
+    alignItems: "center",
     backgroundColor: colors.primary,
+    borderRadius: 8,
+    marginTop: spacing.xl,
     padding: spacing.lg,
     width: "100%",
-    borderRadius: 8,
-    alignItems: "center",
+  },
+  ctaLoading: {
+    opacity: 0.7,
   },
   ctaText: {
     color: colors.textOnPrimary,
@@ -291,10 +230,63 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   errorText: {
-    color: colors.error,
     alignSelf: "flex-start",
+    color: colors.error,
     fontSize: 13,
     marginTop: 4,
+  },
+  formWrapper: {
+    width: "100%",
+  },
+  input: {
+    backgroundColor: colors.surface,
+    borderRadius: 8,
+    color: colors.textPrimary,
+    marginTop: 6,
+    padding: spacing.md,
+    width: "100%",
+  },
+  label: {
+    alignSelf: "flex-start",
+    color: colors.textSecondary,
+    fontSize: 15,
+    fontWeight: "500",
+    marginTop: spacing.md,
+  },
+  logo: {
+    aspectRatio: 1,
+    height: undefined,
+    marginBottom: spacing.md,
+    width: "50%",
+  },
+  option: {
+    backgroundColor: colors.surface,
+    borderRadius: 8,
+    marginBottom: 10,
+    marginRight: 10,
+    padding: spacing.sm,
+  },
+  optionActive: {
+    backgroundColor: colors.primary,
+  },
+  optionRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+    marginTop: 10,
+  },
+  optionText: {
+    color: colors.textSecondary,
+  },
+  optionTextActive: {
+    color: colors.textOnPrimary,
+    fontWeight: "bold",
+  },
+  title: {
+    ...typography.heading1,
+    color: colors.textPrimary,
+    marginBottom: spacing.lg,
+    textAlign: "center",
   },
 });
 

@@ -15,26 +15,31 @@ router.post("/", async (req, res) => {
     const { userId, fitnessGoal, equipment = "", injuries = "" } = req.body;
 
     if (!userId || !fitnessGoal) {
-      return res.status(400).json({ success: false, error: "Missing required fields: userId and fitnessGoal." });
+      return res.status(400).json({
+        success: false,
+        error: "Missing required fields: userId and fitnessGoal.",
+      });
     }
 
     const plan = await generateWorkout(userId, {
       goal: fitnessGoal,
       equipment,
       injuries,
-      availableDays: 4, // ✅ Optional default — you can expose this in req.body if needed
+      availableDays: 4, // Default value, you can expose this in req.body if needed
       preferredSplit: "Push/Pull/Legs",
-      experienceLevel: "Intermediate"
+      experienceLevel: "Intermediate",
     });
 
     if (!plan.success) {
       return res.status(400).json({ success: false, error: plan.error });
     }
 
-    res.status(200).json({ success: true, plan });
-  } catch (err) {
-    console.error("🔥 Error in /api/workout:", err.message);
-    res.status(500).json({ success: false, error: "Failed to generate workout." });
+    return res.status(200).json({ success: true, plan });
+  } catch {
+    // No console.log in production; clean error handling
+    return res
+      .status(500)
+      .json({ success: false, error: "Failed to generate workout." });
   }
 });
 

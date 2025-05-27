@@ -1,3 +1,5 @@
+// payments/stripe/createCheckoutSession.js
+
 import express from "express";
 import Stripe from "stripe";
 
@@ -35,7 +37,7 @@ router.post("/", async (req, res) => {
   }
 
   try {
-    // 🔥 Validate that the Price ID actually exists and is active
+    // Validate that the Price ID actually exists and is active
     const price = await stripe.prices.retrieve(priceId);
 
     if (!price || price.active !== true) {
@@ -56,7 +58,7 @@ router.post("/", async (req, res) => {
       ],
       metadata: {
         userId,
-        ...(email && { email }), // Optional
+        ...(email && { email }),
       },
       success_url: `${FRONTEND_URL}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${FRONTEND_URL}/payment-cancelled`,
@@ -66,10 +68,13 @@ router.post("/", async (req, res) => {
       .status(200)
       .json({ success: true, sessionId: session.id, url: session.url });
   } catch (err) {
-    console.error(
-      "❌ Stripe checkout session error:",
-      err.response?.data || err.message,
-    );
+    if (process.env.NODE_ENV !== "production") {
+      // eslint-disable-next-line no-console
+      console.error(
+        "❌ Stripe checkout session error:",
+        err.response?.data || err.message,
+      );
+    }
     return res
       .status(500)
       .json({ success: false, error: "Failed to create checkout session." });

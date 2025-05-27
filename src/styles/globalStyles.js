@@ -5,45 +5,45 @@ import spacing from "../theme/spacing";
 import typography from "../theme/typography";
 
 export default StyleSheet.create({
-  container: {
-    flex: 1,
+  centered: {
+    alignItems: "center",
     backgroundColor: colors.background,
+    flex: 1,
+    justifyContent: "center",
+    padding: spacing.lg,
+  },
+  container: {
+    backgroundColor: colors.background,
+    flex: 1,
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.lg,
   },
-  text: {
-    ...typography.body,
-    color: colors.textPrimary,
-    fontSize: 15,
-    lineHeight: 22,
-    includeFontPadding: false,
-    allowFontScaling: true,
-  },
-  title: {
-    ...typography.heading2,
-    color: colors.textPrimary,
-    marginBottom: spacing.md,
-    includeFontPadding: false,
-    allowFontScaling: true,
+  separator: {
+    backgroundColor: colors.border,
+    height: 1,
+    marginVertical: spacing.lg,
   },
   subtitle: {
     ...typography.body,
+    allowFontScaling: true,
     color: colors.textSecondary,
     fontSize: 18,
-    marginBottom: spacing.sm,
     includeFontPadding: false,
+    marginBottom: spacing.sm,
+  },
+  text: {
+    ...typography.body,
     allowFontScaling: true,
+    color: colors.textPrimary,
+    fontSize: 15,
+    includeFontPadding: false,
+    lineHeight: 22,
   },
-  centered: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: colors.background,
-    padding: spacing.lg,
-  },
-  separator: {
-    height: 1,
-    backgroundColor: colors.border,
-    marginVertical: spacing.lg,
+  title: {
+    ...typography.heading2,
+    allowFontScaling: true,
+    color: colors.textPrimary,
+    includeFontPadding: false,
+    marginBottom: spacing.md,
   },
 });

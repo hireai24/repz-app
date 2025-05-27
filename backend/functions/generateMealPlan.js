@@ -1,7 +1,9 @@
+// backend/functions/generateMealPlan.js
+
 import { collection, addDoc } from "firebase/firestore";
 
 import { db } from "../firebase/init.js";
-import { generateMealPlan as generateMealPlanAI } from "../../ai/prompts/mealGenerator.js";
+import { generateMealPlan as generateMealPlanAI } from "../ai/prompts/mealGenerator.js";
 
 const generateMealPlan = async (
   userId,
@@ -78,7 +80,6 @@ const generateMealPlan = async (
       mealPlan: planText,
     };
   } catch (error) {
-    console.error("🔥 Error generating meal plan:", error);
     return {
       success: false,
       error: error.message || "Unknown error generating meal plan.",

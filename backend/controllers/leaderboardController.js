@@ -7,7 +7,6 @@ import {
   orderBy,
   limit,
   Timestamp,
-  startAfter,
 } from "firebase/firestore";
 
 import { db } from "../firebase/init.js";
@@ -70,10 +69,6 @@ const submitLift = async (req, res) => {
 
       return res.status(200).json({ success: true, entryId: docRef.id });
     } catch (err) {
-      console.error("🔥 Error submitting lift:", {
-        message: err.message,
-        stack: err.stack,
-      });
       return res.status(500).json({
         success: false,
         error: "Failed to submit lift to leaderboard.",
@@ -85,11 +80,11 @@ const submitLift = async (req, res) => {
 /**
  * Get top lifts based on exercise and optional scope (e.g., gym)
  * Supports pagination
- * Query params: ?exercise=Bench Press&scope=gym&gym=Gold's&lastId=abc123
+ * Query params: ?exercise=Bench Press&scope=gym&gym=Gold's
  */
 const getTopLifts = async (req, res) => {
   await verifyUser(req, res, async () => {
-    const { exercise, scope, gym, lastId } = req.query;
+    const { exercise, scope, gym } = req.query;
 
     if (!exercise || typeof exercise !== "string" || !exercise.trim()) {
       return res.status(400).json({
@@ -105,7 +100,7 @@ const getTopLifts = async (req, res) => {
         lbRef,
         where("exercise", "==", exercise),
         orderBy("weight", "desc"),
-        limit(PAGE_SIZE)
+        limit(PAGE_SIZE),
       );
 
       if (scope === "gym" && typeof gym === "string" && gym.trim()) {
@@ -114,7 +109,7 @@ const getTopLifts = async (req, res) => {
           where("exercise", "==", exercise),
           where("gym", "==", gym),
           orderBy("weight", "desc"),
-          limit(PAGE_SIZE)
+          limit(PAGE_SIZE),
         );
       }
 
@@ -126,10 +121,6 @@ const getTopLifts = async (req, res) => {
 
       return res.status(200).json({ success: true, results });
     } catch (err) {
-      console.error("🔥 Error fetching leaderboard data:", {
-        message: err.message,
-        stack: err.stack,
-      });
       return res.status(500).json({
         success: false,
         error: "Failed to fetch leaderboard data.",

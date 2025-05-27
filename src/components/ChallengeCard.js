@@ -59,11 +59,7 @@ const ChallengeCard = ({ challenge, onEnter, onView, progress = {} }) => {
       )}
 
       <View style={styles.header}>
-        <Text
-          style={styles.title}
-          numberOfLines={2}
-          accessibilityRole="header"
-        >
+        <Text style={styles.title} numberOfLines={2} accessibilityRole="header">
           {title}
         </Text>
         {requiredTier && <TierBadge tier={requiredTier} />}
@@ -78,15 +74,13 @@ const ChallengeCard = ({ challenge, onEnter, onView, progress = {} }) => {
         </Text>
       )}
 
-      <Text style={[styles.status, { color: getStatusColor() }]}>
-        {status}
+      <Text style={[styles.status, { color: getStatusColor() }]}>{status}</Text>
+
+      {expiresAt && <Text style={styles.countdown}>{getCountdown()}</Text>}
+
+      <Text style={styles.reward}>
+        +{xpReward} XP • 💰 {xpPot} XP Pot
       </Text>
-
-      {expiresAt && (
-        <Text style={styles.countdown}>{getCountdown()}</Text>
-      )}
-
-      <Text style={styles.reward}>+{xpReward} XP • 💰 {xpPot} XP Pot</Text>
 
       {(aiVerified || votes > 0) && (
         <Text style={styles.verificationBadge}>
@@ -144,86 +138,86 @@ ChallengeCard.propTypes = {
 };
 
 const styles = StyleSheet.create({
-  card: {
-    backgroundColor: colors.surface,
-    padding: 16,
-    borderRadius: 10,
-    marginBottom: 16,
-  },
-  winnerGlow: {
-    borderColor: "#FFD700",
-    borderWidth: 2,
-    shadowColor: "#FFD700",
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.7,
-    shadowRadius: 8,
-  },
-  challengeImage: {
-    width: "100%",
-    height: 140,
-    borderRadius: 10,
-    marginBottom: 10,
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  title: {
-    color: colors.textPrimary,
-    fontWeight: "bold",
-    fontSize: 16,
-    flex: 1,
-    paddingRight: 10,
-  },
-  gymLabel: {
-    color: colors.accentBlue || "#2196F3",
-    marginTop: 4,
-    fontSize: 13,
-    fontStyle: "italic",
-  },
-  status: {
-    marginTop: 6,
-    fontSize: 14,
-    fontWeight: "600",
-  },
-  countdown: {
-    fontSize: 13,
-    color: colors.warning || "#FFA500",
-    marginTop: 2,
-  },
-  reward: {
-    color: colors.textSecondary,
-    marginTop: 6,
-    fontSize: 13,
-  },
-  verificationBadge: {
-    fontSize: 12,
-    color: colors.success,
-    marginTop: 4,
-    fontStyle: "italic",
-  },
   button: {
     backgroundColor: colors.primary,
+    borderRadius: 8,
     marginTop: 14,
     paddingVertical: 10,
-    borderRadius: 8,
   },
   buttonText: {
-    color: "#fff",
+    color: colors.white,
     fontWeight: "600",
     textAlign: "center",
   },
+  card: {
+    backgroundColor: colors.surface,
+    borderRadius: 10,
+    marginBottom: 16,
+    padding: 16,
+  },
+  challengeImage: {
+    borderRadius: 10,
+    height: 140,
+    marginBottom: 10,
+    width: "100%",
+  },
+  countdown: {
+    color: colors.warning,
+    fontSize: 13,
+    marginTop: 2,
+  },
+  gymLabel: {
+    color: colors.accentBlue,
+    fontSize: 13,
+    fontStyle: "italic",
+    marginTop: 4,
+  },
+  header: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  reward: {
+    color: colors.textSecondary,
+    fontSize: 13,
+    marginTop: 6,
+  },
+  status: {
+    fontSize: 14,
+    fontWeight: "600",
+    marginTop: 6,
+  },
+  title: {
+    color: colors.textPrimary,
+    flex: 1,
+    fontSize: 16,
+    fontWeight: "bold",
+    paddingRight: 10,
+  },
+  verificationBadge: {
+    color: colors.success,
+    fontSize: 12,
+    fontStyle: "italic",
+    marginTop: 4,
+  },
   viewBtn: {
     backgroundColor: colors.card,
+    borderRadius: 8,
     marginTop: 14,
     paddingVertical: 10,
-    borderRadius: 8,
   },
   viewText: {
     color: colors.textSecondary,
     fontWeight: "600",
     textAlign: "center",
+  },
+  winnerGlow: {
+    borderColor: colors.gold,
+    borderWidth: 2,
+    shadowColor: colors.gold,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.7,
+    shadowRadius: 8,
   },
 });
 

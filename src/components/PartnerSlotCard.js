@@ -1,27 +1,26 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 import PropTypes from "prop-types";
+
 import colors from "../theme/colors";
 import spacing from "../theme/spacing";
 import typography from "../theme/typography";
 
-const PartnerSlotCard = ({ slot, onAccept }) => {
-  const {
-    username,
-    timeSlot,
-    gymName,
-    tier,
-    avatar,
-    note,
-  } = slot;
+// ✅ Static import of fallback avatar image
+import defaultAvatar from "../assets/avatars/avatar1.png";
 
-  const avatarUri = avatar
-    ? { uri: avatar }
-    : require("../assets/avatars/avatar1.png");
+const PartnerSlotCard = ({ slot, onAccept }) => {
+  const { username, timeSlot, gymName, tier, avatar, note } = slot;
+
+  const avatarSource = avatar ? { uri: avatar } : defaultAvatar;
 
   return (
     <View style={styles.card}>
-      <Image source={avatarUri} style={styles.avatar} accessibilityLabel="User avatar" />
+      <Image
+        source={avatarSource}
+        style={styles.avatar}
+        accessibilityLabel="User avatar"
+      />
       <View style={styles.details}>
         <Text style={styles.name}>{username || "REPZ User"}</Text>
         <Text style={styles.meta}>
@@ -55,31 +54,41 @@ PartnerSlotCard.propTypes = {
 };
 
 const styles = StyleSheet.create({
-  card: {
-    backgroundColor: colors.surface,
-    flexDirection: "row",
-    padding: spacing.md,
-    borderRadius: 10,
-    marginBottom: spacing.md,
-    alignItems: "center",
-  },
   avatar: {
-    width: 48,
-    height: 48,
     borderRadius: 24,
+    height: 48,
     marginRight: spacing.md,
+    width: 48,
+  },
+  card: {
+    alignItems: "center",
+    backgroundColor: colors.surface,
+    borderRadius: 10,
+    flexDirection: "row",
+    marginBottom: spacing.md,
+    padding: spacing.md,
   },
   details: {
     flex: 1,
   },
-  name: {
-    ...typography.heading4,
-    color: colors.textPrimary,
+  joinBtn: {
+    backgroundColor: colors.primary,
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  joinText: {
+    color: colors.white,
+    fontWeight: "600",
   },
   meta: {
     color: colors.textSecondary,
     fontSize: 13,
     marginTop: 2,
+  },
+  name: {
+    ...typography.heading4,
+    color: colors.textPrimary,
   },
   note: {
     color: colors.textSecondary,
@@ -88,19 +97,9 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   tierLabel: {
-    marginTop: 4,
-    fontSize: 12,
     color: colors.accentBlue,
-  },
-  joinBtn: {
-    backgroundColor: colors.primary,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 6,
-  },
-  joinText: {
-    color: "#fff",
-    fontWeight: "600",
+    fontSize: 12,
+    marginTop: 4,
   },
 });
 

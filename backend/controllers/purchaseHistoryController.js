@@ -36,12 +36,10 @@ const logPurchase = async (req, res) => {
       });
 
       return res.status(200).json({ success: true });
-    } catch (err) {
-      // TODO: Replace with logging utility
+    } catch {
       return res.status(500).json({
         success: false,
         error: "Failed to log purchase.",
-        details: err.message,
       });
     }
   });
@@ -97,12 +95,10 @@ const getUserPurchases = async (req, res) => {
       }
 
       return res.status(200).json({ success: true, purchases });
-    } catch (err) {
-      // TODO: Replace with logging utility
+    } catch {
       return res.status(500).json({
         success: false,
         error: "Error fetching user purchases.",
-        details: err.message,
       });
     }
   });

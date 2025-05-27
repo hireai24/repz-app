@@ -60,7 +60,6 @@ const PlanCard = ({
         throw new Error("Invalid checkout URL returned.");
       }
     } catch (err) {
-      console.error("Buy failed:", err);
       Alert.alert(
         "Purchase failed",
         err.message || "Something went wrong while trying to buy the plan.",
@@ -79,8 +78,8 @@ const PlanCard = ({
         <View style={styles.skeletonImage} />
         <View style={styles.content}>
           <View style={styles.skeletonText} />
-          <View style={[styles.skeletonText, { width: "60%" }]} />
-          <View style={[styles.skeletonText, { width: "40%" }]} />
+          <View style={styles.skeletonText40} />
+          <View style={styles.skeletonText60} />
         </View>
       </View>
     );
@@ -167,68 +166,59 @@ PlanCard.propTypes = {
 };
 
 const styles = StyleSheet.create({
-  card: {
-    backgroundColor: colors.card,
-    borderRadius: spacing.md,
-    overflow: "hidden",
-    marginBottom: spacing.md,
-  },
-  image: {
-    width: "100%",
-    height: 140,
-    resizeMode: "cover",
-  },
-  content: {
-    padding: spacing.sm,
-  },
-  title: {
-    color: colors.textPrimary,
-    fontWeight: "bold",
-    fontSize: 16,
-  },
   author: {
     color: colors.textSecondary,
     fontSize: 13,
     marginTop: 2,
+  },
+  buyBtn: {
+    alignItems: "center",
+    backgroundColor: colors.primary,
+    borderRadius: spacing.sm,
+    marginTop: spacing.sm,
+    paddingVertical: 8,
+  },
+  buyText: {
+    color: colors.textPrimary,
+    fontWeight: "bold",
+  },
+  card: {
+    backgroundColor: colors.card,
+    borderRadius: spacing.md,
+    marginBottom: spacing.md,
+    overflow: "hidden",
+  },
+  content: {
+    padding: spacing.sm,
+  },
+  disabled: {
+    opacity: 0.6,
+  },
+  elite: {
+    color: colors.pro,
+  },
+  footer: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: spacing.sm,
+  },
+  image: {
+    height: 140,
+    resizeMode: "cover",
+    width: "100%",
   },
   meta: {
     color: colors.border,
     fontSize: 12,
     marginTop: 4,
   },
-  footer: {
-    marginTop: spacing.sm,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
   price: {
     color: colors.success,
     fontWeight: "bold",
   },
-  tier: {
-    fontWeight: "bold",
-    fontSize: 13,
-  },
   pro: {
     color: colors.primary,
-  },
-  elite: {
-    color: colors.pro,
-  },
-  buyBtn: {
-    marginTop: spacing.sm,
-    backgroundColor: colors.primary,
-    paddingVertical: 8,
-    borderRadius: spacing.sm,
-    alignItems: "center",
-  },
-  buyText: {
-    color: colors.textPrimary,
-    fontWeight: "bold",
-  },
-  disabled: {
-    opacity: 0.6,
   },
   skeletonImage: {
     backgroundColor: colors.surface,
@@ -236,11 +226,34 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   skeletonText: {
-    height: 14,
     backgroundColor: colors.surface,
     borderRadius: spacing.xs,
+    height: 14,
     marginTop: 8,
     width: "80%",
+  },
+  skeletonText40: {
+    backgroundColor: colors.surface,
+    borderRadius: spacing.xs,
+    height: 14,
+    marginTop: 8,
+    width: "40%",
+  },
+  skeletonText60: {
+    backgroundColor: colors.surface,
+    borderRadius: spacing.xs,
+    height: 14,
+    marginTop: 8,
+    width: "60%",
+  },
+  tier: {
+    fontSize: 13,
+    fontWeight: "bold",
+  },
+  title: {
+    color: colors.textPrimary,
+    fontSize: 16,
+    fontWeight: "bold",
   },
 });
 

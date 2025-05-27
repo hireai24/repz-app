@@ -112,10 +112,14 @@ const ChallengeScreen = () => {
         />
 
         {item.verified && (
-          <Text style={styles.verifiedText}>✅ {i18n.t("challengeWager.verified")}</Text>
+          <Text style={styles.verifiedText}>
+            ✅ {i18n.t("challengeWager.verified")}
+          </Text>
         )}
         {item.flagged && (
-          <Text style={styles.flaggedText}>⚠️ {i18n.t("challengeWager.flagged")}</Text>
+          <Text style={styles.flaggedText}>
+            ⚠️ {i18n.t("challengeWager.flagged")}
+          </Text>
         )}
         {remaining && (
           <Text style={styles.timerText}>
@@ -132,7 +136,9 @@ const ChallengeScreen = () => {
 
   return (
     <View style={[styles.container, { minHeight: screenHeight }]}>
-      <Text style={styles.header}>{i18n.t("challenge.header") || "Workout Battles"}</Text>
+      <Text style={styles.header}>
+        {i18n.t("challenge.header") || "Workout Battles"}
+      </Text>
 
       {message ? (
         <Text style={styles.successText}>{message}</Text>
@@ -171,61 +177,61 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: spacing.lg,
   },
+  emptyText: {
+    color: colors.textSecondary,
+    marginTop: spacing.lg,
+    textAlign: "center",
+  },
+  errorText: {
+    color: colors.error,
+    fontSize: 14,
+    marginBottom: spacing.sm,
+    textAlign: "center",
+  },
+  flaggedText: {
+    color: colors.warning,
+    fontSize: 13,
+    marginTop: 2,
+    textAlign: "right",
+  },
   header: {
     ...typography.heading2,
     color: colors.textPrimary,
     marginBottom: spacing.md,
   },
-  successText: {
-    color: colors.success,
-    textAlign: "center",
-    fontSize: 14,
-    marginBottom: spacing.sm,
-  },
-  errorText: {
-    color: colors.error,
-    textAlign: "center",
-    fontSize: 14,
-    marginBottom: spacing.sm,
-  },
-  emptyText: {
-    color: colors.textSecondary,
-    textAlign: "center",
-    marginTop: spacing.lg,
+  listContent: {
+    paddingBottom: spacing.xl,
   },
   lockedContainer: {
-    flex: 1,
-    justifyContent: "center",
     alignItems: "center",
     backgroundColor: colors.background,
+    flex: 1,
+    justifyContent: "center",
     padding: spacing.xl,
   },
   lockedText: {
     color: colors.textSecondary,
-    textAlign: "center",
     fontSize: 16,
+    textAlign: "center",
   },
-  listContent: {
-    paddingBottom: spacing.xl,
-  },
-  verifiedText: {
-    color: colors.accentBlue,
-    fontSize: 13,
-    textAlign: "right",
-    marginTop: 4,
-  },
-  flaggedText: {
-    color: colors.warning,
-    fontSize: 13,
-    textAlign: "right",
-    marginTop: 2,
+  successText: {
+    color: colors.success,
+    fontSize: 14,
+    marginBottom: spacing.sm,
+    textAlign: "center",
   },
   timerText: {
     color: colors.accent,
     fontSize: 12,
-    textAlign: "right",
-    marginTop: 2,
     fontStyle: "italic",
+    marginTop: 2,
+    textAlign: "right",
+  },
+  verifiedText: {
+    color: colors.accentBlue,
+    fontSize: 13,
+    marginTop: 4,
+    textAlign: "right",
   },
 });
 

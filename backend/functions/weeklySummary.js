@@ -56,7 +56,7 @@ const weeklySummary = async (userId) => {
       totalXP += calculateWorkoutXP(log).total;
 
       const logDate =
-        log.date?.seconds !== null ? new Date(log.date.seconds * 1000) : null;
+        log.date?.seconds != null ? new Date(log.date.seconds * 1000) : null;
 
       if (logDate && (!lastWorkoutDate || logDate > lastWorkoutDate)) {
         lastWorkoutDate = logDate;
@@ -79,9 +79,7 @@ const weeklySummary = async (userId) => {
 
     return { success: true, summary };
   } catch (err) {
-    if (console?.error) {
-      console.error("❌ Weekly summary generation failed:", err?.message);
-    }
+    // No console.error in production, clean error
     return {
       success: false,
       error: err?.message || "Unknown error generating weekly summary.",

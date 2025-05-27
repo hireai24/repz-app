@@ -43,16 +43,16 @@ const Button = ({
 
 const styles = StyleSheet.create({
   button: {
-    paddingVertical: 14,
-    paddingHorizontal: 24,
-    borderRadius: 10,
     alignItems: "center",
+    borderRadius: 10,
     justifyContent: "center",
     marginVertical: 6,
+    paddingHorizontal: 24,
+    paddingVertical: 14,
   },
   text: {
-    fontWeight: "600",
     fontSize: 15,
+    fontWeight: "600",
   },
 });
 

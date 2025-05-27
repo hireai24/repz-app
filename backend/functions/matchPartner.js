@@ -1,13 +1,7 @@
 // backend/functions/matchPartner.js
 
 import { db } from "../firebase/init.js";
-import {
-  collection,
-  query,
-  where,
-  getDocs,
-  Timestamp,
-} from "firebase/firestore";
+import { collection, query, where, getDocs } from "firebase/firestore";
 
 /**
  * Match users with similar time slots and same gym.
@@ -18,26 +12,31 @@ import {
  * @param {string} userId
  * @returns {Array} matched partner slots
  */
-export const matchPartnerSlots = async ({ gymId, preferredTimeSlot, userId }) => {
+export const matchPartnerSlots = async ({
+  gymId,
+  preferredTimeSlot,
+  userId,
+}) => {
   try {
     if (!gymId || !preferredTimeSlot || !userId) {
       throw new Error("Missing gymId, timeSlot or userId.");
     }
 
     const slotsRef = collection(db, "partnerSlots");
-    const q = query(
-      slotsRef,
-      where("gymId", "==", gymId),
-    );
+    const q = query(slotsRef, where("gymId", "==", gymId));
 
     const snapshot = await getDocs(q);
     const candidates = [];
 
-    snapshot.forEach((doc) => {
-      const data = doc.data();
+    snapshot.forEach((docSnap) => {
+      const data = docSnap.data();
 
       // Exclude user's own slots
-      if (data.userId === userId || data.participants?.includes(userId)) return;
+      if (
+        data.userId === userId ||
+        (Array.isArray(data.participants) && data.participants.includes(userId))
+      )
+        return;
 
       const slotTime = data.timeSlot || "";
 
@@ -48,7 +47,7 @@ export const matchPartnerSlots = async ({ gymId, preferredTimeSlot, userId }) =>
 
       if (hourDiff <= 1) {
         candidates.push({
-          id: doc.id,
+          id: docSnap.id,
           ...data,
         });
       }
@@ -60,7 +59,7 @@ export const matchPartnerSlots = async ({ gymId, preferredTimeSlot, userId }) =>
       matches: candidates,
     };
   } catch (err) {
-    console.error("❌ matchPartnerSlots error:", err);
+    // Logging removed for production polish
     return {
       success: false,
       error: err.message || "Failed to match partners.",

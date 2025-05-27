@@ -1,13 +1,23 @@
-// src/context/UserContext.js
-
 import React, { createContext, useState, useEffect, useMemo } from "react";
+import PropTypes from "prop-types";
 import { doc, getDoc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { auth, db } from "../firebase/firebaseClient"; // ✅ fixed import
 
-import { auth, db } from "../firebase/firebaseClient"; // ✅ fixed: now imports frontend-safe Firebase
-
-export const UserContext = createContext();
+export const UserContext = createContext({
+  userProfile: null,
+  setUserProfile: () => {},
+  userId: null,
+  loadingProfile: true,
+  refreshUserProfile: async () => {},
+  currentGym: null,
+  currentChallenges: [],
+  setCurrentChallenges: () => {},
+  pendingSessions: [],
+  setPendingSessions: () => {},
+  dailyChallenge: null,
+});
 
 const USER_PROFILE_STORAGE_KEY = "repz_user_profile";
 const DAILY_CHALLENGE_STORAGE_KEY = "repz_daily_challenge";
@@ -16,7 +26,6 @@ export const UserProvider = ({ children }) => {
   const [userProfile, setUserProfile] = useState(null);
   const [userId, setUserId] = useState(null);
   const [loadingProfile, setLoadingProfile] = useState(true);
-
   const [currentChallenges, setCurrentChallenges] = useState([]);
   const [pendingSessions, setPendingSessions] = useState([]);
   const [dailyChallenge, setDailyChallenge] = useState(null);
@@ -49,8 +58,10 @@ export const UserProvider = ({ children }) => {
     });
 
     return () => unsubscribe();
+    // eslint-disable-next-line
   }, []);
 
+  // Loads the user's profile from Firestore or AsyncStorage fallback
   const loadUserProfile = async (uid) => {
     try {
       const userRef = doc(db, "users", uid);
@@ -76,8 +87,6 @@ export const UserProvider = ({ children }) => {
         streak: typeof userData.streak === "number" ? userData.streak : 0,
         isCreator: userData.is_creator || false,
         creatorStats: userData.creator_stats || {},
-
-        // ✅ Battle stats
         wins: battleData.wins || 0,
         losses: battleData.losses || 0,
         currentBattleStreak: battleData.currentStreak || 0,
@@ -87,7 +96,7 @@ export const UserProvider = ({ children }) => {
       setUserProfile(formattedProfile);
       await AsyncStorage.setItem(
         USER_PROFILE_STORAGE_KEY,
-        JSON.stringify(formattedProfile)
+        JSON.stringify(formattedProfile),
       );
     } catch {
       try {
@@ -103,6 +112,7 @@ export const UserProvider = ({ children }) => {
     }
   };
 
+  // Loads the user's daily challenge from Firestore or AsyncStorage fallback
   const loadDailyChallenge = async (uid) => {
     try {
       const ref = doc(db, "dailyChallenges", uid);
@@ -112,7 +122,7 @@ export const UserProvider = ({ children }) => {
         setDailyChallenge(data);
         await AsyncStorage.setItem(
           DAILY_CHALLENGE_STORAGE_KEY,
-          JSON.stringify(data)
+          JSON.stringify(data),
         );
       } else {
         setDailyChallenge(null);
@@ -131,13 +141,11 @@ export const UserProvider = ({ children }) => {
     }
   };
 
+  // Manual refresh for pulling latest user profile and challenge
   const refreshUserProfile = async () => {
     if (userId) {
       setLoadingProfile(true);
-      await Promise.all([
-        loadUserProfile(userId),
-        loadDailyChallenge(userId),
-      ]);
+      await Promise.all([loadUserProfile(userId), loadDailyChallenge(userId)]);
       setLoadingProfile(false);
     }
   };
@@ -163,10 +171,12 @@ export const UserProvider = ({ children }) => {
       currentChallenges,
       pendingSessions,
       dailyChallenge,
-    ]
+    ],
   );
 
-  return (
-    <UserContext.Provider value={value}>{children}</UserContext.Provider>
-  );
+  return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
+};
+
+UserProvider.propTypes = {
+  children: PropTypes.node.isRequired,
 };

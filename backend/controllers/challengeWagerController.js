@@ -1,6 +1,5 @@
 import { db } from "../firebase/init.js";
 import {
-  collection,
   doc,
   setDoc,
   getDoc,
@@ -34,7 +33,9 @@ export const createChallenge = async (req, res) => {
   try {
     const id = uuidv4();
     const createdAt = Timestamp.now();
-    const expiresAt = Timestamp.fromDate(new Date(createdAt.toDate().getTime() + duration * 60 * 60 * 1000));
+    const expiresAt = Timestamp.fromDate(
+      new Date(createdAt.toDate().getTime() + duration * 60 * 60 * 1000),
+    );
 
     const challenge = {
       id,
@@ -68,7 +69,6 @@ export const createChallenge = async (req, res) => {
 
     res.status(200).json({ success: true, challenge });
   } catch (err) {
-    console.error("createChallenge error:", err);
     res.status(500).json({ error: "Failed to create challenge." });
   }
 };
@@ -81,7 +81,8 @@ export const acceptChallenge = async (req, res) => {
   try {
     const docRef = doc(db, "wagerChallenges", challengeId);
     const snap = await getDoc(docRef);
-    if (!snap.exists()) return res.status(404).json({ error: "Challenge not found." });
+    if (!snap.exists())
+      return res.status(404).json({ error: "Challenge not found." });
 
     const challenge = snap.data();
     if (challenge.participants.includes(userId)) {
@@ -101,7 +102,6 @@ export const acceptChallenge = async (req, res) => {
 
     res.status(200).json({ success: true });
   } catch (err) {
-    console.error("acceptChallenge error:", err);
     res.status(500).json({ error: "Failed to accept challenge." });
   }
 };
@@ -119,7 +119,8 @@ export const submitChallengeResult = async (req, res) => {
   try {
     const docRef = doc(db, "wagerChallenges", challengeId);
     const snap = await getDoc(docRef);
-    if (!snap.exists()) return res.status(404).json({ error: "Challenge not found." });
+    if (!snap.exists())
+      return res.status(404).json({ error: "Challenge not found." });
 
     const submission = {
       videoUrl,
@@ -139,9 +140,10 @@ export const submitChallengeResult = async (req, res) => {
       [`results.${userId}`]: submission,
     });
 
-    res.status(200).json({ success: true, verifiedByAI: submission.verifiedByAI });
+    res
+      .status(200)
+      .json({ success: true, verifiedByAI: submission.verifiedByAI });
   } catch (err) {
-    console.error("submitChallengeResult error:", err);
     res.status(500).json({ error: "Failed to submit result." });
   }
 };
@@ -153,7 +155,8 @@ export const resolveChallengeOutcome = async (req, res) => {
   try {
     const docRef = doc(db, "wagerChallenges", challengeId);
     const snap = await getDoc(docRef);
-    if (!snap.exists()) return res.status(404).json({ error: "Challenge not found." });
+    if (!snap.exists())
+      return res.status(404).json({ error: "Challenge not found." });
 
     const challenge = snap.data();
     const participants = challenge.participants || [];
@@ -200,7 +203,6 @@ export const resolveChallengeOutcome = async (req, res) => {
 
     res.status(200).json({ success: true, winnerId });
   } catch (err) {
-    console.error("resolveChallengeOutcome error:", err);
     res.status(500).json({ error: "Failed to resolve challenge." });
   }
 };

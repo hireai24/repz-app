@@ -1,9 +1,10 @@
+// payments/stripe/purchasePlan.js
+
 import express from "express";
 import Stripe from "stripe";
 import { doc, getDoc } from "firebase/firestore";
-
 import { db } from "../../backend/firebase/init.js";
-import { verifyUser } from "../../backend/utils/authMiddleware.js"; // ✅ Fixed named import
+import { verifyUser } from "../../backend/utils/authMiddleware.js";
 
 const router = express.Router();
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
@@ -108,7 +109,10 @@ router.post("/", verifyUser, async (req, res) => {
       url: session.url,
     });
   } catch (err) {
-    console.error("❌ Stripe purchase session creation error:", err);
+    if (process.env.NODE_ENV !== "production") {
+      // eslint-disable-next-line no-console
+      console.error("❌ Stripe purchase session creation error:", err);
+    }
     return res
       .status(500)
       .json({ success: false, error: "Failed to create checkout session" });

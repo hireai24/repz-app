@@ -28,7 +28,8 @@
         "NSCameraUsageDescription": "This app uses the camera to record workout form and upload photos.",
         "NSPhotoLibraryUsageDescription": "This app accesses your gallery to upload before/after progress photos.",
         "NSMicrophoneUsageDescription": "This app uses the microphone to optionally record audio with video uploads.",
-        "NSLocationWhenInUseUsageDescription": "Location is used to find nearby gyms and training partners."
+        "NSLocationWhenInUseUsageDescription": "Location is used to find nearby gyms and training partners.",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -44,7 +45,8 @@
         "READ_EXTERNAL_STORAGE",
         "WRITE_EXTERNAL_STORAGE",
         "ACCESS_FINE_LOCATION"
-      ]
+      ],
+      "jsEngine": "hermes"
     },
     "web": {
       "favicon": "./src/assets/logo.png"
@@ -59,7 +61,11 @@
         "expo-build-properties",
         {
           "ios": {
-            "useFrameworks": "static"
+            "useFrameworks": "static",
+            "jsEngine": "hermes"
+          },
+          "android": {
+            "jsEngine": "hermes"
           }
         }
       ]

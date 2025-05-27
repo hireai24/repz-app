@@ -1,11 +1,5 @@
 import { db } from "../firebase/init.js";
-import {
-  doc,
-  getDoc,
-  setDoc,
-  updateDoc,
-  increment,
-} from "firebase/firestore";
+import { doc, getDoc, setDoc, updateDoc, increment } from "firebase/firestore";
 
 /**
  * Fetches battle stats for a specific user.
@@ -23,13 +17,17 @@ export const getBattleStats = async (req, res) => {
     const snapshot = await getDoc(ref);
 
     if (!snapshot.exists()) {
-      return res.status(404).json({ success: false, error: "Stats not found." });
+      return res
+        .status(404)
+        .json({ success: false, error: "Stats not found." });
     }
 
     return res.status(200).json({ success: true, stats: snapshot.data() });
   } catch (err) {
-    console.error("🔥 Failed to get battle stats:", err.message);
-    return res.status(500).json({ success: false, error: "Internal server error." });
+    // No console.error - return error response only
+    return res
+      .status(500)
+      .json({ success: false, error: "Internal server error." });
   }
 };
 

@@ -1,26 +1,24 @@
+// backend/functions/analyzeForm.js
+
 import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
 
-import * as tf from "@tensorflow/tfjs"; // ✅ Use tfjs (no native bindings)
+import * as tf from "@tensorflow/tfjs";
 import * as poseDetection from "@tensorflow-models/pose-detection";
 import ffmpeg from "fluent-ffmpeg";
-import { createCanvas, loadImage } from "canvas"; // ✅ Required for tf.browser.fromPixels
+import { createCanvas, loadImage } from "canvas";
 import { collection, addDoc } from "firebase/firestore";
 
 import { db } from "../firebase/init.js";
-import { evaluateFormFromTranscript } from "../../ai/prompts/formEvaluator.js";
+import { evaluateFormFromTranscript } from "../ai/prompts/formEvaluator.js";
 
-const TEMP_DIR = "./tempFrames";
-let detector;
-
-// Fix for __dirname in ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const TEMP_DIR = path.join(__dirname, "../../tempFrames");
 
-/**
- * Analyze uploaded video for form and provide rep-by-rep feedback.
- */
+let detector;
+
 const analyzeForm = async (userId, videoPath, exerciseType) => {
   if (!userId || !videoPath || !exerciseType) {
     return { success: false, error: "Missing or invalid input fields." };
@@ -34,13 +32,12 @@ const analyzeForm = async (userId, videoPath, exerciseType) => {
   }
 
   try {
-    if (!fs.existsSync(TEMP_DIR)) fs.mkdirSync(TEMP_DIR);
-
+    if (!fs.existsSync(TEMP_DIR)) fs.mkdirSync(TEMP_DIR, { recursive: true });
     await extractFrames(videoPath, TEMP_DIR);
 
     if (!detector) {
       detector = await poseDetection.createDetector(
-        poseDetection.SupportedModels.MoveNet
+        poseDetection.SupportedModels.MoveNet,
       );
     }
 
@@ -63,17 +60,13 @@ const analyzeForm = async (userId, videoPath, exerciseType) => {
           ? evaluatePose(poses[0], exerciseType)
           : await fallbackAIAnalysis(exerciseType);
 
-        analysisResults.push({
-          frame: frameFile,
-          feedback,
-        });
-      } catch (frameErr) {
-        console.error("🔥 Frame processing error:", frameFile, frameErr.message);
+        analysisResults.push({ frame: frameFile, feedback });
+      } catch {
         analysisResults.push({
           frame: frameFile,
           feedback: {
             status: "Frame error",
-            comment: frameErr.message,
+            comment: "Error analyzing frame.",
           },
         });
       } finally {
@@ -91,7 +84,6 @@ const analyzeForm = async (userId, videoPath, exerciseType) => {
 
     return { success: true, analysisId: docRef.id, results: analysisResults };
   } catch (err) {
-    console.error("🔥 Form analysis failed:", err.message);
     return {
       success: false,
       error: err.message || "Unexpected error analyzing form.",
@@ -103,25 +95,16 @@ const analyzeForm = async (userId, videoPath, exerciseType) => {
   }
 };
 
-/**
- * Extract frames evenly from video using ffmpeg
- */
 function extractFrames(videoPath, outputDir) {
   return new Promise((resolve, reject) => {
-    ffmpeg(videoPath)
-      .on("end", resolve)
-      .on("error", reject)
-      .screenshots({
-        count: 10,
-        folder: outputDir,
-        filename: "frame-%i.png",
-      });
+    ffmpeg(videoPath).on("end", resolve).on("error", reject).screenshots({
+      count: 10,
+      folder: outputDir,
+      filename: "frame-%i.png",
+    });
   });
 }
 
-/**
- * Evaluate Pose Keypoints based on exercise type
- */
 function evaluatePose(pose, exerciseType) {
   if (!pose || !pose.keypoints) return { status: "No pose detected." };
 
@@ -148,8 +131,8 @@ function evaluatePose(pose, exerciseType) {
 }
 
 function evaluateSquat(keypoints) {
-  const hip = keypoints["left_hip"] || keypoints["right_hip"];
-  const knee = keypoints["left_knee"] || keypoints["right_knee"];
+  const hip = keypoints.left_hip || keypoints.right_hip;
+  const knee = keypoints.left_knee || keypoints.right_knee;
 
   if (!hip || !knee) {
     return { status: "Insufficient keypoints for squat evaluation." };
@@ -169,9 +152,9 @@ function evaluateSquat(keypoints) {
 }
 
 function evaluatePushUp(keypoints) {
-  const wrist = keypoints["left_wrist"] || keypoints["right_wrist"];
-  const elbow = keypoints["left_elbow"] || keypoints["right_elbow"];
-  const shoulder = keypoints["left_shoulder"] || keypoints["right_shoulder"];
+  const wrist = keypoints.left_wrist || keypoints.right_wrist;
+  const elbow = keypoints.left_elbow || keypoints.right_elbow;
+  const shoulder = keypoints.left_shoulder || keypoints.right_shoulder;
 
   if (!wrist || !elbow || !shoulder) {
     return { status: "Insufficient keypoints for push-up evaluation." };
@@ -190,9 +173,9 @@ function evaluatePushUp(keypoints) {
 }
 
 function evaluateDeadlift(keypoints) {
-  const hip = keypoints["left_hip"] || keypoints["right_hip"];
-  const knee = keypoints["left_knee"] || keypoints["right_knee"];
-  const ankle = keypoints["left_ankle"] || keypoints["right_ankle"];
+  const hip = keypoints.left_hip || keypoints.right_hip;
+  const knee = keypoints.left_knee || keypoints.right_knee;
+  const ankle = keypoints.left_ankle || keypoints.right_ankle;
 
   if (!hip || !knee || !ankle) {
     return { status: "Insufficient keypoints for deadlift evaluation." };
@@ -212,9 +195,6 @@ function evaluateDeadlift(keypoints) {
   };
 }
 
-/**
- * Fallback AI Analysis if Pose Estimation fails
- */
 async function fallbackAIAnalysis(exerciseType) {
   const timeoutMs = 8000;
 
@@ -226,13 +206,12 @@ async function fallbackAIAnalysis(exerciseType) {
     });
 
     const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error("Fallback AI timeout")), timeoutMs)
+      setTimeout(() => reject(new Error("Fallback AI timeout")), timeoutMs),
     );
 
     const result = await Promise.race([aiPromise, timeoutPromise]);
     return result.feedback || { status: "Fallback analysis incomplete." };
-  } catch (err) {
-    console.error("🔥 Fallback AI analysis error:", err.message);
+  } catch {
     return {
       status: "Fallback AI analysis failed.",
       comment: "Unable to analyze frame.",

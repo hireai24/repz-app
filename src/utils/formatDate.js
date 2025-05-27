@@ -16,6 +16,7 @@ export const formatDate = (isoString) => {
     if (!isValid(parsed)) return "";
     return format(parsed, "MMM d, yyyy", { locale });
   } catch (err) {
+    // eslint-disable-next-line no-console
     console.warn("formatDate error:", err);
     return "";
   }
@@ -33,6 +34,7 @@ export const formatDateTime = (isoString) => {
     if (!isValid(parsed)) return "";
     return format(parsed, "MMM d • h:mm a", { locale });
   } catch (err) {
+    // eslint-disable-next-line no-console
     console.warn("formatDateTime error:", err);
     return "";
   }
@@ -50,6 +52,7 @@ export const timeAgo = (isoString) => {
     if (!isValid(parsed)) return "";
     return formatDistanceToNow(parsed, { addSuffix: true, locale });
   } catch (err) {
+    // eslint-disable-next-line no-console
     console.warn("timeAgo error:", err);
     return "";
   }

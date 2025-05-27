@@ -11,7 +11,6 @@ import {
   deleteDoc,
   query,
   where,
-  Timestamp,
   serverTimestamp,
   arrayUnion,
   arrayRemove,
@@ -25,7 +24,9 @@ export const createPartnerSlot = async (req, res) => {
     const { userId, username, gymId, gymName, timeSlot } = req.body;
 
     if (!userId || !gymId || !timeSlot) {
-      return res.status(400).json({ success: false, error: "Missing required fields." });
+      return res
+        .status(400)
+        .json({ success: false, error: "Missing required fields." });
     }
 
     const slotData = {
@@ -42,8 +43,9 @@ export const createPartnerSlot = async (req, res) => {
 
     return res.status(200).json({ success: true, id: docRef.id });
   } catch (err) {
-    console.error("❌ createPartnerSlot error:", err);
-    return res.status(500).json({ success: false, error: "Failed to create slot." });
+    return res
+      .status(500)
+      .json({ success: false, error: "Failed to create slot." });
   }
 };
 
@@ -53,11 +55,12 @@ export const createPartnerSlot = async (req, res) => {
 export const getPartnerSlots = async (req, res) => {
   try {
     const { gymId } = req.params;
-    if (!gymId) return res.status(400).json({ success: false, error: "Missing gym ID." });
+    if (!gymId)
+      return res.status(400).json({ success: false, error: "Missing gym ID." });
 
     const q = query(
       collection(db, "partnerSlots"),
-      where("gymId", "==", gymId)
+      where("gymId", "==", gymId),
     );
 
     const querySnapshot = await getDocs(q);
@@ -74,8 +77,9 @@ export const getPartnerSlots = async (req, res) => {
 
     return res.status(200).json({ success: true, data: slots });
   } catch (err) {
-    console.error("❌ getPartnerSlots error:", err);
-    return res.status(500).json({ success: false, error: "Failed to fetch slots." });
+    return res
+      .status(500)
+      .json({ success: false, error: "Failed to fetch slots." });
   }
 };
 
@@ -88,7 +92,9 @@ export const joinPartnerSlot = async (req, res) => {
     const { userId } = req.body;
 
     if (!slotId || !userId) {
-      return res.status(400).json({ success: false, error: "Missing parameters." });
+      return res
+        .status(400)
+        .json({ success: false, error: "Missing parameters." });
     }
 
     const slotRef = doc(db, "partnerSlots", slotId);
@@ -103,8 +109,9 @@ export const joinPartnerSlot = async (req, res) => {
 
     return res.status(200).json({ success: true });
   } catch (err) {
-    console.error("❌ joinPartnerSlot error:", err);
-    return res.status(500).json({ success: false, error: "Failed to join slot." });
+    return res
+      .status(500)
+      .json({ success: false, error: "Failed to join slot." });
   }
 };
 
@@ -117,7 +124,9 @@ export const leavePartnerSlot = async (req, res) => {
     const { userId } = req.body;
 
     if (!slotId || !userId) {
-      return res.status(400).json({ success: false, error: "Missing parameters." });
+      return res
+        .status(400)
+        .json({ success: false, error: "Missing parameters." });
     }
 
     const slotRef = doc(db, "partnerSlots", slotId);
@@ -139,7 +148,8 @@ export const leavePartnerSlot = async (req, res) => {
 
     return res.status(200).json({ success: true });
   } catch (err) {
-    console.error("❌ leavePartnerSlot error:", err);
-    return res.status(500).json({ success: false, error: "Failed to leave slot." });
+    return res
+      .status(500)
+      .json({ success: false, error: "Failed to leave slot." });
   }
 };

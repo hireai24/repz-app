@@ -35,7 +35,10 @@ export const createChallenge = async (data) => {
     const result = await res.json();
     return { success: true, challenge: result.challenge };
   } catch (err) {
-    console.error("createChallenge error:", err);
+    if (process.env.NODE_ENV !== "production") {
+      // eslint-disable-next-line no-console
+      console.error("createChallenge error:", err);
+    }
     return { success: false, error: err.message };
   }
 };

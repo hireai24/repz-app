@@ -7,6 +7,7 @@
  */
 export const filterExercises = (exercises, filters = {}) => {
   if (!Array.isArray(exercises)) {
+    // eslint-disable-next-line no-console
     console.warn("filterExercises: exercises must be an array");
     return [];
   }
@@ -14,15 +15,16 @@ export const filterExercises = (exercises, filters = {}) => {
   const allowedKeys = ["category", "muscle", "equipment", "level"];
   for (const key of Object.keys(filters)) {
     if (!allowedKeys.includes(key)) {
+      // eslint-disable-next-line no-console
       console.warn(`filterExercises: unsupported filter key "${key}"`);
     }
   }
 
   const normalizedFilters = {
-    category: filters.category?.toLowerCase().trim(),
-    muscle: filters.muscle?.toLowerCase().trim(),
-    equipment: filters.equipment?.toLowerCase().trim(),
-    level: filters.level?.toLowerCase().trim(),
+    category: filters.category?.toLowerCase().trim() || "",
+    muscle: filters.muscle?.toLowerCase().trim() || "",
+    equipment: filters.equipment?.toLowerCase().trim() || "",
+    level: filters.level?.toLowerCase().trim() || "",
   };
 
   return exercises.filter((ex) => {
@@ -54,6 +56,7 @@ export const filterExercises = (exercises, filters = {}) => {
  */
 export const searchExercises = (exercises, query = "") => {
   if (!Array.isArray(exercises)) {
+    // eslint-disable-next-line no-console
     console.warn("searchExercises: exercises must be an array");
     return [];
   }
@@ -61,9 +64,7 @@ export const searchExercises = (exercises, query = "") => {
   const term = query.trim().toLowerCase();
   if (!term) return exercises;
 
-  return exercises.filter((ex) =>
-    (ex.name || "").toLowerCase().includes(term)
-  );
+  return exercises.filter((ex) => (ex.name || "").toLowerCase().includes(term));
 };
 
 /**

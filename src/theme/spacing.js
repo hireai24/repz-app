@@ -1,9 +1,9 @@
-import { Dimensions, PixelRatio } from "react-native";
+import { Dimensions } from "react-native";
 
 const { width, height } = Dimensions.get("window");
 
 // Base guideline sizes for scaling
-const guidelineBaseWidth = 375;  // iPhone 11/12 width
+const guidelineBaseWidth = 375; // iPhone 11/12 width
 const guidelineBaseHeight = 812; // iPhone 11/12 height
 
 const scale = (size) => (width / guidelineBaseWidth) * size;

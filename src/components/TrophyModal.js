@@ -14,24 +14,32 @@ import spacing from "../theme/spacing";
 import typography from "../theme/typography";
 import i18n from "../locales/i18n";
 
-// 🏆 Trophy images for workout streaks and battle wins
+import streak3 from "../assets/trophies/streak3.png";
+import streak7 from "../assets/trophies/streak7.png";
+import streak15 from "../assets/trophies/streak15.png";
+import streak30 from "../assets/trophies/streak30.png";
+import streak50 from "../assets/trophies/streak50.png";
+import streak75 from "../assets/trophies/streak75.png";
+import streak100 from "../assets/trophies/streak100.png";
+import streak150 from "../assets/trophies/streak150.png";
+import streak365 from "../assets/trophies/streak365.png";
+
 const streakImages = {
-  3: require("../assets/trophies/streak3.png"),
-  7: require("../assets/trophies/streak7.png"),
-  15: require("../assets/trophies/streak15.png"),
-  30: require("../assets/trophies/streak30.png"),
-  50: require("../assets/trophies/streak50.png"),
-  75: require("../assets/trophies/streak75.png"),
-  100: require("../assets/trophies/streak100.png"),
-  150: require("../assets/trophies/streak150.png"),
-  365: require("../assets/trophies/streak365.png"),
+  3: streak3,
+  7: streak7,
+  15: streak15,
+  30: streak30,
+  50: streak50,
+  75: streak75,
+  100: streak100,
+  150: streak150,
+  365: streak365,
 };
 
-// 🎯 Battle win streaks (e.g., 3, 5, 10 wins in a row)
 const battleImages = {
-  3: require("../assets/trophies/streak3.png"),
-  5: require("../assets/trophies/streak7.png"),
-  10: require("../assets/trophies/streak15.png"),
+  3: streak3,
+  5: streak7,
+  10: streak15,
 };
 
 const workoutXPBonuses = {
@@ -103,50 +111,50 @@ TrophyModal.propTypes = {
   visible: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
   milestone: PropTypes.number.isRequired,
-  type: PropTypes.oneOf(["workout", "battle"]), // 🆕 Support both types
+  type: PropTypes.oneOf(["workout", "battle"]),
 };
 
 const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: "#00000088",
-    justifyContent: "center",
-    alignItems: "center",
+  body: {
+    ...typography.body,
+    color: colors.textPrimary,
+    marginBottom: spacing.sm,
+    textAlign: "center",
+  },
+  button: {
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+  },
+  buttonText: {
+    color: colors.white,
+    fontWeight: "bold",
   },
   modal: {
+    alignItems: "center",
     backgroundColor: colors.surface,
     borderRadius: 12,
-    padding: spacing.lg,
-    alignItems: "center",
-    width: "85%",
     elevation: 5,
+    padding: spacing.lg,
+    width: "85%",
   },
-  trophy: {
-    width: 120,
-    height: 120,
-    marginBottom: spacing.md,
+  overlay: {
+    alignItems: "center",
+    backgroundColor: colors.overlayDark,
+    flex: 1,
+    justifyContent: "center",
   },
   title: {
     ...typography.heading3,
     color: colors.primary,
-    textAlign: "center",
     marginBottom: spacing.sm,
-  },
-  body: {
-    ...typography.body,
-    color: colors.textPrimary,
     textAlign: "center",
-    marginBottom: spacing.sm,
   },
-  button: {
-    backgroundColor: colors.primary,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.lg,
-    borderRadius: 8,
-  },
-  buttonText: {
-    color: "#fff",
-    fontWeight: "bold",
+  trophy: {
+    height: 120,
+    marginBottom: spacing.md,
+    width: 120,
   },
 });
 

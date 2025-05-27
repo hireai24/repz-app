@@ -1,8 +1,6 @@
 import crypto from "crypto";
-
 import express from "express";
 import { doc, updateDoc } from "firebase/firestore";
-
 import { db } from "../../backend/firebase/init.js";
 
 const router = express.Router();
@@ -23,8 +21,8 @@ const verifyRevenueCatSignature = (rawBody, signature) => {
     .update(rawBody)
     .digest("hex");
 
-  const bufferExpected = Buffer.from(expectedSignature, "utf8");
-  const bufferProvided = Buffer.from(signature || "", "utf8");
+  const bufferExpected = Buffer.from(expectedSignature, "hex");
+  const bufferProvided = Buffer.from(signature || "", "hex");
 
   return (
     bufferExpected.length === bufferProvided.length &&
@@ -33,7 +31,7 @@ const verifyRevenueCatSignature = (rawBody, signature) => {
 };
 
 /**
- * Determine subscription tier based on entitlement mapping
+ * Maps RevenueCat event entitlements to tier string.
  */
 const mapEventToTier = (event, entitlementIds) => {
   const entitlements = event.entitlement_ids || [];
@@ -42,7 +40,7 @@ const mapEventToTier = (event, entitlementIds) => {
   return null;
 };
 
-// Middleware for parsing raw body for HMAC verification
+// Middleware to capture raw body for signature verification
 router.use(
   express.json({
     verify: (req, res, buf) => {
@@ -56,7 +54,10 @@ router.post("/webhook", async (req, res) => {
     const signature = req.headers["x-revenuecat-signature"];
 
     if (!verifyRevenueCatSignature(req.rawBody, signature)) {
-      console.error("❌ Invalid RevenueCat webhook signature.");
+      if (process.env.NODE_ENV !== "production") {
+        // eslint-disable-next-line no-console
+        console.error("❌ Invalid RevenueCat webhook signature.");
+      }
       return res
         .status(401)
         .json({ success: false, error: "Invalid webhook signature." });
@@ -79,9 +80,12 @@ router.post("/webhook", async (req, res) => {
     const tier = mapEventToTier(event, entitlementIds);
 
     if (!tier) {
-      console.warn(
-        `⚠️ No matching entitlement found for userId ${userId}. Event type: ${event.type}`,
-      );
+      if (process.env.NODE_ENV !== "production") {
+        // eslint-disable-next-line no-console
+        console.warn(
+          `⚠️ No matching entitlement found for userId ${userId}. Event type: ${event.type}`,
+        );
+      }
       return res.status(200).json({
         success: true,
         message: "No valid entitlement found; no update performed.",
@@ -96,10 +100,16 @@ router.post("/webhook", async (req, res) => {
       updatedAt: new Date().toISOString(),
     });
 
-    console.log(`✅ User ${userId} updated to tier ${tier}.`);
+    if (process.env.NODE_ENV !== "production") {
+      // eslint-disable-next-line no-console
+      console.log(`✅ User ${userId} updated to tier ${tier}.`);
+    }
     return res.status(200).json({ success: true, tier });
   } catch (err) {
-    console.error("🔥 RevenueCat webhook error:", err.message || err);
+    if (process.env.NODE_ENV !== "production") {
+      // eslint-disable-next-line no-console
+      console.error("🔥 RevenueCat webhook error:", err.message || err);
+    }
     return res
       .status(500)
       .json({ success: false, error: err.message || "Internal server error." });
