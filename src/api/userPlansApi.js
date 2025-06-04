@@ -3,8 +3,8 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
-const USER_PLANS_URL = `${BASE_URL}/save-plan`;
-const XP_TRACK_URL = `${BASE_URL}/xp`; // Added for XP tracking if needed
+const USER_PLANS_URL = `${BASE_URL}/api/save-plan`; // Corrected path (missing /api)
+const XP_TRACK_URL = `${BASE_URL}/api/xp`; // CORRECTED: Path to match backend trackXP.routes.js
 
 const MAX_RETRIES = 2;
 const RETRY_DELAY_MS = 500;
@@ -16,7 +16,8 @@ const getAuthToken = async () => {
   try {
     const token = await AsyncStorage.getItem("authToken");
     return token || "";
-  } catch {
+  } catch (err) {
+    // console.error("Failed to get auth token from storage:", err);
     return "";
   }
 };
@@ -31,12 +32,13 @@ const fetchWithRetry = async (url, options = {}, retries = MAX_RETRIES) => {
     try {
       const res = await fetch(url, options);
       if (!res.ok) {
-        const errText = await res.text();
-        throw new Error(errText || `HTTP ${res.status}`);
+        const errorData = await res.json().catch(() => ({})); // Try to parse JSON error, fallback to empty object
+        throw new Error(errorData.error || `HTTP ${res.status}`);
       }
       return await res.json();
     } catch (err) {
       if (attempt === retries) {
+        // console.error("fetchWithRetry failed after retries:", err);
         return { success: false, error: err.message };
       }
       await sleep(RETRY_DELAY_MS);
@@ -46,6 +48,7 @@ const fetchWithRetry = async (url, options = {}, retries = MAX_RETRIES) => {
 
 /**
  * Fetch all saved user plans
+ * @param {string} userId
  */
 export const getUserPlans = async (userId) => {
   const token = await getAuthToken();
@@ -58,6 +61,7 @@ export const getUserPlans = async (userId) => {
 
 /**
  * Save a new plan
+ * @param {object} planData - Should include userId, name, exercises, type, etc.
  */
 export const saveUserPlan = async (planData) => {
   const token = await getAuthToken();
@@ -72,11 +76,13 @@ export const saveUserPlan = async (planData) => {
 };
 
 /**
- * Optional: Track XP after saving
+ * Track XP after saving or other events.
+ * Note: Your backend trackXP.routes.js is POST /api/xp.
+ * @param {object} xpPayload - { userId, source, amount, data? (for workout/battle mode) }
  */
 export const trackXP = async (xpPayload) => {
   const token = await getAuthToken();
-  return await fetchWithRetry(`${XP_TRACK_URL}/log`, {
+  return await fetchWithRetry(`${XP_TRACK_URL}`, { // CORRECTED: Target /api/xp
     method: "POST",
     headers: {
       "Content-Type": "application/json",

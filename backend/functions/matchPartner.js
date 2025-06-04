@@ -31,7 +31,7 @@ export const matchPartnerSlots = async ({
     snapshot.forEach((docSnap) => {
       const data = docSnap.data();
 
-      // Exclude user's own slots
+      // Exclude user's own slots and slots they've already joined
       if (
         data.userId === userId ||
         (Array.isArray(data.participants) && data.participants.includes(userId))
@@ -59,7 +59,7 @@ export const matchPartnerSlots = async ({
       matches: candidates,
     };
   } catch (err) {
-    // Logging removed for production polish
+    console.error("Error matching partner slots:", err.message); // Added console.error for debugging
     return {
       success: false,
       error: err.message || "Failed to match partners.",

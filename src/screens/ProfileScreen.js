@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useState, useContext, useCallback } from "react";
 import {
   View,
   Text,
@@ -35,7 +35,7 @@ const ProfileScreen = () => {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
-  const loadProfile = async () => {
+  const loadProfile = useCallback(async () => {
     try {
       setLoading(true);
       setErrorMsg("");
@@ -51,11 +51,11 @@ const ProfileScreen = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId, userToken]);
 
   useEffect(() => {
     loadProfile();
-  }, []);
+  }, [loadProfile]);
 
   const handleViewProof = (url) => {
     if (!url) return;
@@ -123,6 +123,17 @@ const ProfileScreen = () => {
             </Text>
           </TouchableOpacity>
         </View>
+
+        {profile.isGymOwner && (
+          <TouchableOpacity
+            style={styles.earningsBtn}
+            onPress={() => navigation.navigate("GymOwnerLogin")}
+          >
+            <Text style={styles.earningsText}>
+              {i18n.t("profile.gymOwnerDashboard") || "Gym Owner Dashboard"}
+            </Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       <View style={styles.section}>
@@ -166,7 +177,7 @@ const ProfileScreen = () => {
       </View>
 
       {profile.isCreator && (
-        <View style={styles.section}>
+        <View className={styles.section}>
           <Text style={styles.sectionTitle}>
             {i18n.t("profile.creatorDashboard")}
           </Text>

@@ -23,7 +23,7 @@
     "viewSummary": "Ver Resumen",
     "joinChallenge": "Unirse al Desafío",
     "noWorkout": "No has registrado ningún entrenamiento hoy",
-    "welcome": "¡Bienvenido!",
+    "welcome": "Bienvenido, {{username}}",
     "defaultName": "Atleta REPZ",
     "nextWorkout": "Próximo Entrenamiento",
     "challenges": "Desafíos Diarios",
@@ -63,7 +63,7 @@
     "days": "Días/Semana",
     "split": "División Preferida",
     "equipment": "Equipamiento Disponible",
-    "injuries": "Lesiones",
+    "injuries": "Consideraciones de Lesiones",
     "experience": "Nivel de Experiencia",
     "loading": "Generando tu plan...",
     "viewPlan": "Ver Plan",
@@ -119,8 +119,8 @@
     "lockedMessage": "Mejora tu acceso para ver las clasificaciones.",
     "empty": "No hay entradas aún.",
     "errorLoad": "Error al cargar clasificación.",
-    "rank": "Tu posición en {category}: #{rank}",
-    "gainToBreakTop": "Faltan {value}kg para entrar en el top."
+    "rank": "Tu posición para {category}: #{rank}",
+    "gainToBreakTop": "{value}kg necesarios para entrar en el top."
   },
   "marketplace": {
     "title": "Mercado de Planes",
@@ -136,12 +136,12 @@
     "topRated": "Mejor Valorados",
     "mostBought": "Más Comprados",
     "preview": "Ver Plan",
-    "buy": "Comprar",
+    "buy": "Comprar Ahora",
     "save": "Guardar en Mis Planes",
-    "unlockPro": "Disponible con Nivel Pro",
-    "unlockElite": "Disponible con Nivel Elite",
+    "unlockPro": "Desbloquear con Nivel Pro",
+    "unlockElite": "Desbloquear con Nivel Elite",
     "errorTitle": "Error",
-    "errorLoad": "Error al cargar los planes.",
+    "errorLoad": "Error al cargar los planes del mercado.",
     "locked": "Actualiza tu suscripción para acceder."
   },
   "profile": {
@@ -164,13 +164,15 @@
     "bestLifts": "Mejores Levantamientos",
     "noLifts": "Aún no hay levantamientos registrados.",
     "transformation": "Transformaciones",
-    "noTransformation": "Aún no hay fotos de progreso.",
+    "noTransformation": "Aún no hay fotos de progreso subidas.",
     "creatorDashboard": "Panel de Creador",
     "plansSold": "Planes Vendidos",
     "earnings": "Ganancias",
     "topPlan": "Plan Más Vendido",
     "toolPlanBuilder": "Creador de Planes",
-    "toolVisualGains": "Análisis de Progreso Visual"
+    "toolVisualGains": "Análisis de Progreso Visual",
+    "gymOwnerPrompt": "¿Eres dueño de un gimnasio?",
+    "gymOwnerLogin": "Ir al inicio de sesión de dueño de gimnasio"
   },
   "plans": {
     "title": "Tus Planes y Desafíos",
@@ -181,10 +183,10 @@
     },
     "xpReward": "XP Apostado",
     "exercise": "Ejercicio",
-    "offlineMode": "Estás sin conexión. Mostrando planes guardados.",
+    "offlineMode": "Estás en modo sin conexión. Mostrando planes en caché.",
     "errorLoading": "No se pudieron cargar los planes.",
-    "errorUnexpected": "Ocurrió un error al cargar tus planes.",
-    "deleteFail": "No se pudo eliminar el plan.",
+    "errorUnexpected": "Ocurrió un error inesperado al cargar tus planes.",
+    "deleteFail": "No se pudo eliminar este plan.",
     "empty": "No hay elementos para mostrar."
   },
   "common": {
@@ -192,9 +194,9 @@
     "cancel": "Cancelar",
     "loading": "Cargando...",
     "error": "Ocurrió un error.",
-    "proOnly": "Función solo para Pro.",
-    "eliteOnly": "Función solo para Elite.",
-    "noData": "Sin datos disponibles.",
+    "proOnly": "Esta es una característica Pro.",
+    "eliteOnly": "Esta es una característica Elite.",
+    "noData": "No hay datos disponibles.",
     "tryAgain": "Intenta de nuevo",
     "back": "Atrás",
     "next": "Siguiente",
@@ -233,11 +235,11 @@
   },
   "partnerFinder": {
     "title": "Buscar Compañeros de Entrenamiento",
-    "postSlot": "Publicar Horario",
+    "postSlot": "Publicar un Horario de Sesión",
     "gym": "Gimnasio",
     "time": "Hora",
     "post": "Publicar Sesión",
-    "noSlots": "Aún no hay sesiones publicadas.",
+    "noSlots": "Aún no hay horarios de compañeros publicados.",
     "accept": "Unirse a Sesión",
     "joined": "Te has unido a esta sesión.",
     "error": "No se pudieron cargar las sesiones."
@@ -246,14 +248,14 @@
     "congrats": "¡Felicidades!",
     "milestone": "¡Has alcanzado una racha de {days} días!",
     "bonusXP": "+{xp} XP extra otorgado!",
-    "keepGoing": "¡Sigue así!",
+    "keepGoing": "¡Sigue con la racha!",
     "ok": "¡Genial!"
   },
   "notifications": {
     "acceptedChallenge": "¡Tu desafío fue aceptado!",
     "dailyReminder": "¡No olvides completar tu desafío diario!",
     "xpBonus": "¡Has ganado XP extra!",
-    "newSlot": "¡Nueva sesión publicada cerca!",
+    "newSlot": "¡Nuevo horario de compañero de entrenamiento disponible cerca!",
     "reminderPlan": "¡Es hora de seguir tu plan de entrenamiento!"
   },
   "dailyChallenge": {
@@ -261,7 +263,7 @@
     "completed": "¡Desafío Completado!",
     "complete": "Completar Desafío",
     "xpEarned": "+{xp} XP ganados",
-    "description": "Desafío personalizado del día",
+    "description": "Desafío personalizado para hoy",
     "notAvailable": "Aún no hay desafío disponible",
     "buttonComplete": "Marcar como Completado"
   },
@@ -270,7 +272,7 @@
     "flagged": "⚠️ Técnica marcada para revisión"
   },
   "challengeType": {
-    "classic": "1v1 Clásico",
+    "classic": "Clásico 1v1",
     "group": "Desafío en Grupo",
     "gym": "Gimnasio vs Gimnasio",
     "battle": "Batalla de Entrenamiento"

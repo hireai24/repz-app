@@ -1,3 +1,4 @@
+// src/components/ChallengeWagerCard.js
 import React from "react";
 import PropTypes from "prop-types";
 import { Text, StyleSheet, TouchableOpacity } from "react-native";
@@ -15,7 +16,7 @@ const ChallengeWagerCard = ({ challenge, onPress }) => {
     status,
     opponents = [],
     winnerId,
-    userId,
+    userId, // This prop should be passed from the parent component (e.g., from UserContext)
     verified,
     flagged,
     type,
@@ -29,7 +30,8 @@ const ChallengeWagerCard = ({ challenge, onPress }) => {
   const getStatusLabel = () => {
     if (isUserWinner) return i18n.t("challengeWager.winner");
     if (isUserLoser) return i18n.t("challengeWager.loser");
-    return status || "Pending";
+    // Capitalize the first letter of the status for better display, if status is a string
+    return status ? status.charAt(0).toUpperCase() + status.slice(1) : "Pending";
   };
 
   const getCountdown = () => {
@@ -51,7 +53,8 @@ const ChallengeWagerCard = ({ challenge, onPress }) => {
       <Text style={styles.detail}>🧩 Type: {type?.toUpperCase() || "N/A"}</Text>
       <Text style={styles.detail}>
         ⚔️ {i18n.t("challengeWager.opponents")}:{" "}
-        {opponents.length > 0 ? opponents.join(", ") : "-"}
+        {opponents.length > 0 ? opponents.join(", ") : i18n.t("challengeWager.noOpponentsYet")}
+        {/* TODO: Opponent IDs should ideally be resolved to usernames for better UX. */}
       </Text>
       <Text style={styles.detail}>
         🎯 {i18n.t("challengeWager.wagerAmount")}: {xp} XP
@@ -92,15 +95,15 @@ ChallengeWagerCard.propTypes = {
     xp: PropTypes.number,
     xpPot: PropTypes.number,
     status: PropTypes.string,
-    creatorName: PropTypes.string, // still included in shape, even though unused
+    // creatorName: PropTypes.string, // Removed: no longer used
     opponents: PropTypes.arrayOf(PropTypes.string),
     winnerId: PropTypes.string,
-    userId: PropTypes.string,
+    userId: PropTypes.string, // Explicitly define this prop
     verified: PropTypes.bool,
     flagged: PropTypes.bool,
     type: PropTypes.string,
     votes: PropTypes.number,
-    expiresAt: PropTypes.object,
+    expiresAt: PropTypes.object, // Firebase Timestamp object
   }).isRequired,
   onPress: PropTypes.func,
 };

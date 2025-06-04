@@ -1,7 +1,8 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-import fetch from "node-fetch";
+// import fetch from "node-fetch"; // REMOVED: No longer direct fetch
+import { getOpenAIResponse } from "../../utils/openaiHelper.js"; // ADDED: Import openaiHelper
 
 /**
  * Evaluates exercise form based on rep-by-rep video transcript.
@@ -12,6 +13,7 @@ export const evaluateFormFromTranscript = async ({
   reps,
   transcript,
   gymContext = null,
+  token = null // ADDED: Accept token for authenticated AI call
 }) => {
   if (
     typeof exercise !== "string" ||
@@ -95,29 +97,12 @@ Expert Cues:
 `;
 
   try {
-    const res = await fetch(
-      `${process.env.EXPO_PUBLIC_API_BASE_URL}/api/openai`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          // Optionally include Authorization if needed:
-          // Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          messages: [{ role: "user", content: prompt }],
-        }),
-      },
-    );
+    const messages = [{ role: "user", content: prompt }];
+    const feedback = await getOpenAIResponse(messages, token); // CHANGED: Use openaiHelper with token
 
-    const data = await res.json();
-
-    if (!res.ok) {
-      throw new Error(data.error || "AI request failed");
-    }
-
-    return { success: true, feedback: data.result };
+    return { success: true, feedback };
   } catch (err) {
+    console.error("Error in evaluateFormFromTranscript:", err); // Server-side debugging
     return {
       success: false,
       error: {

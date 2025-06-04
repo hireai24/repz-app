@@ -6,6 +6,7 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  Image,
 } from "react-native";
 import {
   collection,
@@ -23,6 +24,9 @@ import spacing from "../theme/spacing";
 import typography from "../theme/typography";
 import { useUser } from "../context/UserContext";
 
+// ✅ Hermes-safe static fallback avatar
+import avatarFallback from "../assets/avatars/avatar1.png";
+
 const LiveChatThread = ({ challengeId }) => {
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
@@ -34,7 +38,7 @@ const LiveChatThread = ({ challengeId }) => {
       orderBy("createdAt", "asc"),
     );
 
-    const unsub = onSnapshot(q, (snapshot) => {
+    const unsubscribe = onSnapshot(q, (snapshot) => {
       const data = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
@@ -42,16 +46,37 @@ const LiveChatThread = ({ challengeId }) => {
       setMessages(data);
     });
 
-    return () => unsub();
+    return () => unsubscribe();
   }, [challengeId]);
 
   const sendMessage = async () => {
     if (!text.trim()) return;
+
+    const message = text.trim();
+
     await addDoc(collection(db, "challengeChats", challengeId, "messages"), {
-      text: text.trim(),
+      text: message,
       createdAt: Timestamp.now(),
-      sender: user.username || "Anonymous",
+      sender: user?.username || "Anonymous",
     });
+
+    try {
+      await fetch(
+        `${process.env.EXPO_PUBLIC_API_BASE_URL}/api/notify/notifyChallengeMessage`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            challengeId,
+            sender: user?.username || "Anonymous",
+            message,
+          }),
+        },
+      );
+    } catch {
+      // Silently fail in production
+    }
+
     setText("");
   };
 
@@ -61,12 +86,19 @@ const LiveChatThread = ({ challengeId }) => {
         data={messages}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <Text
-            style={styles.message}
-            accessibilityLabel={`Message from ${item.sender}`}
-          >
-            <Text style={styles.sender}>{item.sender}:</Text> {item.text}
-          </Text>
+          <View style={styles.messageRow}>
+            <Image
+              source={avatarFallback} // ✅ Safe static image
+              style={styles.avatar}
+              accessibilityLabel="Sender avatar"
+            />
+            <Text
+              style={styles.message}
+              accessibilityLabel={`Message from ${item.sender}`}
+            >
+              <Text style={styles.sender}>{item.sender}:</Text> {item.text}
+            </Text>
+          </View>
         )}
         accessibilityRole="list"
         accessibilityLabel="Live chat messages"
@@ -97,6 +129,12 @@ LiveChatThread.propTypes = {
 };
 
 const styles = StyleSheet.create({
+  avatar: {
+    borderRadius: 14,
+    height: 28,
+    marginRight: spacing.sm,
+    width: 28,
+  },
   container: {
     borderTopColor: colors.border,
     borderTopWidth: 1,
@@ -118,6 +156,11 @@ const styles = StyleSheet.create({
   },
   message: {
     ...typography.body,
+    flexShrink: 1,
+  },
+  messageRow: {
+    alignItems: "center",
+    flexDirection: "row",
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
   },

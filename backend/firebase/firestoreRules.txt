@@ -98,38 +98,52 @@ service cloud.firestore {
       allow write: if isSignedIn() && !exists(/databases/$(database)/documents/reviews/$(reviewId));
     }
 
-    // ✅ NEW: Gym Profiles
+    // ✅ UPDATED: Gym Profiles (owners only)
     match /gyms/{gymId} {
       allow read: if isSignedIn();
-      allow write: if isSignedIn();
+      allow create: if requestIsOwner();
+      allow update, delete: if resourceIsOwner();
     }
 
-    // ✅ NEW: Partner Finder Slots
+    // ✅ NEW: Gym Owner Profiles
+    match /gymOwners/{ownerId} {
+      allow read: if isSignedIn();
+      allow write: if isOwner(ownerId);
+    }
+
+    // ✅ NEW: Gym Feeds (public read, owner write-only)
+    match /gymFeeds/{postId} {
+      allow read: if true;
+      allow create: if requestIsOwner();
+      allow update, delete: if resourceIsOwner();
+    }
+
+    // ✅ Partner Finder Slots
     match /partnerSlots/{slotId} {
       allow read: if isSignedIn();
       allow create: if requestIsOwner();
       allow update, delete: if resourceIsOwner();
     }
 
-    // ✅ NEW: XP Wager Challenges / Workout Battles
+    // ✅ XP Wager Challenges / Workout Battles
     match /wagerChallenges/{challengeId} {
       allow read: if isSignedIn();
       allow create: if requestIsOwner();
       allow update, delete: if resourceIsOwner();
     }
 
-    // ✅ NEW: Daily AI Challenges
+    // ✅ Daily AI Challenges
     match /dailyChallenges/{userId} {
       allow read, write: if isOwner(userId);
     }
 
-    // ✅ NEW: Battle Voting (per challenge)
+    // ✅ Battle Voting (per challenge)
     match /votes/{challengeId}/{userId} {
       allow read: if isSignedIn();
       allow write: if isSignedIn() && request.auth.uid == userId;
     }
 
-    // ✅ NEW: Battle Stats
+    // ✅ Battle Stats
     match /battleStats/{userId} {
       allow read: if isOwner(userId);
       allow write: if isOwner(userId);

@@ -4,11 +4,12 @@ import React, {
   useEffect,
   useMemo,
   useContext,
+  useCallback,
 } from "react";
 import PropTypes from "prop-types";
 import { doc, onSnapshot, updateDoc, increment } from "firebase/firestore";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { db } from "../firebase/firebaseClient"; // ✅ FIXED IMPORT
+import { db } from "../firebase/firebaseClient";
 import { AuthContext } from "./AuthContext";
 
 // Provide default values for safer consumption outside provider (prevents undefined errors)
@@ -79,20 +80,23 @@ export const XPProvider = ({ children }) => {
     return () => unsubscribe();
   }, [authUser]);
 
-  const addXP = async (amount) => {
-    if (!authUser) return;
-    try {
-      const xpRef = doc(db, "xp", authUser.uid);
-      await updateDoc(xpRef, { total: increment(amount) });
-      const updated = totalXP + amount;
-      setTotalXP(updated);
-      await AsyncStorage.setItem(XP_STORAGE_KEY, updated.toString());
-    } catch {
-      setXpError("Failed to add XP.");
-    }
-  };
+  const addXP = useCallback(
+    async (amount) => {
+      if (!authUser) return;
+      try {
+        const xpRef = doc(db, "xp", authUser.uid);
+        await updateDoc(xpRef, { total: increment(amount) });
+        const updated = totalXP + amount;
+        setTotalXP(updated);
+        await AsyncStorage.setItem(XP_STORAGE_KEY, updated.toString());
+      } catch {
+        setXpError("Failed to add XP.");
+      }
+    },
+    [authUser, totalXP],
+  );
 
-  const resetXP = async () => {
+  const resetXP = useCallback(async () => {
     if (!authUser) return;
     try {
       const xpRef = doc(db, "xp", authUser.uid);
@@ -102,43 +106,52 @@ export const XPProvider = ({ children }) => {
     } catch {
       setXpError("Failed to reset XP.");
     }
-  };
+  }, [authUser]);
 
-  const addPlanXP = async (type = "Workout") => {
-    const xpMap = { Workout: 100, Meal: 50, Bundle: 150 };
-    const xpAmount = xpMap[type] || 75;
-    await addXP(xpAmount);
-  };
+  const addPlanXP = useCallback(
+    async (type = "Workout") => {
+      const xpMap = { Workout: 100, Meal: 50, Bundle: 150 };
+      const xpAmount = xpMap[type] || 75;
+      await addXP(xpAmount);
+    },
+    [addXP],
+  );
 
-  const applyWagerXP = async (win, amount) => {
-    if (!authUser || typeof amount !== "number") return;
-    try {
-      const delta = win ? amount : -amount;
-      const xpRef = doc(db, "xp", authUser.uid);
-      await updateDoc(xpRef, { total: increment(delta) });
-      const newXP = totalXP + delta;
-      setTotalXP(newXP);
-      await AsyncStorage.setItem(XP_STORAGE_KEY, newXP.toString());
-    } catch {
-      setXpError("Failed to update wager XP.");
-    }
-  };
+  const applyWagerXP = useCallback(
+    async (win, amount) => {
+      if (!authUser || typeof amount !== "number") return;
+      try {
+        const delta = win ? amount : -amount;
+        const xpRef = doc(db, "xp", authUser.uid);
+        await updateDoc(xpRef, { total: increment(delta) });
+        const newXP = totalXP + delta;
+        setTotalXP(newXP);
+        await AsyncStorage.setItem(XP_STORAGE_KEY, newXP.toString());
+      } catch {
+        setXpError("Failed to update wager XP.");
+      }
+    },
+    [authUser, totalXP],
+  );
 
-  const applyStreakBonus = async (milestone) => {
-    if (!authUser || ![3, 7, 14].includes(milestone)) return;
-    const bonusMap = { 3: 50, 7: 100, 14: 200 };
-    const bonusXP = bonusMap[milestone] || 0;
+  const applyStreakBonus = useCallback(
+    async (milestone) => {
+      if (!authUser || ![3, 7, 14].includes(milestone)) return;
+      const bonusMap = { 3: 50, 7: 100, 14: 200 };
+      const bonusXP = bonusMap[milestone] || 0;
 
-    try {
-      const xpRef = doc(db, "xp", authUser.uid);
-      await updateDoc(xpRef, { total: increment(bonusXP) });
-      const updated = totalXP + bonusXP;
-      setTotalXP(updated);
-      await AsyncStorage.setItem(XP_STORAGE_KEY, updated.toString());
-    } catch {
-      setXpError("Failed to apply streak bonus.");
-    }
-  };
+      try {
+        const xpRef = doc(db, "xp", authUser.uid);
+        await updateDoc(xpRef, { total: increment(bonusXP) });
+        const updated = totalXP + bonusXP;
+        setTotalXP(updated);
+        await AsyncStorage.setItem(XP_STORAGE_KEY, updated.toString());
+      } catch {
+        setXpError("Failed to apply streak bonus.");
+      }
+    },
+    [authUser, totalXP],
+  );
 
   const { level, currentXP, xpToNext } = useMemo(
     () => calculateLevel(totalXP),
@@ -158,7 +171,18 @@ export const XPProvider = ({ children }) => {
       applyStreakBonus,
       xpError,
     }),
-    [totalXP, currentXP, xpToNext, level, xpError],
+    [
+      totalXP,
+      currentXP,
+      xpToNext,
+      level,
+      addXP,
+      resetXP,
+      addPlanXP,
+      applyWagerXP,
+      applyStreakBonus,
+      xpError,
+    ],
   );
 
   return <XPContext.Provider value={value}>{children}</XPContext.Provider>;

@@ -1,3 +1,4 @@
+// backend/controllers/battleStatsController.js
 import { db } from "../firebase/init.js";
 import { doc, getDoc, setDoc, updateDoc, increment } from "firebase/firestore";
 
@@ -17,14 +18,14 @@ export const getBattleStats = async (req, res) => {
     const snapshot = await getDoc(ref);
 
     if (!snapshot.exists()) {
-      return res
-        .status(404)
-        .json({ success: false, error: "Stats not found." });
+      // If stats don't exist, return a default/empty stats object instead of 404
+      // This allows the frontend to display "0 wins, 0 losses" instead of an error
+      return res.status(200).json({ success: true, stats: { wins: 0, losses: 0, currentStreak: 0, bestStreak: 0 } });
     }
 
     return res.status(200).json({ success: true, stats: snapshot.data() });
   } catch (err) {
-    // No console.error - return error response only
+    console.error("Error in getBattleStats:", err); // Log the error for debugging
     return res
       .status(500)
       .json({ success: false, error: "Internal server error." });
@@ -34,6 +35,7 @@ export const getBattleStats = async (req, res) => {
 /**
  * Updates battle stats for a user after a challenge result.
  * Called after each challenge outcome.
+ * This function should ONLY be called internally by other trusted backend functions.
  *
  * @param {string} userId - Firebase user ID
  * @param {boolean} won - Whether the user won the challenge
@@ -43,6 +45,7 @@ export const updateBattleStats = async (userId, won) => {
   const snapshot = await getDoc(ref);
 
   if (!snapshot.exists()) {
+    // Initialize stats if they don't exist
     await setDoc(ref, {
       wins: won ? 1 : 0,
       losses: won ? 0 : 1,

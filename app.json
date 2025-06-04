@@ -6,24 +6,28 @@
     "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./src/assets/logo.png",
+    "scheme": "repz",
     "splash": {
       "image": "./src/assets/splash/splash-dark/splash-dark.png",
       "resizeMode": "contain",
       "backgroundColor": "#000000"
     },
+    "assetBundlePatterns": ["**/*"],
     "updates": {
-      "fallbackToCacheTimeout": 0,
-      "url": "https://u.expo.dev/ee573bbd-14f7-47f2-988d-a0da24fac370"
+      "fallbackToCacheTimeout": 0
     },
     "runtimeVersion": {
       "policy": "appVersion"
     },
-    "assetBundlePatterns": ["**/*"],
+    "extra": {
+      "eas": {
+        "projectId": "YOUR_PROJECT_ID" // Replace with actual EAS project ID from dashboard
+      }
+    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.repz.app",
       "buildNumber": "2",
-      "jsEngine": "hermes",
       "infoPlist": {
         "NSCameraUsageDescription": "This app uses the camera to record workout form and upload photos.",
         "NSPhotoLibraryUsageDescription": "This app accesses your gallery to upload before/after progress photos.",
@@ -33,10 +37,6 @@
       }
     },
     "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./src/assets/logo.png",
-        "backgroundColor": "#000000"
-      },
       "package": "com.repz.app",
       "versionCode": 2,
       "permissions": [
@@ -46,25 +46,23 @@
         "WRITE_EXTERNAL_STORAGE",
         "ACCESS_FINE_LOCATION"
       ],
-      "jsEngine": "hermes"
+      "adaptiveIcon": {
+        "foregroundImage": "./src/assets/logo.png",
+        "backgroundColor": "#000000"
+      }
     },
     "web": {
       "favicon": "./src/assets/logo.png"
-    },
-    "extra": {
-      "eas": {
-        "projectId": "ee573bbd-14f7-47f2-988d-a0da24fac370"
-      }
     },
     "plugins": [
       [
         "expo-build-properties",
         {
-          "ios": {
-            "useFrameworks": "static",
+          "android": {
             "jsEngine": "hermes"
           },
-          "android": {
+          "ios": {
+            "useFrameworks": "static",
             "jsEngine": "hermes"
           }
         }

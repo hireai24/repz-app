@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import express from "express";
 import { doc, updateDoc } from "firebase/firestore";
-import { db } from "../../backend/firebase/init.js";
+import { db } from "../../firebase/init.js";
 
 const router = express.Router();
 const REVENUECAT_WEBHOOK_SECRET = process.env.REVENUECAT_WEBHOOK_SECRET;

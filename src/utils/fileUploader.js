@@ -1,7 +1,7 @@
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
 import * as FileSystem from "expo-file-system";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { storage } from "../firebase/firebaseClient"; // ✅ CORRECTED PATH
+import { storage } from "../firebase/firebaseClient";
 
 const allowedTypes = [
   "image/jpeg",
@@ -9,7 +9,7 @@ const allowedTypes = [
   "video/mp4",
   "video/quicktime",
 ];
-const maxSizeMB = 10;
+const maxSizeMB = 100; // Increased limit for videos, adjust as needed
 const maxRetries = 3;
 
 /**
@@ -20,6 +20,7 @@ const maxRetries = 3;
  * @param {string} params.userId - User ID for file path
  * @param {string} params.pathPrefix - Path prefix in storage bucket
  * @param {function} [params.onProgress] - Progress callback (0–1)
+ * // REMOVED: endpoint parameter as it was unused and misleading
  */
 export const uploadFile = async ({
   uri,
@@ -33,11 +34,11 @@ export const uploadFile = async ({
   }
 
   const fileInfo = await FileSystem.getInfoAsync(uri);
-  if (!fileInfo.exists) throw new Error("File does not exist");
+  if (!fileInfo.exists) throw new Error("File does not exist at URI: " + uri);
 
   const fileSizeMB = fileInfo.size / (1024 * 1024);
   if (fileSizeMB > maxSizeMB) {
-    throw new Error(`File exceeds ${maxSizeMB}MB limit`);
+    throw new Error(`File exceeds ${maxSizeMB}MB limit. Current: ${fileSizeMB.toFixed(2)}MB`);
   }
 
   const fileName = uri.split("/").pop();
@@ -54,7 +55,7 @@ export const uploadFile = async ({
   const mimeType = mimeMap[ext] || `${type}/*`;
 
   if (!allowedTypes.includes(mimeType)) {
-    throw new Error("Unsupported file type (only JPEG, PNG, MP4, MOV)");
+    throw new Error(`Unsupported file type: ${mimeType}. Only JPEG, PNG, MP4, MOV allowed.`);
   }
 
   const filePath = `${pathPrefix}/${userId}/${Date.now()}_${fileName}`;

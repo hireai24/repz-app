@@ -1,3 +1,4 @@
+// src/screens/ChallengeSetupScreen.js
 import React, { useContext, useState } from "react";
 import {
   View,
@@ -15,7 +16,7 @@ import { useNavigation } from "@react-navigation/native";
 import { UserContext } from "../context/UserContext";
 import { XPContext } from "../context/XPContext";
 import { createChallenge } from "../api/challengeWagerApi";
-import ChallengeTypeSelector from "../components/ChallengeTypeSelector";
+import ChallengeTypeSelector from "../components/ChallengeTypeSelector"; // Correct import
 
 import i18n from "../locales/i18n";
 import colors from "../theme/colors";
@@ -31,29 +32,40 @@ const ChallengeSetupScreen = () => {
   const [wagerXP, setWagerXP] = useState("50");
   const [opponents, setOpponents] = useState("");
   const [description, setDescription] = useState("");
-  const [type, setType] = useState("reps");
+  const [type, setType] = useState("reps"); // Initial state for challenge type
   const [winnerTakesAll, setWinnerTakesAll] = useState(false);
   const [representGym, setRepresentGym] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  const canSubmit = () =>
-    exercise.trim() &&
-    parseInt(wagerXP, 10) >= 50 &&
-    parseInt(wagerXP, 10) <= 500 &&
-    opponents.trim() &&
-    type &&
-    !submitting;
+  const canSubmit = () => {
+    const parsedWagerXP = parseInt(wagerXP, 10);
+    return (
+      exercise.trim() !== "" &&
+      !isNaN(parsedWagerXP) &&
+      parsedWagerXP >= 50 &&
+      parsedWagerXP <= 500 &&
+      opponents.trim() !== "" &&
+      type !== "" && // Ensure a type is selected
+      !submitting
+    );
+  };
 
   const handleCreateChallenge = async () => {
     const wager = parseInt(wagerXP, 10);
 
     if (!canSubmit()) {
-      Alert.alert("Invalid", "Please fill in all fields properly.");
+      Alert.alert(
+        i18n.t("challengeSetup.invalidInputTitle") || "Invalid Input",
+        i18n.t("challengeSetup.invalidInputMessage") || "Please fill in all fields properly and ensure XP wager is between 50-500."
+      );
       return;
     }
 
     if (wager > xp) {
-      Alert.alert("Not enough XP", "You don’t have enough XP to wager.");
+      Alert.alert(
+        i18n.t("challengeSetup.notEnoughXpTitle") || "Not enough XP",
+        i18n.t("challengeSetup.notEnoughXpMessage") || "You don’t have enough XP to wager."
+      );
       return;
     }
 
@@ -61,30 +73,31 @@ const ChallengeSetupScreen = () => {
 
     try {
       const res = await createChallenge({
-        createdBy: userProfile?.id,
+        createdBy: userProfile?.uid, // Use userProfile.uid for consistency with Firebase Auth
         exercise,
-        xpPot: wager,
+        wagerXP: wager, // Send as number
         type,
-        opponents: opponents.split(",").map((s) => s.trim()),
+        opponents: opponents.split(",").map((s) => s.trim()).filter(Boolean), // Filter out empty strings
         rules: description,
         winnerTakesAll,
-        gymName: representGym ? userProfile?.gymName : null,
+        gym: representGym ? userProfile?.gymName : null, // Pass gymName if representing gym
       });
 
       if (res.success) {
         Alert.alert(
-          "✅ Challenge Created",
-          "Waiting for opponent(s) to accept.",
+          i18n.t("challengeSetup.successTitle") || "✅ Challenge Created",
+          i18n.t("challengeSetup.successMessage") || "Waiting for opponent(s) to accept."
         );
         navigation.goBack();
       } else {
         Alert.alert(
-          "Error",
-          (res.error && res.error.message) || "Could not create challenge.",
+          i18n.t("common.error") || "Error",
+          (res.error && res.error.message) || i18n.t("challengeSetup.createErrorMessage") || "Could not create challenge."
         );
       }
-    } catch {
-      Alert.alert("Error", "Something went wrong.");
+    } catch (err) {
+      console.error("Error creating challenge:", err); // Log for debugging
+      Alert.alert(i18n.t("common.error") || "Error", i18n.t("common.somethingWentWrong") || "Something went wrong.");
     } finally {
       setSubmitting(false);
     }
@@ -98,31 +111,37 @@ const ChallengeSetupScreen = () => {
 
       <TextInput
         style={styles.input}
-        placeholder="Exercise (e.g., Bench Press)"
+        placeholder={i18n.t("challengeSetup.exercisePlaceholder") || "Exercise (e.g., Bench Press)"}
+        placeholderTextColor={colors.textSecondary}
         value={exercise}
         onChangeText={setExercise}
       />
 
       <TextInput
         style={styles.input}
-        placeholder="Opponent IDs (comma separated)"
+        placeholder={i18n.t("challengeSetup.opponentsPlaceholder") || "Opponent IDs (comma separated)"}
+        placeholderTextColor={colors.textSecondary}
         value={opponents}
         onChangeText={setOpponents}
+        autoCapitalize="none" // User IDs are typically not capitalized
       />
 
       <TextInput
         style={styles.input}
-        placeholder="XP Wager (50–500)"
+        placeholder={i18n.t("challengeSetup.xpWagerPlaceholder") || "XP Wager (50–500)"}
+        placeholderTextColor={colors.textSecondary}
         value={wagerXP}
-        onChangeText={setWagerXP}
+        onChangeText={(text) => setWagerXP(text.replace(/[^0-9]/g, ""))} // Only allow numeric input
         keyboardType="numeric"
       />
 
-      <ChallengeTypeSelector selectedType={type} onChange={setType} />
+      {/* Corrected prop name: onChange -> onSelect */}
+      <ChallengeTypeSelector selectedType={type} onSelect={setType} />
 
       <TextInput
         style={styles.textArea}
-        placeholder="Challenge Description or Rules"
+        placeholder={i18n.t("challengeSetup.descriptionPlaceholder") || "Challenge Description or Rules"}
+        placeholderTextColor={colors.textSecondary}
         value={description}
         onChangeText={setDescription}
         multiline
@@ -130,22 +149,31 @@ const ChallengeSetupScreen = () => {
       />
 
       <View style={styles.toggleRow}>
-        <Text style={styles.toggleLabel}>🎯 Winner Takes All</Text>
+        <Text style={styles.toggleLabel}>🎯 {i18n.t("challengeSetup.winnerTakesAll") || "Winner Takes All"}</Text>
         <Switch
           value={winnerTakesAll}
           onValueChange={setWinnerTakesAll}
           trackColor={{ false: colors.gray, true: colors.primary }}
+          thumbColor={colors.white}
         />
       </View>
 
       <View style={styles.toggleRow}>
-        <Text style={styles.toggleLabel}>🏋️ Represent Your Gym</Text>
+        <Text style={styles.toggleLabel}>🏋️ {i18n.t("challengeSetup.representGym") || "Represent Your Gym"}</Text>
         <Switch
           value={representGym}
           onValueChange={setRepresentGym}
           trackColor={{ false: colors.gray, true: colors.accentBlue }}
+          thumbColor={colors.white}
+          disabled={!userProfile?.gymName} // Disable if user has no gym
         />
       </View>
+      {!userProfile?.gymName && representGym && (
+        <Text style={styles.disabledToggleHint}>
+          {i18n.t("challengeSetup.noGymHint") || "You need to be part of a gym to represent one."}
+        </Text>
+      )}
+
 
       <TouchableOpacity
         style={[styles.submitBtn, !canSubmit() && styles.disabledBtn]}
@@ -164,8 +192,8 @@ const ChallengeSetupScreen = () => {
   );
 };
 
-// Add prop-types for future-proofing and warnings removal if this becomes a child component
-ChallengeSetupScreen.propTypes = {};
+// No prop-types needed as it's a screen component, not meant for reuse with props from parent
+// ChallengeSetupScreen.propTypes = {}; // Can remove this if it's purely a screen
 
 const styles = StyleSheet.create({
   container: {
@@ -175,6 +203,13 @@ const styles = StyleSheet.create({
   },
   disabledBtn: {
     backgroundColor: colors.disabled,
+    opacity: 0.7,
+  },
+  disabledToggleHint: {
+    color: colors.textSecondary,
+    fontSize: 12,
+    marginBottom: spacing.md,
+    textAlign: "right",
   },
   input: {
     backgroundColor: colors.surface,
@@ -188,6 +223,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     borderRadius: 8,
     padding: spacing.md,
+    marginTop: spacing.md, // Add some top margin
   },
   submitText: {
     color: colors.white,

@@ -42,7 +42,17 @@ const fetchWithRetry = async (url, options = {}, retries = MAX_RETRIES) => {
 };
 
 /**
- * Fetch user profile
+ * Fetch current user profile (via /users/me)
+ */
+export const getMyProfile = async () => {
+  const token = await getAuthToken();
+  return await fetchWithRetry(`${BASE_URL}/users/me`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+};
+
+/**
+ * Fetch user profile by ID (for admin or fallback)
  */
 export const getUserProfile = async (userId, overrideToken = null) => {
   const token = overrideToken || (await getAuthToken());

@@ -49,6 +49,9 @@ PartnerSlotCard.propTypes = {
     tier: PropTypes.string,
     avatar: PropTypes.string,
     note: PropTypes.string,
+    // Ensure participants is also in PropTypes if you plan to use it for display
+    participants: PropTypes.arrayOf(PropTypes.string),
+    userId: PropTypes.string, // The ID of the user who created the slot
   }).isRequired,
   onAccept: PropTypes.func.isRequired,
 };

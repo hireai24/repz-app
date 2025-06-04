@@ -1,7 +1,7 @@
-// utils/userUtils.js
+// src/utils/userUtils.js (Frontend)
 
 import { doc, getDoc } from "firebase/firestore";
-import { db } from "../../backend/firebase/init";
+import { db } from "../firebase/firebaseClient"; // ✅ Corrected import path for frontend
 
 /**
  * Get the user's subscription tier from Firestore.
@@ -26,8 +26,7 @@ export const getUserTier = async (userId) => {
     }
     return "Free";
   } catch (err) {
-    // eslint-disable-next-line no-console
-    console.error("getUserTier error:", err);
+    // console.error("getUserTier error (frontend):", err); // Log only in development
     return "Free";
   }
 };

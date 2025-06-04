@@ -2,18 +2,20 @@ import React, { useState, useContext } from "react";
 import {
   View,
   Text,
-  StyleSheet,
+  TextInput, // Assuming TextInput might be used for custom inputs if you expand this
   TouchableOpacity,
+  StyleSheet,
   ScrollView,
   ActivityIndicator,
   Animated,
+  Alert,
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import { UserContext } from "../context/UserContext";
+import { UserContext } from "../context/UserContext"; // UserContext contains userProfile
 import { useTierAccess } from "../hooks/useTierAccess";
 import useFadeIn from "../animations/fadeIn";
-import { saveNewUserPlan } from "../services/userPlanService";
+import { saveNewUserPlan } from "../services/userPlanService"; // Still used for saving to local storage/Firestore
+import { generateWorkoutPlan as callGenerateWorkoutAPI } from "../api/workoutApi"; // NEW: Import API call from workoutApi
 import i18n from "../locales/i18n";
 import colors from "../theme/colors";
 import spacing from "../theme/spacing";
@@ -24,96 +26,55 @@ const splits = ["Push/Pull/Legs", "Full Body", "Upper/Lower", "Bro Split"];
 
 const PlanBuilderScreen = () => {
   const fadeAnim = useFadeIn(100);
-  const { locked } = useTierAccess("Pro");
-  const { userProfile, userId } = useContext(UserContext);
+  const { locked } = useTierAccess("Pro"); // Access check should also happen in backend
+  const { userProfile, userId } = useContext(UserContext); // userProfile has injuries, equipment, experienceLevel
 
   const [goal, setGoal] = useState("");
   const [split, setSplit] = useState("");
   const [days, setDays] = useState(4);
   const [loading, setLoading] = useState(false);
-  const [plan, setPlan] = useState(null);
+  const [plan, setPlan] = useState(null); // This is the structured plan from AI
   const [error, setError] = useState("");
-
-  const getAuthToken = async () => {
-    const token = await AsyncStorage.getItem("authToken");
-    if (!token) throw new Error("Missing auth token");
-    return token;
-  };
 
   const generatePlan = async () => {
     if (!goal || !split || !days) {
-      setError(i18n.t("plan.missing"));
+      Alert.alert(i18n.t("common.error"), i18n.t("plan.missing")); // Use Alert for user-facing errors
       return;
     }
 
     setLoading(true);
     setError("");
-    setPlan(null);
-
-    const payload = {
-      goal,
-      availableDays: days,
-      injuries: userProfile?.injuries || [],
-      equipment: userProfile?.equipment || ["Dumbbell", "Barbell"],
-      preferredSplit: split,
-      experienceLevel: userProfile?.experience || "Intermediate",
-    };
-
-    const messages = [
-      {
-        role: "system",
-        content: "You are a certified elite personal trainer AI.",
-      },
-      {
-        role: "user",
-        content: `Generate a 1-week ${goal} workout split for an ${payload.experienceLevel} with ${days} available days using a ${split} approach. Injuries: ${payload.injuries.join(", ") || "None"}. Equipment: ${payload.equipment.join(", ")}.`,
-      },
-    ];
+    setPlan(null); // Clear previous plan
 
     try {
-      const token = await getAuthToken();
-      const res = await fetch(
-        `${process.env.EXPO_PUBLIC_API_BASE_URL}/api/openai`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ messages }),
-        },
-      );
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-
-      const text = data.result;
-      const splitByDays = text.split(/Day \d+ -/).filter(Boolean);
-      const structured = {};
-      splitByDays.forEach((section, idx) => {
-        structured[`Day ${idx + 1}`] = section
-          .trim()
-          .split("\n")
-          .filter(Boolean);
-      });
-
-      setPlan(structured);
-
-      await saveNewUserPlan({
+      // Call your backend API endpoint for workout generation
+      const res = await callGenerateWorkoutAPI({ // Using imported API call
         userId,
-        name: `AI Plan - ${goal}`,
-        type: "Workout",
-        exercises: Object.entries(structured).map(([day, workout]) => ({
-          day,
-          workout,
-        })),
-        createdAt: new Date().toISOString(),
+        fitnessGoal: goal, // Backend expects fitnessGoal
+        equipment: userProfile?.equipment || [], // Pass as array if backend handles
+        injuries: userProfile?.injuries || [], // Pass as array if backend handles
+        availableDays: days,
+        preferredSplit: split,
+        experienceLevel: userProfile?.experience || "Intermediate",
       });
-    } catch {
-      setError(i18n.t("plan.error") || "Plan generation failed.");
-    }
 
-    setLoading(false);
+      if (res.success && res.plan) { // Backend now returns plan directly
+        setPlan(res.plan); // Set the structured plan from backend
+        // Save to userPlans collection via backend too (handled by generateWorkout.js itself)
+        // No need to call saveNewUserPlan separately here as generateWorkout.js already does it.
+        Alert.alert(
+          i18n.t("plan.successTitle"),
+          i18n.t("plan.successMessage"),
+        );
+      } else {
+        throw new Error(res.error || i18n.t("plan.error"));
+      }
+    } catch (err) {
+      setError(err.message || i18n.t("plan.error"));
+      Alert.alert(i18n.t("common.error"), err.message || i18n.t("plan.error"));
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (locked) {
@@ -196,17 +157,26 @@ const PlanBuilderScreen = () => {
           disabled={loading}
           accessibilityRole="button"
         >
-          <Text style={styles.generateText}>
-            {loading ? i18n.t("plan.generating") : i18n.t("plan.generate")}
-          </Text>
+          {loading ? (
+            <ActivityIndicator color={colors.textOnPrimary} />
+          ) : (
+            <Text style={styles.generateText}>
+              {i18n.t("plan.generate")}
+            </Text>
+          )}
         </TouchableOpacity>
 
         {plan && (
           <View style={styles.planBox}>
-            {Object.entries(plan).map(([day, workout]) => (
-              <View key={day} style={styles.dayBlock}>
-                <Text style={styles.dayTitle}>{day}</Text>
-                <Text style={styles.workoutText}>{workout.join(", ")}</Text>
+            <Text style={styles.planTitle}>{i18n.t("plan.aiGenerated")}</Text>
+            {plan.map((dayBlock, index) => ( // Iterate through the structured plan (array of {day, exercises})
+              <View key={index} style={styles.dayBlock}>
+                <Text style={styles.dayTitle}>{dayBlock.day}</Text>
+                {dayBlock.exercises.map((exercise, exIndex) => (
+                  <Text key={exIndex} style={styles.workoutText}>
+                    {exercise.name}: {exercise.details}
+                  </Text>
+                ))}
               </View>
             ))}
             <TouchableOpacity
@@ -217,14 +187,6 @@ const PlanBuilderScreen = () => {
             </TouchableOpacity>
           </View>
         )}
-
-        {loading && (
-          <ActivityIndicator
-            size="large"
-            color={colors.primary}
-            style={styles.loadingIndicator}
-          />
-        )}
       </Animated.View>
     </ScrollView>
   );
@@ -233,7 +195,7 @@ const PlanBuilderScreen = () => {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: colors.background,
-    flex: 1,
+    flexGrow: 1, // Use flexGrow for ScrollView contentContainerStyle
     padding: spacing.lg,
   },
   dayBlock: {
@@ -243,6 +205,7 @@ const styles = StyleSheet.create({
     color: colors.success,
     fontWeight: "bold",
     marginBottom: spacing.xs,
+    fontSize: 16, // Adjusted for better readability
   },
   disabledGenerateBtn: {
     opacity: 0.6,
@@ -259,6 +222,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginTop: spacing.lg,
     padding: spacing.md,
+    alignItems: "center", // Center text/loader
   },
   generateText: {
     color: colors.textOnPrimary,
@@ -289,8 +253,7 @@ const styles = StyleSheet.create({
   option: {
     backgroundColor: colors.surface,
     borderRadius: 8,
-    marginBottom: spacing.sm,
-    marginRight: spacing.sm,
+    // Removed marginBottom/marginRight here, relying on gap in optionsRow
     padding: spacing.sm,
   },
   optionActive: {
@@ -306,7 +269,7 @@ const styles = StyleSheet.create({
   optionsRow: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: spacing.sm,
+    gap: spacing.sm, // Using gap for consistent spacing
   },
   planBox: {
     backgroundColor: colors.surface,
@@ -314,11 +277,18 @@ const styles = StyleSheet.create({
     marginTop: spacing.xl,
     padding: spacing.md,
   },
+  planTitle: {
+    ...typography.heading3, // Added style for the AI-generated plan title
+    color: colors.textPrimary,
+    marginBottom: spacing.md,
+    textAlign: "center",
+  },
   startBtn: {
     backgroundColor: colors.success,
     borderRadius: 8,
     marginTop: spacing.md,
     padding: spacing.md,
+    alignItems: "center",
   },
   startText: {
     color: colors.textOnSuccess,
@@ -333,6 +303,7 @@ const styles = StyleSheet.create({
   workoutText: {
     color: colors.textPrimary,
     fontSize: 14,
+    marginBottom: 4, // Added small margin for readability between exercises
   },
 });
 

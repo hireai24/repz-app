@@ -1,4 +1,5 @@
 // src/firebase/firebaseClient.js
+
 import { initializeApp, getApps, getApp } from "firebase/app";
 import {
   getAuth,
@@ -8,6 +9,7 @@ import {
 import { getFirestore } from "firebase/firestore";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+// ✅ Secure, public environment variables
 const firebaseConfig = {
   apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -18,6 +20,7 @@ const firebaseConfig = {
 };
 
 let app;
+
 if (!getApps().length) {
   app = initializeApp(firebaseConfig);
   initializeAuth(app, {
@@ -27,5 +30,6 @@ if (!getApps().length) {
   app = getApp();
 }
 
+// ✅ Exports used across the app
 export const auth = getAuth(app);
-export const db = getFirestore(app);
+export const firestore = getFirestore(app);

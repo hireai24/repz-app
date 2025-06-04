@@ -1,9 +1,15 @@
-import React, { createContext, useState, useEffect, useMemo } from "react";
+import React, {
+  createContext,
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+} from "react";
 import PropTypes from "prop-types";
 import { doc, getDoc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { auth, db } from "../firebase/firebaseClient"; // ✅ fixed import
+import { auth, db } from "../firebase/firebaseClient";
 
 export const UserContext = createContext({
   userProfile: null,
@@ -17,6 +23,8 @@ export const UserContext = createContext({
   pendingSessions: [],
   setPendingSessions: () => {},
   dailyChallenge: null,
+  isAdmin: false,
+  isGymOwner: false,
 });
 
 const USER_PROFILE_STORAGE_KEY = "repz_user_profile";
@@ -61,7 +69,6 @@ export const UserProvider = ({ children }) => {
     // eslint-disable-next-line
   }, []);
 
-  // Loads the user's profile from Firestore or AsyncStorage fallback
   const loadUserProfile = async (uid) => {
     try {
       const userRef = doc(db, "users", uid);
@@ -87,6 +94,7 @@ export const UserProvider = ({ children }) => {
         streak: typeof userData.streak === "number" ? userData.streak : 0,
         isCreator: userData.is_creator || false,
         creatorStats: userData.creator_stats || {},
+        role: userData.role || "user", // ✅ new
         wins: battleData.wins || 0,
         losses: battleData.losses || 0,
         currentBattleStreak: battleData.currentStreak || 0,
@@ -112,7 +120,6 @@ export const UserProvider = ({ children }) => {
     }
   };
 
-  // Loads the user's daily challenge from Firestore or AsyncStorage fallback
   const loadDailyChallenge = async (uid) => {
     try {
       const ref = doc(db, "dailyChallenges", uid);
@@ -141,14 +148,16 @@ export const UserProvider = ({ children }) => {
     }
   };
 
-  // Manual refresh for pulling latest user profile and challenge
-  const refreshUserProfile = async () => {
+  const refreshUserProfile = useCallback(async () => {
     if (userId) {
       setLoadingProfile(true);
       await Promise.all([loadUserProfile(userId), loadDailyChallenge(userId)]);
       setLoadingProfile(false);
     }
-  };
+  }, [userId]);
+
+  const isAdmin = userProfile?.role === "admin";
+  const isGymOwner = userProfile?.role === "gymOwner";
 
   const value = useMemo(
     () => ({
@@ -163,14 +172,19 @@ export const UserProvider = ({ children }) => {
       pendingSessions,
       setPendingSessions,
       dailyChallenge,
+      isAdmin,
+      isGymOwner,
     }),
     [
       userProfile,
       userId,
       loadingProfile,
+      refreshUserProfile,
       currentChallenges,
       pendingSessions,
       dailyChallenge,
+      isAdmin,
+      isGymOwner,
     ],
   );
 

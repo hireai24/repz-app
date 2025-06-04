@@ -1,13 +1,15 @@
+// metro.config.js
+
 const { getDefaultConfig } = require("@expo/metro-config");
 const exclusionList = require("metro-config/src/defaults/exclusionList");
 
 module.exports = (async () => {
   const config = await getDefaultConfig(__dirname);
 
-  // ✅ Disable modern exports resolution (Hermes compatibility)
+  // ✅ Ensure Hermes-safe resolution
   config.resolver.unstable_enablePackageExports = false;
 
-  // ✅ ADD: Polyfill Node.js core modules (ONLY works in EAS Dev Client)
+  // ✅ Polyfill required Node.js core modules
   config.resolver.extraNodeModules = {
     ...config.resolver.extraNodeModules,
     assert: require.resolve("empty-module"),
@@ -20,30 +22,30 @@ module.exports = (async () => {
     crypto: require.resolve("crypto-browserify"),
     stream: require.resolve("readable-stream"),
     buffer: require.resolve("buffer"),
-    process: require.resolve("process/browser"), // ✅ missing comma fixed here
+    process: require.resolve("process/browser"),
   };
 
-  // ✅ SVG support
+  // ✅ Hermes-compatible transformer with SVG support
   config.transformer = {
     ...config.transformer,
     babelTransformerPath: require.resolve("react-native-svg-transformer"),
+    assetPlugins: ["expo-asset/tools/hashAssetFiles"],
     getTransformOptions: async () => ({
       transform: {
         experimentalImportSupport: false,
         inlineRequires: true,
       },
     }),
-    assetPlugins: ["expo-asset/tools/hashAssetFiles"], // Hermes-safe image handling
-    runtimeRequireWarning: true, // Warn about dynamic require
+    runtimeRequireWarning: true,
   };
 
-  // ✅ Hermes-safe SVG fix (Prettier-compliant format)
+  // ✅ Handle SVG as source (JSX) instead of asset
   config.resolver.assetExts = config.resolver.assetExts.filter(
     (ext) => ext !== "svg",
   );
   config.resolver.sourceExts.push("svg");
 
-  // ✅ Block backend & server files from frontend bundle
+  // ✅ Block all server-side/backend code from bundling
   config.resolver.blockList = exclusionList([
     /backend\/.*/,
     /ai\/.*/,

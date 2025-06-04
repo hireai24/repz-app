@@ -10,123 +10,155 @@ import {
 } from "firebase/firestore";
 
 import { db } from "../firebase/init.js";
-import { verifyUser } from "../utils/authMiddleware.js";
 
 const ALLOWED_TIERS = ["Free", "Pro", "Elite"];
 const PAGE_SIZE = 20;
 
 /**
  * Submit a lift to the leaderboard
+ * @param {object} data - { userId, exercise, weight, reps, gym, location, videoUrl, tier }
+ * @returns {Promise<object>} - { success: boolean, entryId?: string, error?: string }
  */
-const submitLift = async (req, res) => {
-  await verifyUser(req, res, async () => {
-    const { exercise, weight, reps, gym, location, videoUrl, tier } = req.body;
-    const userId = req.user?.uid;
+const submitLift = async (data) => {
+  const { exercise, weight, reps, gym, location, videoUrl, tier, userId } = data;
 
-    const isValid =
-      userId &&
-      typeof exercise === "string" &&
-      exercise.trim() &&
-      typeof weight === "number" &&
-      weight > 0 &&
-      typeof reps === "number" &&
-      reps > 0 &&
-      typeof gym === "string" &&
-      gym.trim() &&
-      typeof videoUrl === "string" &&
-      videoUrl.trim() &&
-      typeof tier === "string" &&
-      ALLOWED_TIERS.includes(tier);
+  const isValid =
+    userId &&
+    typeof exercise === "string" &&
+    exercise.trim() &&
+    typeof weight === "number" &&
+    weight > 0 &&
+    typeof reps === "number" &&
+    reps > 0 &&
+    typeof gym === "string" &&
+    gym.trim() &&
+    typeof videoUrl === "string" &&
+    videoUrl.trim() &&
+    typeof tier === "string" &&
+    ALLOWED_TIERS.includes(tier);
 
-    if (!isValid) {
-      return res.status(400).json({
-        success: false,
-        error: "Missing or invalid input fields.",
-      });
-    }
+  if (!isValid) {
+    return { success: false, error: "Missing or invalid input fields." };
+  }
 
-    const safeLocation =
-      location &&
-      typeof location.lat === "number" &&
-      typeof location.lng === "number"
-        ? location
-        : null;
+  const safeLocation =
+    location &&
+    typeof location.lat === "number" &&
+    typeof location.lng === "number"
+      ? location
+      : null;
 
-    try {
-      const entry = {
-        userId,
-        exercise,
-        weight,
-        reps,
-        gym,
-        location: safeLocation,
-        videoUrl,
-        tier,
-        createdAt: Timestamp.now(),
-      };
+  try {
+    const entry = {
+      userId,
+      exercise,
+      weight,
+      reps,
+      gym,
+      location: safeLocation,
+      videoUrl,
+      tier,
+      createdAt: Timestamp.now(),
+    };
 
-      const docRef = await addDoc(collection(db, "leaderboard"), entry);
+    const docRef = await addDoc(collection(db, "leaderboard"), entry);
 
-      return res.status(200).json({ success: true, entryId: docRef.id });
-    } catch (err) {
-      return res.status(500).json({
-        success: false,
-        error: "Failed to submit lift to leaderboard.",
-      });
-    }
-  });
+    return { success: true, entryId: docRef.id };
+  } catch (err) {
+    console.error("Error submitting lift:", err); // For server-side debugging
+    return { success: false, error: "Failed to submit lift to leaderboard." };
+  }
 };
 
 /**
  * Get top lifts based on exercise and optional scope (e.g., gym)
  * Supports pagination
- * Query params: ?exercise=Bench Press&scope=gym&gym=Gold's
+ * @param {string} exercise - The exercise name (e.g., "Bench", "XP")
+ * @param {string} scope - "global" or "gym"
+ * @param {string} [gymId] - Required if scope is "gym"
+ * @returns {Promise<object[]>} - Array of leaderboard entries
  */
-const getTopLifts = async (req, res) => {
-  await verifyUser(req, res, async () => {
-    const { exercise, scope, gym } = req.query;
+const getTopLifts = async (exercise, scope, gymId = null) => {
+  if (!exercise || typeof exercise !== "string" || !exercise.trim()) {
+    throw new Error("Missing or invalid exercise parameter.");
+  }
 
-    if (!exercise || typeof exercise !== "string" || !exercise.trim()) {
-      return res.status(400).json({
-        success: false,
-        error: "Missing or invalid exercise parameter.",
-      });
-    }
+  try {
+    const lbRef = collection(db, "leaderboard");
 
-    try {
-      const lbRef = collection(db, "leaderboard");
+    let baseQuery = query(
+      lbRef,
+      where("exercise", "==", exercise),
+      orderBy("weight", "desc"), // Assuming weight is the primary ranking metric
+      limit(PAGE_SIZE),
+    );
 
-      let baseQuery = query(
+    if (scope === "gym" && typeof gymId === "string" && gymId.trim()) {
+      baseQuery = query(
         lbRef,
         where("exercise", "==", exercise),
+        where("gym", "==", gymId), // Assuming 'gym' field stores gym ID
         orderBy("weight", "desc"),
         limit(PAGE_SIZE),
       );
-
-      if (scope === "gym" && typeof gym === "string" && gym.trim()) {
-        baseQuery = query(
-          lbRef,
-          where("exercise", "==", exercise),
-          where("gym", "==", gym),
-          orderBy("weight", "desc"),
-          limit(PAGE_SIZE),
-        );
-      }
-
-      const snapshot = await getDocs(baseQuery);
-      const results = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-
-      return res.status(200).json({ success: true, results });
-    } catch (err) {
-      return res.status(500).json({
-        success: false,
-        error: "Failed to fetch leaderboard data.",
-      });
     }
-  });
+    // For 'global' scope, no additional where clause is needed as it's the default.
+
+    const snapshot = await getDocs(baseQuery);
+    const results = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    return results;
+  } catch (err) {
+    console.error("Error fetching top lifts:", err); // For server-side debugging
+    throw new Error("Failed to fetch leaderboard data: " + err.message);
+  }
 };
 
-export { submitLift, getTopLifts };
+/**
+ * Get a user's rank for a specific exercise and scope.
+ * @param {string} userId
+ * @param {string} exercise
+ * @param {string} scope - "global" or "gym"
+ * @param {string} [gymId] - Required if scope is "gym"
+ * @returns {Promise<object>} - { rank: number|null, bestLift: object|null, message?: string }
+ */
+const getUserRank = async (userId, exercise, scope, gymId = null) => {
+  if (!userId || !exercise || typeof exercise !== "string" || !exercise.trim()) {
+    throw new Error("Missing or invalid userId or exercise parameter for user rank.");
+  }
+
+  try {
+    const lbRef = collection(db, "leaderboard");
+
+    let q = query(
+      lbRef,
+      where("exercise", "==", exercise),
+      orderBy("weight", "desc"), // Assuming rank by weight
+    );
+
+    if (scope === "gym" && typeof gymId === "string" && gymId.trim()) {
+      q = query(q, where("gym", "==", gymId));
+    }
+
+    const snapshot = await getDocs(q);
+    const rankedLifts = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+
+    const userEntryIndex = rankedLifts.findIndex((entry) => entry.userId === userId);
+    const userRank = userEntryIndex !== -1 ? userEntryIndex + 1 : null;
+    const userBestLift = userEntryIndex !== -1 ? rankedLifts[userEntryIndex] : null;
+
+    if (userRank === null) {
+      return { rank: null, bestLift: null, message: "User has no entry in this category/location." };
+    }
+
+    return { rank: userRank, bestLift: userBestLift };
+  } catch (err) {
+    console.error("Error calculating user rank:", err); // For server-side debugging
+    throw new Error("Failed to get user rank: " + err.message);
+  }
+};
+
+export { submitLift, getTopLifts, getUserRank };

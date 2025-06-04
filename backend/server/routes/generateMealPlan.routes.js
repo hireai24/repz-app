@@ -1,30 +1,52 @@
 import express from "express";
-import generateMealPlan from "../../functions/generateMealPlan.js";
+import { generateMealPlan } from "../../functions/generateMealPlan.js"; // NOW POINTS TO THE RENAMED FILE
+import { verifyUser } from "../../utils/authMiddleware.js";
 
 const router = express.Router();
 
 /**
- * POST /api/meal
- * Generates a personalized AI meal plan.
- * Expects: userId, dietaryPreferences, dailyCalories
+ * @route   POST /api/meal
+ * @desc    Generate AI-personalized meal plan based on preferences
+ * @access  Private (requires valid token via verifyUser middleware)
  */
-router.post("/", async (req, res) => {
+router.post("/", verifyUser, async (req, res) => {
   try {
-    const { userId, dietaryPreferences, dailyCalories } = req.body;
+    // ADDED 'goal' to destructuring and validation
+    const { userId, goal, dietaryPreferences = "", dailyCalories, protein, carbs, fat, mealsPerDay } = req.body;
+    const user = req.user; // Get full user object from verifyUser middleware
 
-    if (!userId || !dailyCalories) {
-      return res.status(400).json({ error: "Missing required fields." });
+    // Basic field validation - ADDED 'goal' to validation
+    if (!userId || typeof dailyCalories !== "number" || !user || typeof protein !== 'number' || typeof carbs !== 'number' || typeof fat !== 'number' || !goal || typeof goal !== 'string') {
+      return res
+        .status(400)
+        .json({ success: false, error: "userId, goal, dailyCalories, protein, carbs, fat are required. User not authenticated." });
     }
 
-    const plan = await generateMealPlan(
+    const planResult = await generateMealPlan({
+      user, // PASSED: user object for tier check in generateMealPlan function
       userId,
+      goal, // PASSED: goal explicitly
       dietaryPreferences,
       dailyCalories,
-    );
-    return res.status(200).json({ success: true, plan });
-  } catch {
-    // No console.log, clean error handling for launch
-    return res.status(500).json({ error: "Failed to generate meal plan." });
+      protein,
+      carbs,
+      fat,
+      mealsPerDay,
+    });
+
+    if (!planResult.success) {
+      return res
+        .status(planResult.error?.code === "TIER_RESTRICTED" ? 403 : 400) // Return 403 for tier issues
+        .json({ success: false, error: planResult.error?.message || "Failed to generate meal plan." });
+    }
+
+    // Backend now returns 'plan' which is the structured array
+    return res.status(200).json({ success: true, plan: planResult.plan });
+  } catch (error) {
+    console.error("Error generating meal plan in route:", error); // Server-side logging
+    return res
+      .status(500)
+      .json({ success: false, error: "Failed to generate meal plan. Please try again." });
   }
 });
 

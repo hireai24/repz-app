@@ -17,7 +17,7 @@ import spacing from "../theme/spacing";
 import typography from "../theme/typography";
 
 const PartnerFinderScreen = () => {
-  const { currentGym } = useContext(UserContext); // ✅ removed unused userProfile
+  const { currentGym, userProfile } = useContext(UserContext); // ✅ Added userProfile
   const [slots, setSlots] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -25,24 +25,48 @@ const PartnerFinderScreen = () => {
 
   const fetchSlots = useCallback(async () => {
     setLoading(true);
+    setError(""); // Clear previous errors
     try {
-      const { success, data, error } = await getPartnerSlots(currentGym);
+      if (!currentGym) {
+        setError(i18n.t("partnerFinder.selectGymPrompt")); // Ensure this key exists in your i18n files
+        setSlots([]);
+        return;
+      }
+      if (!userProfile || !userProfile.uid) {
+        setError(i18n.t("common.userNotAuthenticated")); // Ensure this key exists
+        setSlots([]);
+        return;
+      }
+
+      const { success, data, error: apiError } = await getPartnerSlots(currentGym);
       if (success) {
-        setSlots(data);
-        setError("");
+        // Filter out slots that the current user has already created or joined
+        const filteredSlots = data.filter(
+          (slot) =>
+            slot.userId !== userProfile.uid &&
+            !slot.participants.includes(userProfile.uid),
+        );
+        setSlots(filteredSlots);
       } else {
-        setError(error || i18n.t("common.error"));
+        setError(apiError || i18n.t("common.error"));
       }
     } catch (err) {
-      setError(i18n.t("common.error"));
+      console.error("Error in fetchSlots:", err);
+      setError(i18n.t("common.errorFetchingSlots")); // Ensure this key exists
     } finally {
       setLoading(false);
     }
-  }, [currentGym]);
+  }, [currentGym, userProfile]);
 
   useEffect(() => {
-    fetchSlots();
-  }, [fetchSlots]);
+    // Only fetch if userProfile and currentGym are available
+    if (userProfile && userProfile.uid && currentGym) {
+      fetchSlots();
+    } else {
+      setLoading(false);
+      setError(i18n.t("partnerFinder.noUserOrGymSelected")); // Add a new i18n key for this state
+    }
+  }, [fetchSlots, userProfile, currentGym]); // Add dependencies
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -51,15 +75,26 @@ const PartnerFinderScreen = () => {
   };
 
   const handleAccept = async (slotId) => {
+    if (!userProfile || !userProfile.uid) {
+      setError(i18n.t("common.userNotAuthenticated"));
+      return;
+    }
+    setLoading(true); // Indicate action is in progress
     try {
-      const { success, error } = await acceptPartnerInvite(slotId);
+      const { success, error: apiError } = await acceptPartnerInvite(
+        slotId,
+        userProfile.uid,
+      ); // ✅ Pass userId
       if (success) {
-        fetchSlots();
+        await fetchSlots(); // Refresh the list to remove the joined slot
       } else {
-        setError(error || i18n.t("common.error"));
+        setError(apiError || i18n.t("common.errorAcceptingInvite")); // Ensure this key exists
       }
-    } catch {
+    } catch (err) {
+      console.error("Error in handleAccept:", err);
       setError(i18n.t("common.error"));
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -75,6 +110,10 @@ const PartnerFinderScreen = () => {
         <ActivityIndicator size="large" color={colors.primary} />
       ) : error ? (
         <Text style={styles.error}>{error}</Text>
+      ) : slots.length === 0 ? (
+        <Text style={styles.emptyListText}>
+          {i18n.t("partnerFinder.noSlotsAvailable")}
+        </Text>
       ) : (
         <FlatList
           data={slots}
@@ -108,6 +147,12 @@ const styles = StyleSheet.create({
     ...typography.heading2,
     color: colors.textPrimary,
     marginBottom: spacing.md,
+  },
+  emptyListText: {
+    ...typography.body,
+    color: colors.textSecondary,
+    textAlign: "center",
+    marginTop: spacing.lg,
   },
 });
 

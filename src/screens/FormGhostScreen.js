@@ -8,6 +8,7 @@ import {
   ScrollView,
   ActivityIndicator,
   RefreshControl,
+  Alert, // ADDED: For user-facing alerts
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 
@@ -15,7 +16,7 @@ import FormFeedbackCard from "../components/FormFeedbackCard";
 import { UserContext } from "../context/UserContext";
 import { useTierAccess } from "../hooks/useTierAccess";
 import { saveNewUserPlan } from "../services/userPlanService";
-import { uploadFile } from "../utils/fileUploader";
+// REMOVED: import { uploadFile } from "../utils/fileUploader"; // No longer pre-uploading to Firebase Storage here
 import { uploadFormVideo } from "../api/formGhostApi";
 import i18n from "../locales/i18n";
 import colors from "../theme/colors";
@@ -23,7 +24,7 @@ import spacing from "../theme/spacing";
 import typography from "../theme/typography";
 
 const FormGhostScreen = () => {
-  const { userProfile } = useContext(UserContext);
+  const { userProfile } = useContext(UserContext); // userProfile has id
   const { locked } = useTierAccess("Pro");
 
   const [videoUri, setVideoUri] = useState(null);
@@ -44,51 +45,56 @@ const FormGhostScreen = () => {
         setErrorText("");
         setConfirmationText("");
         setVideoUri(result.assets[0].uri);
+        // Call analysis directly with local URI
         analyzeUploadedVideo(result.assets[0].uri);
       }
-    } catch {
-      setErrorText(i18n.t("form.uploadError"));
+    } catch (err) {
+      setErrorText(i18n.t("form.uploadError") + (err.message ? `: ${err.message}` : ""));
+      Alert.alert(i18n.t("common.error"), i18n.t("form.uploadError"));
     }
   };
 
-  const analyzeUploadedVideo = async (uri) => {
+  // Renamed to clarify it takes local URI
+  const analyzeUploadedVideo = async (localUri) => { // CHANGED: Takes localUri directly
     setLoading(true);
     setErrorText("");
     setConfirmationText("");
     setAnalysis([]);
 
+    if (!userProfile?.id) {
+        setErrorText("User profile not loaded. Cannot analyze form.");
+        setLoading(false);
+        Alert.alert(i18n.t("common.error"), "User profile not loaded. Please try again.");
+        return;
+    }
+
     try {
-      const uploaded = await uploadFile({
-        uri,
-        type: "video",
-        userId: userProfile?.id,
-        endpoint: `${process.env.EXPO_PUBLIC_API_BASE_URL}/upload/video`,
-      });
-
-      if (!uploaded?.url) throw new Error("Upload failed");
-
-      const result = await uploadFormVideo(
+      // Direct call to formGhostApi to upload and analyze
+      const result = await uploadFormVideo( // Now sends the local video data
         userProfile.id,
-        uploaded.url,
-        "Squat",
+        localUri, // Pass local URI
+        "Squat", // Exercise type needs to be passed, current hardcoded "Squat"
       );
 
-      if (result?.results?.length > 0) {
+      if (result?.success && result.results?.length > 0) {
         setAnalysis(result.results);
+        setConfirmationText(i18n.t("form.analysisSuccess")); // New text for success
 
+        // Save analysis to user's plans
         await saveNewUserPlan({
           userId: userProfile.id,
-          name: `Form Analysis - Squat`,
-          type: "Form",
-          exercises: result.results.map((rep, idx) => ({
-            day: `Rep ${idx + 1}`,
-            workout: rep.feedback?.comment || "Good form",
+          name: `Form Analysis - Squat (${new Date().toLocaleDateString()})`, // Dynamic name
+          type: "Form Analysis", // More specific type
+          exercises: result.results.map((rep, idx) => ({ // Assuming 'rep' is the structure for each rep
+            name: `Rep ${idx + 1}`,
+            feedback: rep.feedback?.comment || "No comment", // Ensure proper path to feedback
+            score: rep.feedback?.score || 'N/A'
           })),
           createdAt: new Date().toISOString(),
-          videoUrl: uploaded.url,
+          videoUrl: localUri, // Save original local URI or a persistent URL if re-uploaded for storage
         });
       } else {
-        setErrorText(i18n.t("form.noFeedback"));
+        setErrorText(result?.error || i18n.t("form.noFeedback"));
       }
     } catch (err) {
       setErrorText(
@@ -96,22 +102,27 @@ const FormGhostScreen = () => {
           err.message ||
           "Something went wrong during analysis.",
       );
+      Alert.alert(i18n.t("common.error"), err.message || i18n.t("form.error"));
     } finally {
       setLoading(false);
     }
   };
 
-  const handleRefresh = () => {
+  const handleRefresh = useCallback(() => { // Wrap in useCallback
     setRefreshing(true);
     setVideoUri(null);
     setAnalysis([]);
     setErrorText("");
     setConfirmationText("");
+    // After states are reset, simulate async refresh and then set refreshing to false
     setTimeout(() => setRefreshing(false), 600);
-  };
+  }, []);
 
   const handleChallengeSubmit = () => {
+    // Implement logic to submit to challenge, e.g., navigate to ChallengeSetupScreen
+    // with videoUri and analysis results.
     setConfirmationText(i18n.t("form.challengeSubmitted"));
+    Alert.alert(i18n.t("form.challenge"), i18n.t("form.challengeSubmitted"));
   };
 
   if (locked) {
@@ -138,11 +149,13 @@ const FormGhostScreen = () => {
         accessibilityLabel={i18n.t("form.upload")}
       >
         {videoUri ? (
-          <Image
-            source={{ uri: videoUri }}
-            style={styles.thumbnail}
-            onError={() => setVideoUri(null)}
-          />
+          // Consider using Expo-AV or Video component for video thumbnail preview
+          <Text style={styles.uploadText}>Video Selected: {videoUri.split('/').pop()}</Text>
+          // <Image
+          //   source={{ uri: videoUri }}
+          //   style={styles.thumbnail}
+          //   onError={() => setVideoUri(null)}
+          // />
         ) : (
           <Text style={styles.uploadText}>{i18n.t("form.upload")}</Text>
         )}
@@ -203,7 +216,7 @@ const styles = StyleSheet.create({
   },
   container: {
     backgroundColor: colors.background,
-    flex: 1,
+    flexGrow: 1, // Use flexGrow for ScrollView contentContainerStyle
     padding: spacing.lg,
   },
   cta: {

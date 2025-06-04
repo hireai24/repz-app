@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useCallback } from "react";
 import {
   View,
   Text,
@@ -14,6 +14,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { format } from "date-fns";
 
 import ExerciseCard from "../components/ExerciseCard";
+import WorkoutSummaryCard from "../components/WorkoutSummaryCard";
 import { filterExercises, searchExercises } from "../utils/exerciseFilter";
 import { getUserPlans } from "../api/marketplaceApi";
 import useFadeIn from "../animations/fadeIn";
@@ -38,11 +39,8 @@ const WorkoutLogScreen = () => {
   const { allowed } = useTierAccess("Free");
   const { userId } = useContext(UserContext);
 
-  useEffect(() => {
-    if (userId) loadPlans();
-  }, [userId]);
-
-  const loadPlans = async () => {
+  // Memoize loadPlans so useEffect dependency is stable
+  const loadPlans = useCallback(async () => {
     try {
       setLoadingPlans(true);
       setErrorLoadingPlans("");
@@ -59,7 +57,11 @@ const WorkoutLogScreen = () => {
     } finally {
       setLoadingPlans(false);
     }
-  };
+  }, [userId]);
+
+  useEffect(() => {
+    if (userId) loadPlans();
+  }, [userId, loadPlans]);
 
   const addExercise = (exercise) => {
     setWorkout((prev) => [
@@ -201,79 +203,92 @@ const WorkoutLogScreen = () => {
           <Text style={styles.emptyText}>{i18n.t("common.noData")}</Text>
         </View>
       ) : (
-        <FlatList
-          data={filteredWorkout}
-          keyExtractor={(_, index) => `log-${index}`}
-          contentContainerStyle={styles.flatListContent}
-          renderItem={({ item, index: exIndex }) => (
-            <View key={exIndex} style={styles.exerciseBlock}>
-              <Text style={styles.exerciseTitle}>{item.name}</Text>
-              {item.sets.map((set, setIndex) => (
-                <View key={setIndex} style={styles.setRow}>
-                  <TextInput
-                    style={[styles.setInput, { width: width * 0.2 }]}
-                    placeholder={i18n.t("workoutLog.weight")}
-                    keyboardType="numeric"
-                    value={set.weight}
-                    onChangeText={(val) =>
-                      updateSet(exIndex, setIndex, "weight", val)
-                    }
-                    placeholderTextColor={colors.textSecondary}
-                  />
-                  <TextInput
-                    style={[styles.setInput, { width: width * 0.2 }]}
-                    placeholder={i18n.t("workoutLog.reps")}
-                    keyboardType="numeric"
-                    value={set.reps}
-                    onChangeText={(val) =>
-                      updateSet(exIndex, setIndex, "reps", val)
-                    }
-                    placeholderTextColor={colors.textSecondary}
-                  />
-                  <TextInput
-                    style={[styles.setInput, { width: width * 0.2 }]}
-                    placeholder={i18n.t("workoutLog.rpe")}
-                    keyboardType="numeric"
-                    value={set.rpe}
-                    onChangeText={(val) =>
-                      updateSet(exIndex, setIndex, "rpe", val)
-                    }
-                    placeholderTextColor={colors.textSecondary}
-                  />
-                  <TouchableOpacity onPress={() => togglePR(exIndex, setIndex)}>
-                    <Text style={[styles.prButton, set.pr && styles.prActive]}>
-                      PR
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              ))}
-              <TouchableOpacity
-                style={styles.addSetBtn}
-                onPress={() => addSet(exIndex)}
-              >
-                <Text style={styles.addSetText}>
-                  + {i18n.t("workoutLog.addSet")}
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.challengeToggle}
-                onPress={() => toggleChallenge(exIndex)}
-              >
-                <Text
-                  style={{
-                    color: item.challengeEntry
-                      ? colors.success
-                      : colors.textSecondary,
-                  }}
+        <>
+          <FlatList
+            data={filteredWorkout}
+            keyExtractor={(_, index) => `log-${index}`}
+            contentContainerStyle={styles.flatListContent}
+            renderItem={({ item, index: exIndex }) => (
+              <View key={exIndex} style={styles.exerciseBlock}>
+                <Text style={styles.exerciseTitle}>{item.name}</Text>
+                {item.sets.map((set, setIndex) => (
+                  <View key={setIndex} style={styles.setRow}>
+                    <TextInput
+                      style={[styles.setInput, { width: width * 0.2 }]}
+                      placeholder={i18n.t("workoutLog.weight")}
+                      keyboardType="numeric"
+                      value={set.weight}
+                      onChangeText={(val) =>
+                        updateSet(exIndex, setIndex, "weight", val)
+                      }
+                      placeholderTextColor={colors.textSecondary}
+                    />
+                    <TextInput
+                      style={[styles.setInput, { width: width * 0.2 }]}
+                      placeholder={i18n.t("workoutLog.reps")}
+                      keyboardType="numeric"
+                      value={set.reps}
+                      onChangeText={(val) =>
+                        updateSet(exIndex, setIndex, "reps", val)
+                      }
+                      placeholderTextColor={colors.textSecondary}
+                    />
+                    <TextInput
+                      style={[styles.setInput, { width: width * 0.2 }]}
+                      placeholder={i18n.t("workoutLog.rpe")}
+                      keyboardType="numeric"
+                      value={set.rpe}
+                      onChangeText={(val) =>
+                        updateSet(exIndex, setIndex, "rpe", val)
+                      }
+                      placeholderTextColor={colors.textSecondary}
+                    />
+                    <TouchableOpacity
+                      onPress={() => togglePR(exIndex, setIndex)}
+                    >
+                      <Text
+                        style={[styles.prButton, set.pr && styles.prActive]}
+                      >
+                        PR
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                ))}
+                <TouchableOpacity
+                  style={styles.addSetBtn}
+                  onPress={() => addSet(exIndex)}
                 >
-                  {item.challengeEntry
-                    ? i18n.t("workoutLog.markedChallenge")
-                    : i18n.t("workoutLog.tagChallenge")}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          )}
-        />
+                  <Text style={styles.addSetText}>
+                    + {i18n.t("workoutLog.addSet")}
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.challengeToggle}
+                  onPress={() => toggleChallenge(exIndex)}
+                >
+                  <Text
+                    style={{
+                      color: item.challengeEntry
+                        ? colors.success
+                        : colors.textSecondary,
+                    }}
+                  >
+                    {item.challengeEntry
+                      ? i18n.t("workoutLog.markedChallenge")
+                      : i18n.t("workoutLog.tagChallenge")}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          />
+
+          <View style={{ marginTop: spacing.xl }}>
+            <WorkoutSummaryCard
+              workout={filteredWorkout}
+              date={format(new Date(), "MMMM dd, yyyy")}
+            />
+          </View>
+        </>
       )}
     </View>
   );

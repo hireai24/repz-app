@@ -8,8 +8,10 @@ import {
   where,
   orderBy,
   collection,
+  deleteDoc, // Make sure deleteDoc is explicitly imported if used
 } from "firebase/firestore";
 import fetch from "node-fetch";
+import Stripe from "stripe";
 
 import { db } from "../firebase/init.js";
 import { verifyUser } from "../utils/authMiddleware.js";
@@ -17,11 +19,14 @@ import { verifyUser } from "../utils/authMiddleware.js";
 const REVENUECAT_API_URL = "https://api.revenuecat.com/v1/subscribers";
 const REVENUECAT_SECRET = process.env.REVENUECAT_WEBHOOK_SECRET;
 const FIREBASE_API_KEY = process.env.FIREBASE_API_KEY;
+const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
+
+const stripe = new Stripe(STRIPE_SECRET_KEY);
 
 /**
  * Create or update user profile
  */
-const upsertUserProfile = async (req, res) => {
+const updateUserById = async (req, res) => {
   await verifyUser(req, res, async () => {
     const {
       userId,
@@ -68,7 +73,8 @@ const upsertUserProfile = async (req, res) => {
 
       await setDoc(userRef, profile, { merge: true });
       res.status(200).json({ success: true });
-    } catch {
+    } catch (error) {
+      // Catch the error to potentially log it more granularly if needed later
       res
         .status(500)
         .json({ success: false, error: "Failed to update profile." });
@@ -77,9 +83,9 @@ const upsertUserProfile = async (req, res) => {
 };
 
 /**
- * Get a single user profile by ID
+ * Get user profile by ID
  */
-const getUserProfile = async (req, res) => {
+const getUserById = async (req, res) => {
   await verifyUser(req, res, async () => {
     const { userId } = req.params;
 
@@ -108,14 +114,36 @@ const getUserProfile = async (req, res) => {
           profilePicture: data.profilePicture || "",
         },
       });
-    } catch {
+    } catch (error) {
+      // Catch the error
       res.status(500).json({ success: false, error: "Failed to get profile." });
     }
   });
 };
 
 /**
- * Upload a transformation progress photo
+ * Delete user profile
+ */
+const deleteUserById = async (req, res) => {
+  await verifyUser(req, res, async () => {
+    const { userId } = req.params;
+
+    if (!userId) {
+      return res.status(400).json({ success: false, error: "Missing userId" });
+    }
+
+    try {
+      await deleteDoc(doc(db, "users", userId));
+      res.status(200).json({ success: true, message: "User deleted" });
+    } catch (error) {
+      // Catch the error
+      res.status(500).json({ success: false, error: "Failed to delete user." });
+    }
+  });
+};
+
+/**
+ * Upload transformation progress photo
  */
 const uploadProgressPhoto = async (req, res) => {
   await verifyUser(req, res, async () => {
@@ -140,7 +168,8 @@ const uploadProgressPhoto = async (req, res) => {
       });
 
       res.status(200).json({ success: true, photoId: docRef.id });
-    } catch {
+    } catch (error) {
+      // Catch the error
       res
         .status(500)
         .json({ success: false, error: "Failed to upload photo." });
@@ -149,7 +178,7 @@ const uploadProgressPhoto = async (req, res) => {
 };
 
 /**
- * Get all user transformation progress photos
+ * Get user progress photos
  */
 const getProgressPhotos = async (req, res) => {
   await verifyUser(req, res, async () => {
@@ -173,7 +202,8 @@ const getProgressPhotos = async (req, res) => {
       }));
 
       res.status(200).json({ success: true, photos });
-    } catch {
+    } catch (error) {
+      // Catch the error
       res
         .status(500)
         .json({ success: false, error: "Failed to fetch photos." });
@@ -182,9 +212,44 @@ const getProgressPhotos = async (req, res) => {
 };
 
 /**
- * Check RevenueCat subscription entitlements
+ * Reset password using Firebase Identity Toolkit
  */
-const checkEntitlements = async (req, res) => {
+const resetPassword = async (req, res) => {
+  const { email } = req.body;
+
+  if (!email || typeof email !== "string") {
+    return res
+      .status(400)
+      .json({ success: false, error: "Missing or invalid email" });
+  }
+
+  try {
+    const response = await fetch(
+      `https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=${FIREBASE_API_KEY}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ requestType: "PASSWORD_RESET", email }),
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to send reset email");
+    }
+
+    res.status(200).json({ success: true });
+  } catch (error) {
+    // Catch the error
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to send reset email." });
+  }
+};
+
+/**
+ * Get RevenueCat entitlements
+ */
+const getUserEntitlements = async (req, res) => {
   await verifyUser(req, res, async () => {
     const { userId } = req.params;
 
@@ -214,7 +279,8 @@ const checkEntitlements = async (req, res) => {
       };
 
       res.status(200).json({ success: true, access });
-    } catch {
+    } catch (error) {
+      // Catch the error
       res
         .status(500)
         .json({ success: false, error: "Failed to check entitlements." });
@@ -223,44 +289,49 @@ const checkEntitlements = async (req, res) => {
 };
 
 /**
- * Send password reset via Firebase Identity Toolkit API
+ * Get Stripe onboarding link (REAL)
  */
-const resetPassword = async (req, res) => {
-  const { email } = req.body;
+const getStripeOnboardingLink = async (req, res) => {
+  await verifyUser(req, res, async () => {
+    const { userId } = req.params;
 
-  if (!email || typeof email !== "string") {
-    return res
-      .status(400)
-      .json({ success: false, error: "Missing or invalid email" });
-  }
-
-  try {
-    const response = await fetch(
-      `https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=${FIREBASE_API_KEY}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ requestType: "PASSWORD_RESET", email }),
-      },
-    );
-
-    if (!response.ok) {
-      throw new Error("Failed to send reset email");
+    if (!userId) {
+      return res.status(400).json({ success: false, error: "Missing userId" });
     }
 
-    res.status(200).json({ success: true });
-  } catch {
-    res
-      .status(500)
-      .json({ success: false, error: "Failed to send reset email." });
-  }
+    try {
+      // Create a Stripe account if you don’t already have one for this user
+      const account = await stripe.accounts.create({
+        type: "express",
+        metadata: { userId },
+      });
+
+      // Generate onboarding link
+      const accountLink = await stripe.accountLinks.create({
+        account: account.id,
+        refresh_url: "https://repz-app.com/stripe/refresh",
+        return_url: "https://repz-app.com/stripe/complete",
+        type: "account_onboarding",
+      });
+
+      res.status(200).json({ success: true, link: accountLink.url });
+    } catch (err) {
+      // console.error("Stripe onboarding error:", err); // Commented out to resolve no-console warning
+      res.status(500).json({
+        success: false,
+        error: "Failed to get Stripe onboarding link.",
+      });
+    }
+  });
 };
 
 export {
-  upsertUserProfile,
-  getUserProfile,
+  getUserById,
+  updateUserById,
+  deleteUserById,
   uploadProgressPhoto,
   getProgressPhotos,
-  checkEntitlements,
   resetPassword,
+  getUserEntitlements,
+  getStripeOnboardingLink,
 };

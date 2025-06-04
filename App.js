@@ -1,5 +1,4 @@
 // ✅ Hermes-safe polyfills for Buffer, process, URL
-global.global = global;
 import "react-native-url-polyfill/auto";
 import { Buffer } from "buffer";
 import PropTypes from "prop-types";
@@ -43,9 +42,8 @@ class ErrorBoundary extends React.Component {
     return { hasError: true };
   }
 
-  componentDidCatch(error, info) {
-    // eslint-disable-next-line no-console
-    console.error("App crashed:", error, info); // Retain for production debugging
+  componentDidCatch() {
+    // Silent fallback in production
   }
 
   render() {
@@ -99,9 +97,7 @@ function RootNavigation() {
         accessibilityLabel="Loading Screen"
         style={[
           styles.loadingContainer,
-          {
-            backgroundColor: colors.background,
-          },
+          { backgroundColor: colors.background },
         ]}
       >
         <ActivityIndicator size="large" color={colors.primary} />

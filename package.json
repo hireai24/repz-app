@@ -17,11 +17,10 @@
     "postinstall": "patch-package"
   },
   "dependencies": {
-    "@babel/runtime-corejs3": "^7.27.1",
     "@expo/metro-config": "^0.20.14",
     "@expo/vector-icons": "^14.1.0",
     "@react-native-async-storage/async-storage": "2.1.2",
-    "@react-native-masked-view/masked-view": "0.3.2",
+    "@react-native-picker/picker": "^2.11.0",
     "@react-navigation/bottom-tabs": "^6.5.17",
     "@react-navigation/native": "^6.1.18",
     "@react-navigation/native-stack": "^6.11.0",
@@ -40,27 +39,21 @@
     "expo-splash-screen": "~0.30.5",
     "expo-status-bar": "~2.2.3",
     "expo-updates": "~0.28.12",
-    "express": "^5.1.0",
     "firebase": "^10.14.0",
-    "firebase-admin": "^13.4.0",
     "formik": "^2.4.6",
     "i18next": "^25.1.1",
     "metro-config": "^0.82.4",
     "prop-types": "^15.8.1",
     "react": "19.0.0",
-    "react-dom": "19.0.0",
     "react-i18next": "^15.5.1",
     "react-native": "0.79.2",
-    "react-native-dotenv": "^3.4.11",
     "react-native-gesture-handler": "~2.24.0",
     "react-native-reanimated": "~3.17.4",
-    "react-native-safe-area-context": "5.4.0",
-    "react-native-screens": "~4.10.0",
-    "react-native-svg": "15.11.2",
+    "react-native-safe-area-context": "^5.4.1",
+    "react-native-screens": "^4.11.1",
+    "react-native-svg": "^15.12.0",
     "react-native-svg-transformer": "^1.5.1",
     "react-native-url-polyfill": "^2.0.0",
-    "react-native-web": "^0.20.0",
-    "stripe": "^18.1.0",
     "uuid": "^11.1.0",
     "yup": "^1.4.0"
   },
@@ -70,7 +63,6 @@
     "@babel/plugin-proposal-optional-catch-binding": "^7.18.6",
     "@babel/plugin-transform-runtime": "^7.24.1",
     "babel-preset-expo": "~13.0.0",
-    "buffer": "^6.0.3",
     "crypto-browserify": "^3.12.1",
     "empty-module": "^0.0.2",
     "eslint": "^8.57.1",
@@ -86,18 +78,19 @@
     "husky": "^9.1.7",
     "jest": "^29.7.0",
     "lint-staged": "^15.2.10",
-    "node-libs-react-native": "^1.2.1",
+    "madge": "^8.0.0",
     "patch-package": "^8.0.0",
     "prettier": "^3.5.3",
-    "process": "^0.11.10",
-    "react-native-level-fs": "^3.0.1",
-    "readable-stream": "^4.7.0",
-    "webpack-bundle-analyzer": "^4.10.2"
+    "react-native-dotenv": "^3.4.11",
+    "readable-stream": "^4.7.0"
   },
   "lint-staged": {
     "*.{js,jsx}": [
       "eslint --fix",
       "prettier --write"
     ]
+  },
+  "expo": {
+    "metroConfig": "./metro.config.js"
   }
 }

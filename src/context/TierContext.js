@@ -61,16 +61,20 @@ export const TierProvider = ({ children }) => {
     fetchTier();
   }, [fetchTier]);
 
-  const hasAccess = (requiredTier) => {
-    const levels = { Free: 0, Pro: 1, Elite: 2 };
-    return levels[tier] >= levels[requiredTier];
-  };
+  // ---- FIX: useCallback for hasAccess and refreshTier ----
+  const hasAccess = useCallback(
+    (requiredTier) => {
+      const levels = { Free: 0, Pro: 1, Elite: 2 };
+      return levels[tier] >= levels[requiredTier];
+    },
+    [tier],
+  );
 
-  const refreshTier = async () => {
+  const refreshTier = useCallback(async () => {
     setLoading(true);
     setError(null);
     await fetchTier();
-  };
+  }, [fetchTier]);
 
   const value = useMemo(
     () => ({

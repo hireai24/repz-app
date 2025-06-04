@@ -32,13 +32,21 @@
       }
     }
   },
-  "plugins": ["react", "react-native", "unused-imports", "import"],
+  "plugins": [
+    "react",
+    "react-native",
+    "unused-imports",
+    "import",
+    "react-hooks"
+  ],
   "rules": {
     "no-console": "warn",
     "unused-imports/no-unused-imports": "error",
     "react-native/no-inline-styles": "error",
     "react-native/no-color-literals": "error",
     "react/prop-types": "warn",
-    "import/no-unresolved": "error"
+    "import/no-unresolved": "error",
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": "warn"
   }
 }

@@ -23,7 +23,7 @@
     "viewSummary": "View Summary",
     "joinChallenge": "Join Challenge",
     "noWorkout": "No workout logged today",
-    "welcome": "Welcome!",
+    "welcome": "Welcome, {{username}}",
     "defaultName": "REPZ Athlete",
     "nextWorkout": "Next Workout",
     "challenges": "Daily Challenges",
@@ -170,7 +170,9 @@
     "earnings": "Earnings",
     "topPlan": "Top Selling Plan",
     "toolPlanBuilder": "Plan Builder",
-    "toolVisualGains": "Visual Gains Analysis"
+    "toolVisualGains": "Visual Gains Analysis",
+    "gymOwnerPrompt": "Are you a Gym Owner?",
+    "gymOwnerLogin": "Go to Gym Owner Login"
   },
   "plans": {
     "title": "Your Plans & Challenges",

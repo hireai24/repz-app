@@ -1,24 +1,53 @@
 {
   "cli": {
-    "version": ">= 16.6.2",
-    "appVersionSource": "remote"
+    "version": ">=3.0.0"
   },
   "build": {
     "development": {
       "developmentClient": true,
       "distribution": "internal",
-      "channel": "development"
+      "ios": {
+        "buildType": "development"
+      },
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "https://your-api-url.com",
+        "EXPO_PUBLIC_FIREBASE_API_KEY": "your-firebase-key",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://your-supabase-url.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "your-anon-key"
+      }
     },
     "preview": {
       "distribution": "internal",
-      "channel": "preview"
+      "ios": {
+        "buildType": "simulator"
+      },
+      "android": {
+        "buildType": "apk"
+      }
     },
     "production": {
-      "autoIncrement": true,
-      "channel": "production"
+      "ios": {
+        "autoIncrement": true
+      },
+      "android": {
+        "autoIncrement": true
+      },
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "https://your-api-url.com"
+      }
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "ios": {
+        "appleId": "your-apple-email@example.com"
+      },
+      "android": {
+        "track": "production"
+      }
+    }
   }
 }

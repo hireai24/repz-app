@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useContext } from "react";
 import {
   View,
   Text,
@@ -13,6 +13,7 @@ import {
 } from "react-native";
 
 import { useTierAccess } from "../hooks/useTierAccess";
+import { AuthContext } from "../context/AuthContext"; // ADDED: Import AuthContext
 import { getTopLifts } from "../api/leaderboardApi";
 import i18n from "../locales/i18n";
 import colors from "../theme/colors";
@@ -29,38 +30,56 @@ const LeaderboardScreen = () => {
   const [leaders, setLeaders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [userRank, setUserRank] = useState(null);
+  const [userRankData, setUserRankData] = useState(null); // Changed name for clarity
   const [error, setError] = useState("");
   const { allowed } = useTierAccess("Free");
 
-  const fetchLeaderboard = async () => {
+  const { userId, userProfile } = useContext(AuthContext); // ADDED: Get userId and userProfile
+  // Assuming userProfile.gym holds the gymId if the user is associated with one
+  const userGymId = userProfile?.gym;
+
+  const fetchLeaderboard = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
-      const result = await getTopLifts(category, filter);
+      // Pass category, filter, and userGymId when filter is 'Your Gym'
+      const result = await getTopLifts(
+        category,
+        filter,
+        filter === "Your Gym" ? userGymId : null,
+      );
+
       if (result.success) {
         setLeaders(result.results || []);
-        setUserRank(result.user || null);
+        // Backend now returns userRank and userBestLift directly
+        if (result.userRank !== undefined && result.userBestLift !== undefined) {
+          setUserRankData({ rank: result.userRank, bestLift: result.userBestLift });
+        } else {
+          setUserRankData(null); // User might not have an entry
+        }
       } else {
         setLeaders([]);
-        setError(i18n.t("leaderboard.errorLoad"));
+        setError(result.error || i18n.t("leaderboard.errorLoad"));
       }
-    } catch {
+    } catch (err) {
       setLeaders([]);
-      setError(i18n.t("leaderboard.errorLoad"));
+      setError(err.message || i18n.t("leaderboard.errorLoad"));
     } finally {
       setLoading(false);
     }
-  };
+  }, [category, filter, userGymId]); // ADDED: userGymId to dependencies
 
   useEffect(() => {
-    fetchLeaderboard();
-  }, [category, filter]);
+    // Only fetch if userId is available and userProfile is loaded (from AuthContext)
+    if (userId !== undefined && userProfile !== undefined) {
+      fetchLeaderboard();
+    }
+  }, [fetchLeaderboard, userId, userProfile]); // ADDED: userId and userProfile to dependencies
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     fetchLeaderboard().finally(() => setRefreshing(false));
-  }, [category, filter]);
+  }, [fetchLeaderboard]);
 
   if (!allowed) {
     return (
@@ -139,7 +158,7 @@ const LeaderboardScreen = () => {
             <View style={styles.row}>
               <Text style={styles.rank}>#{index + 1}</Text>
               <Image
-                source={{ uri: item.avatar || "" }}
+                source={{ uri: item.avatar || "" }} // Assuming 'avatar' field in leaderboard entry
                 defaultSource={avatarFallback}
                 style={styles.avatar}
               />
@@ -153,8 +172,8 @@ const LeaderboardScreen = () => {
                     : item.value || "N/A"}
                 </Text>
               </View>
-              {item.video && (
-                <TouchableOpacity onPress={() => Linking.openURL(item.video)}>
+              {item.videoUrl && ( // CHANGED: From item.video to item.videoUrl
+                <TouchableOpacity onPress={() => Linking.openURL(item.videoUrl)}>
                   <Text style={styles.watch}>
                     {i18n.t("leaderboard.watch")}
                   </Text>
@@ -166,19 +185,22 @@ const LeaderboardScreen = () => {
             <Text style={styles.emptyState}>{i18n.t("leaderboard.empty")}</Text>
           }
           ListFooterComponent={
-            userRank && (
+            userRankData && userRankData.rank !== null && ( // Use userRankData
               <View style={styles.yourRankBox}>
                 <Text style={styles.yourRankText}>
                   {i18n.t("leaderboard.rank", {
                     category,
-                    rank: userRank.rank,
+                    rank: userRankData.rank,
                   })}
                 </Text>
-                <Text style={styles.yourRankSub}>
-                  {i18n.t("leaderboard.gainToBreakTop", {
-                    value: userRank.toTop,
-                  })}
-                </Text>
+                {/* Calculate 'toTop' based on userRankData.bestLift and leaders[0] */}
+                {userRankData.rank > 1 && leaders.length > 0 && userRankData.bestLift?.weight && leaders[0]?.weight && (
+                     <Text style={styles.yourRankSub}>
+                       {i18n.t("leaderboard.gainToBreakTop", {
+                           value: leaders[0].weight - userRankData.bestLift.weight,
+                       })}
+                     </Text>
+                 )}
               </View>
             )
           }

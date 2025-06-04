@@ -10,11 +10,32 @@ import colors from "../theme/colors";
 
 const AvatarSelector = ({ selectedAvatar, onSelect }) => {
   const isCustomSelected = selectedAvatar?.profilePicture;
-  const validAvatars = Array.isArray(avatars) ? avatars : [];
 
-  const handleAvatarSelect = (index) => {
-    onSelect({ avatar: index });
-  };
+  const avatarItems = useMemo(() => {
+    if (!Array.isArray(avatars)) return [];
+
+    return avatars.map((avatar, index) => {
+      const isSelected = selectedAvatar?.avatar === index;
+
+      const handleAvatarSelect = () => {
+        onSelect({ avatar: index });
+      };
+
+      return (
+        <TouchableOpacity
+          key={index}
+          accessible
+          accessibilityRole="imagebutton"
+          accessibilityLabel={`Avatar ${index + 1}`}
+          accessibilityState={{ selected: isSelected }}
+          style={[styles.avatarWrap, isSelected && styles.avatarSelected]}
+          onPress={handleAvatarSelect}
+        >
+          <Image source={avatar} style={styles.avatar} />
+        </TouchableOpacity>
+      );
+    });
+  }, [selectedAvatar, onSelect]);
 
   const handleImageUpload = async () => {
     try {
@@ -33,29 +54,9 @@ const AvatarSelector = ({ selectedAvatar, onSelect }) => {
         }
       }
     } catch {
-      // Silent fail: image upload failed
+      // Silent fail
     }
   };
-
-  const avatarItems = useMemo(() => {
-    return validAvatars.map((avatar, index) => {
-      const isSelected = selectedAvatar?.avatar === index;
-
-      return (
-        <TouchableOpacity
-          key={index}
-          accessible
-          accessibilityRole="imagebutton"
-          accessibilityLabel={`Avatar ${index + 1}`}
-          accessibilityState={{ selected: isSelected }}
-          style={[styles.avatarWrap, isSelected && styles.avatarSelected]}
-          onPress={() => handleAvatarSelect(index)}
-        >
-          <Image source={avatar} style={styles.avatar} />
-        </TouchableOpacity>
-      );
-    });
-  }, [validAvatars, selectedAvatar]);
 
   return (
     <View style={styles.container}>

@@ -26,7 +26,13 @@ const retryWithBackoff = async (
   try {
     return await fn();
   } catch (err) {
-    if (retries === 0) throw err;
+    if (retries === 0) {
+      // For production, avoid exposing full error details if sensitive
+      const errorMessage = process.env.NODE_ENV === "production"
+        ? "Network error, please try again."
+        : err.message;
+      throw new Error(errorMessage);
+    }
     await new Promise((res) => setTimeout(res, delay));
     return retryWithBackoff(fn, retries - 1, delay * 2);
   }
@@ -43,12 +49,15 @@ export const fetchMarketplacePlans = async (filter = "") => {
     if (response.success && Array.isArray(response.plans)) {
       await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(response.plans));
     }
+    // Return the full response from the API, including potential error message
     return response;
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.warn(
-      "⚠️ Failed to fetch marketplace plans. Loading cached version...",
-    );
+    // Only log warnings/errors to console in development
+    if (process.env.NODE_ENV !== "production") {
+      // eslint-disable-next-line no-console
+      console.warn("⚠️ Failed to fetch marketplace plans. Attempting to load cached version...", error);
+    }
+
     try {
       const cached = await AsyncStorage.getItem(CACHE_KEY);
       if (cached) {
@@ -56,15 +65,23 @@ export const fetchMarketplacePlans = async (filter = "") => {
           success: true,
           cached: true,
           plans: JSON.parse(cached),
+          error: "Could not fetch latest plans, showing cached data." // Informative message
         };
       }
     } catch (cacheErr) {
-      // eslint-disable-next-line no-console
-      console.error("❌ Failed to load cached plans:", cacheErr);
+      if (process.env.NODE_ENV !== "production") {
+        // eslint-disable-next-line no-console
+        console.error("❌ Failed to load cached plans:", cacheErr);
+      }
     }
+    // Provide a more generic error message for the user in production
+    const errorMessage = process.env.NODE_ENV === "production"
+      ? "Unable to fetch plans. Please check your internet connection."
+      : error.message || "Failed to fetch plans and no cached data available.";
+
     return {
       success: false,
-      error: "Failed to fetch plans and no cached data available.",
+      error: errorMessage,
     };
   }
 };
@@ -108,9 +125,11 @@ export const deleteMarketplacePlan = async (planId) => {
 
 /**
  * Start purchase flow for a plan.
- * @param {Object} options - { planId, buyerId, creatorStripeAccountId, priceInCents }
- * @returns {Promise}
+ * @param {Object} options - { planId }
+ * @returns {Promise<{success: boolean, sessionId?: string, url?: string, error?: string}>}
  */
 export const initiatePlanPurchase = async (options) => {
+  // `options` should now only contain `planId` as other details like buyerId, buyerEmail
+  // are derived from authentication context on the backend, and creator/plan details from Firestore.
   return retryWithBackoff(() => purchasePlan(options));
 };

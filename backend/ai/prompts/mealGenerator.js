@@ -1,111 +1,62 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-import fetch from "node-fetch";
+// REMOVED: import fetch from "node-fetch"; // No longer makes API calls directly
 
 /**
- * Generates a structured meal plan using AI prompt.
+ * Builds a structured, high-conversion meal plan prompt for AI generation.
  *
  * @param {Object} input
- * @param {string} input.goal - e.g. 'Fat Loss'
- * @param {number} input.calories - e.g. 2200
- * @param {number} input.protein - in grams
- * @param {number} input.carbs - in grams
- * @param {number} input.fat - in grams
- * @param {string} input.dietaryPrefs - e.g. 'No dairy, gluten-free'
- * @param {number} input.mealsPerDay - default 4
- * @returns {Object} planText or error
+ * @param {string} input.goal - User’s goal (e.g., "Fat Loss", "Muscle Gain")
+ * @param {number} input.calories - Total daily calories
+ * @param {number} input.protein - Grams of protein
+ * @param {number} input.carbs - Grams of carbs
+ * @param {number} input.fat - Grams of fat
+ * @param {string} [input.dietaryPrefs] - e.g. "Vegan, No Gluten"
+ * @param {number} [input.mealsPerDay=4] - Meals per day (default = 4)
+ * @returns {string} AI prompt to send to OpenAI
  */
-export const generateMealPlan = async ({
+export const buildMealPrompt = ({ // Exported as named export
   goal,
   calories,
   protein,
   carbs,
   fat,
-  dietaryPrefs,
+  dietaryPrefs = "None",
   mealsPerDay = 4,
 }) => {
-  const isValid =
-    typeof goal === "string" &&
-    typeof calories === "number" &&
-    typeof protein === "number" &&
-    typeof carbs === "number" &&
-    typeof fat === "number" &&
-    typeof mealsPerDay === "number" &&
-    (!dietaryPrefs || typeof dietaryPrefs === "string") &&
-    goal.trim() &&
-    calories > 0 &&
-    protein > 0 &&
-    carbs > 0 &&
-    fat > 0 &&
-    mealsPerDay >= 1;
+  // Removed validation here, as it's handled upstream in generateMealPlanLogic.js
+  return `
+You are a certified performance nutritionist designing a personalized meal plan tailored to the user's goals and macros.
 
-  if (!isValid) {
-    return {
-      success: false,
-      error: {
-        message:
-          "Invalid input. Please check all fields for correct types and values.",
-        code: "INVALID_INPUT",
-      },
-    };
-  }
+=== USER PROFILE ===
+• Goal: ${goal}
+• Daily Calories: ${calories} kcal
+• Macros: ${protein}g Protein / ${carbs}g Carbs / ${fat}g Fat
+• Dietary Preferences: ${dietaryPrefs}
+• Meals Per Day: ${mealsPerDay}
 
-  const content = `
-You are a certified performance nutritionist creating a structured, goal-based meal plan.
+=== TASK ===
+Design ${mealsPerDay} clean, practical, and satisfying meals that:
+- Use familiar, whole-food ingredients
+- Split calories and macros evenly per meal
+- Adhere to dietary restrictions/preferences
+- Include a clear, enticing meal name
 
-=== USER CONTEXT ===
-- Goal: ${goal}
-- Calories: ${calories} kcal
-- Macros: ${protein}g protein / ${carbs}g carbs / ${fat}g fat
-- Dietary Restrictions: ${dietaryPrefs || "None"}
-- Meals Per Day: ${mealsPerDay}
+=== OUTPUT FORMAT ===
+Meal X: [Creative Meal Name]
+• Ingredients: [Bullet list of real-world ingredients]
+• Macros: [Calories] kcal | [Protein]g Protein | [Carbs]g Carbs | [Fat]g Fat
 
-=== OBJECTIVE ===
-Create exactly ${mealsPerDay} clean, accessible meals.
-
-=== FORMAT ===
-Meal [X]: [Meal Name]  
-- Ingredients: [List of common items]  
-- Macros: [Calories] kcal | [Protein]g protein | [Carbs]g carbs | [Fat]g fat
-
-Distribute calories/macros evenly across all meals.
+=== STYLE GUIDE ===
+- Friendly and motivating tone (avoid clinical or robotic phrasing)
+- Avoid repetition or generic meals
+- No brand names, just real ingredients
+- Easy to follow for a regular gym-goer or athlete
 
 === DISCLAIMER ===
 This plan is AI-generated and not a substitute for medical advice. Always consult a licensed nutritionist for personal guidance.
 
 Begin:
 `;
-
-  try {
-    const res = await fetch(
-      `${process.env.EXPO_PUBLIC_API_BASE_URL}/api/openai`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          messages: [{ role: "user", content }],
-        }),
-      },
-    );
-
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "AI call failed");
-
-    return {
-      success: true,
-      planText: data.result,
-    };
-  } catch (err) {
-    return {
-      success: false,
-      error: {
-        message: "Failed to generate meal plan.",
-        details: err.message || err,
-        code: "PROMPT_FAILURE",
-      },
-    };
-  }
 };

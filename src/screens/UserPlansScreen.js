@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -35,15 +35,7 @@ const UserPlansScreen = () => {
   const [error, setError] = useState("");
   const fadeAnim = useFadeIn(300);
 
-  useEffect(() => {
-    if (userId) {
-      loadPlans();
-      loadCreatedChallenges();
-      loadAcceptedChallenges();
-    }
-  }, [userId]);
-
-  const loadPlans = async () => {
+  const loadPlans = useCallback(async () => {
     try {
       setLoading(true);
       setError("");
@@ -73,9 +65,9 @@ const UserPlansScreen = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId]);
 
-  const loadCreatedChallenges = async () => {
+  const loadCreatedChallenges = useCallback(async () => {
     try {
       const q = query(
         collection(db, "wagerChallenges"),
@@ -87,9 +79,9 @@ const UserPlansScreen = () => {
     } catch {
       // Silence to avoid console warnings
     }
-  };
+  }, [userId]);
 
-  const loadAcceptedChallenges = async () => {
+  const loadAcceptedChallenges = useCallback(async () => {
     try {
       const q = query(
         collection(db, "wagerChallenges"),
@@ -101,9 +93,17 @@ const UserPlansScreen = () => {
     } catch {
       // Silence to avoid console warnings
     }
-  };
+  }, [userId]);
 
-  const handleRefresh = async () => {
+  useEffect(() => {
+    if (userId) {
+      loadPlans();
+      loadCreatedChallenges();
+      loadAcceptedChallenges();
+    }
+  }, [userId, loadPlans, loadCreatedChallenges, loadAcceptedChallenges]);
+
+  const handleRefresh = useCallback(async () => {
     setRefreshing(true);
     await Promise.all([
       loadPlans(),
@@ -111,7 +111,7 @@ const UserPlansScreen = () => {
       loadAcceptedChallenges(),
     ]);
     setRefreshing(false);
-  };
+  }, [loadPlans, loadCreatedChallenges, loadAcceptedChallenges]);
 
   const handleDelete = async (planId) => {
     try {

@@ -8,12 +8,14 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { auth } from "../firebase/firebaseClient";
+import { getUserProfile } from "../api/userApi"; // ✅ Added
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [authUser, setAuthUser] = useState(null);
   const [userToken, setUserToken] = useState(null);
+  const [userProfile, setUserProfile] = useState(null); // ✅ New
   const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState(null);
 
@@ -25,14 +27,21 @@ export const AuthProvider = ({ children }) => {
           await AsyncStorage.setItem("authToken", token);
           setUserToken(token);
           setAuthUser(user);
+
+          // ✅ Fetch user profile once signed in
+          const profile = await getUserProfile();
+          setUserProfile(profile);
         } else {
           await AsyncStorage.removeItem("authToken");
           setUserToken(null);
           setAuthUser(null);
+          setUserProfile(null);
         }
-      } catch {
+      } catch (error) {
+        // Added error parameter for consistency
         setUserToken(null);
         setAuthUser(null);
+        setUserProfile(null);
         setAuthError("Failed to process authentication state.");
       } finally {
         setLoading(false);
@@ -50,7 +59,11 @@ export const AuthProvider = ({ children }) => {
       await AsyncStorage.setItem("authToken", token);
       setUserToken(token);
       setAuthUser(result.user);
-    } catch {
+
+      const profile = await getUserProfile();
+      setUserProfile(profile);
+    } catch (error) {
+      // Added error parameter for consistency
       setAuthError("Invalid credentials or network issue.");
       throw new Error("Sign-in failed");
     }
@@ -63,21 +76,28 @@ export const AuthProvider = ({ children }) => {
       await AsyncStorage.removeItem("authToken");
       setUserToken(null);
       setAuthUser(null);
-    } catch {
+      setUserProfile(null);
+    } catch (error) {
+      // Added error parameter for consistency
       setAuthError("Sign-out failed. Try again.");
     }
   };
+
+  const isGymOwner = userProfile?.role === "gymOwner"; // ✅ New
 
   const value = useMemo(
     () => ({
       authUser,
       userToken,
+      userId: authUser?.uid ?? null, // ✅ Normalized
       signIn,
       signOut,
       loading,
       authError,
+      userProfile,
+      isGymOwner,
     }),
-    [authUser, userToken, loading, authError],
+    [authUser, userToken, userProfile, loading, authError, isGymOwner], // Added isGymOwner here
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
