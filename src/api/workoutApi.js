@@ -100,9 +100,11 @@ export const getWorkoutPlans = async () => {
  * Generate a personalized workout plan via backend AI service.
  * @param {object} payload - { userId, fitnessGoal, equipment, injuries, availableDays, preferredSplit, experienceLevel }
  */
-export const generateWorkoutPlan = async (payload) => { // NEW: Exported function for AI generation
+export const generateWorkoutPlan = async (payload) => {
+  // NEW: Exported function for AI generation
   const token = await getAuthToken();
-  return await fetchWithRetry(`${WORKOUT_API_URL}/generate`, { // Targets POST /api/workout/generate
+  return await fetchWithRetry(`${WORKOUT_API_URL}/generate`, {
+    // Targets POST /api/workout/generate
     method: "POST",
     headers: {
       "Content-Type": "application/json",

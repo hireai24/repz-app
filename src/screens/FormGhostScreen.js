@@ -1,14 +1,13 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useCallback } from "react";
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
-  Image,
   ScrollView,
   ActivityIndicator,
   RefreshControl,
-  Alert, // ADDED: For user-facing alerts
+  Alert,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 
@@ -16,7 +15,6 @@ import FormFeedbackCard from "../components/FormFeedbackCard";
 import { UserContext } from "../context/UserContext";
 import { useTierAccess } from "../hooks/useTierAccess";
 import { saveNewUserPlan } from "../services/userPlanService";
-// REMOVED: import { uploadFile } from "../utils/fileUploader"; // No longer pre-uploading to Firebase Storage here
 import { uploadFormVideo } from "../api/formGhostApi";
 import i18n from "../locales/i18n";
 import colors from "../theme/colors";
@@ -24,7 +22,7 @@ import spacing from "../theme/spacing";
 import typography from "../theme/typography";
 
 const FormGhostScreen = () => {
-  const { userProfile } = useContext(UserContext); // userProfile has id
+  const { userProfile } = useContext(UserContext);
   const { locked } = useTierAccess("Pro");
 
   const [videoUri, setVideoUri] = useState(null);
@@ -45,53 +43,50 @@ const FormGhostScreen = () => {
         setErrorText("");
         setConfirmationText("");
         setVideoUri(result.assets[0].uri);
-        // Call analysis directly with local URI
         analyzeUploadedVideo(result.assets[0].uri);
       }
     } catch (err) {
-      setErrorText(i18n.t("form.uploadError") + (err.message ? `: ${err.message}` : ""));
+      setErrorText(
+        i18n.t("form.uploadError") + (err.message ? `: ${err.message}` : ""),
+      );
       Alert.alert(i18n.t("common.error"), i18n.t("form.uploadError"));
     }
   };
 
-  // Renamed to clarify it takes local URI
-  const analyzeUploadedVideo = async (localUri) => { // CHANGED: Takes localUri directly
+  const analyzeUploadedVideo = async (localUri) => {
     setLoading(true);
     setErrorText("");
     setConfirmationText("");
     setAnalysis([]);
 
     if (!userProfile?.id) {
-        setErrorText("User profile not loaded. Cannot analyze form.");
-        setLoading(false);
-        Alert.alert(i18n.t("common.error"), "User profile not loaded. Please try again.");
-        return;
+      setErrorText("User profile not loaded. Cannot analyze form.");
+      setLoading(false);
+      Alert.alert(
+        i18n.t("common.error"),
+        "User profile not loaded. Please try again.",
+      );
+      return;
     }
 
     try {
-      // Direct call to formGhostApi to upload and analyze
-      const result = await uploadFormVideo( // Now sends the local video data
-        userProfile.id,
-        localUri, // Pass local URI
-        "Squat", // Exercise type needs to be passed, current hardcoded "Squat"
-      );
+      const result = await uploadFormVideo(userProfile.id, localUri, "Squat");
 
       if (result?.success && result.results?.length > 0) {
         setAnalysis(result.results);
-        setConfirmationText(i18n.t("form.analysisSuccess")); // New text for success
+        setConfirmationText(i18n.t("form.analysisSuccess"));
 
-        // Save analysis to user's plans
         await saveNewUserPlan({
           userId: userProfile.id,
-          name: `Form Analysis - Squat (${new Date().toLocaleDateString()})`, // Dynamic name
-          type: "Form Analysis", // More specific type
-          exercises: result.results.map((rep, idx) => ({ // Assuming 'rep' is the structure for each rep
+          name: `Form Analysis - Squat (${new Date().toLocaleDateString()})`,
+          type: "Form Analysis",
+          exercises: result.results.map((rep, idx) => ({
             name: `Rep ${idx + 1}`,
-            feedback: rep.feedback?.comment || "No comment", // Ensure proper path to feedback
-            score: rep.feedback?.score || 'N/A'
+            feedback: rep.feedback?.comment || "No comment",
+            score: rep.feedback?.score || "N/A",
           })),
           createdAt: new Date().toISOString(),
-          videoUrl: localUri, // Save original local URI or a persistent URL if re-uploaded for storage
+          videoUrl: localUri,
         });
       } else {
         setErrorText(result?.error || i18n.t("form.noFeedback"));
@@ -108,19 +103,16 @@ const FormGhostScreen = () => {
     }
   };
 
-  const handleRefresh = useCallback(() => { // Wrap in useCallback
+  const handleRefresh = useCallback(() => {
     setRefreshing(true);
     setVideoUri(null);
     setAnalysis([]);
     setErrorText("");
     setConfirmationText("");
-    // After states are reset, simulate async refresh and then set refreshing to false
     setTimeout(() => setRefreshing(false), 600);
   }, []);
 
   const handleChallengeSubmit = () => {
-    // Implement logic to submit to challenge, e.g., navigate to ChallengeSetupScreen
-    // with videoUri and analysis results.
     setConfirmationText(i18n.t("form.challengeSubmitted"));
     Alert.alert(i18n.t("form.challenge"), i18n.t("form.challengeSubmitted"));
   };
@@ -149,13 +141,9 @@ const FormGhostScreen = () => {
         accessibilityLabel={i18n.t("form.upload")}
       >
         {videoUri ? (
-          // Consider using Expo-AV or Video component for video thumbnail preview
-          <Text style={styles.uploadText}>Video Selected: {videoUri.split('/').pop()}</Text>
-          // <Image
-          //   source={{ uri: videoUri }}
-          //   style={styles.thumbnail}
-          //   onError={() => setVideoUri(null)}
-          // />
+          <Text style={styles.uploadText}>
+            Video Selected: {videoUri.split("/").pop()}
+          </Text>
         ) : (
           <Text style={styles.uploadText}>{i18n.t("form.upload")}</Text>
         )}
@@ -216,7 +204,7 @@ const styles = StyleSheet.create({
   },
   container: {
     backgroundColor: colors.background,
-    flexGrow: 1, // Use flexGrow for ScrollView contentContainerStyle
+    flexGrow: 1,
     padding: spacing.lg,
   },
   cta: {
@@ -259,10 +247,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     marginBottom: 10,
-  },
-  thumbnail: {
-    height: "100%",
-    width: "100%",
   },
   title: {
     ...typography.heading2,

@@ -82,7 +82,8 @@ export const saveUserPlan = async (planData) => {
  */
 export const trackXP = async (xpPayload) => {
   const token = await getAuthToken();
-  return await fetchWithRetry(`${XP_TRACK_URL}`, { // CORRECTED: Target /api/xp
+  return await fetchWithRetry(`${XP_TRACK_URL}`, {
+    // CORRECTED: Target /api/xp
     method: "POST",
     headers: {
       "Content-Type": "application/json",

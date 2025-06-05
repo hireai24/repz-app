@@ -26,7 +26,10 @@ const GymOwnerLoginScreen = () => {
 
       // If user is not authenticated, redirect to login
       if (!authUser?.uid) {
-        Alert.alert("Unauthorized", "You must be logged in to manage gym profiles.");
+        Alert.alert(
+          "Unauthorized",
+          "You must be logged in to manage gym profiles.",
+        );
         // FIX: Use navigation.replace to prevent going back to this screen
         navigation.replace("Login"); // Or your main AuthNavigator screen
         setLoading(false);
@@ -36,11 +39,14 @@ const GymOwnerLoginScreen = () => {
       // Check if the user has the 'gym' role from their profile
       const isGymOwnerRole = userProfile?.role === "gym";
       if (!isGymOwnerRole) {
-          Alert.alert("Access Denied", "Your account is not registered as a gym owner.");
-          // FIX: Redirect to dashboard or profile if not a gym owner
-          navigation.replace("Main"); // Redirect to the main tab navigator
-          setLoading(false);
-          return;
+        Alert.alert(
+          "Access Denied",
+          "Your account is not registered as a gym owner.",
+        );
+        // FIX: Redirect to dashboard or profile if not a gym owner
+        navigation.replace("Main"); // Redirect to the main tab navigator
+        setLoading(false);
+        return;
       }
 
       setLoading(true); // Start loading indicator for API call
@@ -66,11 +72,12 @@ const GymOwnerLoginScreen = () => {
 
     // Only run if authentication and user profile data have loaded
     if (!authLoading && !loadingProfile) {
-        checkGymStatus();
+      checkGymStatus();
     }
   }, [authUser, authLoading, userProfile, loadingProfile, navigation]); // Added all relevant dependencies
 
-  if (loading) { // Use local loading state for screen rendering
+  if (loading) {
+    // Use local loading state for screen rendering
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={colors.primary} />

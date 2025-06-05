@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from "react"; // FIX: Added useEffect to import
+import React, { useState, useContext, useEffect } from "react";
 import {
   View,
   TextInput,
@@ -21,8 +21,23 @@ const GymFeedEditorScreen = ({ route, navigation }) => {
   const [text, setText] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [offer, setOffer] = useState("");
+  const [shouldGoBack, setShouldGoBack] = useState(false);
 
-  // Handle loading state for AuthContext
+  useEffect(() => {
+    if (!isGymOwner && !loading) {
+      const timer = setTimeout(() => {
+        setShouldGoBack(true);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [isGymOwner, loading]);
+
+  useEffect(() => {
+    if (shouldGoBack) {
+      navigation.goBack();
+    }
+  }, [shouldGoBack, navigation]);
+
   if (loading) {
     return (
       <View style={styles.centeredContainer}>
@@ -32,16 +47,7 @@ const GymFeedEditorScreen = ({ route, navigation }) => {
     );
   }
 
-  // Handle unauthorized access
   if (!isGymOwner) {
-    // FIX: Activate the useEffect for automatic navigation
-    useEffect(() => {
-      const timer = setTimeout(() => {
-        navigation.goBack(); // Or navigation.replace('HomeScreen')
-      }, 3000); // Navigate back after 3 seconds
-      return () => clearTimeout(timer);
-    }, [navigation]);
-
     return (
       <View style={styles.centeredContainer}>
         <Text style={styles.unauthorizedText}>Access Denied</Text>
@@ -62,7 +68,6 @@ const GymFeedEditorScreen = ({ route, navigation }) => {
       await createGymFeedPost({ gymId, text, imageUrl, offer });
       navigation.goBack();
     } catch (err) {
-      // console.error("Failed to create feed post", err);
       alert("Failed to create feed post. Please try again.");
     }
   };

@@ -16,7 +16,8 @@ dotenv.config();
  * @param {number} [input.mealsPerDay=4] - Meals per day (default = 4)
  * @returns {string} AI prompt to send to OpenAI
  */
-export const buildMealPrompt = ({ // Exported as named export
+export const buildMealPrompt = ({
+  // Exported as named export
   goal,
   calories,
   protein,

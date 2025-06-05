@@ -1,4 +1,4 @@
-import React, { useState, useContext, useCallback } from "react";
+import React, { useState, useContext } from "react";
 import {
   View,
   Text,
@@ -8,15 +8,13 @@ import {
   ScrollView,
   Switch,
   ActivityIndicator,
-  Alert, // ADDED: For user-facing alerts
+  Alert,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
-// REMOVED: AsyncStorage is not directly needed here as uploadFile handles token/userId internally
-// import AsyncStorage from "@react-native-async-storage/async-storage";
-
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { UserContext } from "../context/UserContext";
 import { useTierAccess } from "../hooks/useTierAccess";
-import { uploadFile } from "../utils/fileUploader"; // This is the correct path for fileUploader
+import { uploadFile } from "../utils/fileUploader";
 import { saveNewUserPlan } from "../services/userPlanService";
 import i18n from "../locales/i18n";
 import colors from "../theme/colors";
@@ -26,7 +24,7 @@ import typography from "../theme/typography";
 const views = ["Front", "Side", "Back"];
 
 const VisualGainsScreen = () => {
-  const { userProfile, userId } = useContext(UserContext); // userId is more explicit from context
+  const { userProfile, userId } = useContext(UserContext);
   const { locked } = useTierAccess("Pro");
 
   const [beforeImg, setBeforeImg] = useState(null);
@@ -37,13 +35,6 @@ const VisualGainsScreen = () => {
   const [successMessage, setSuccessMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorText, setErrorText] = useState("");
-
-  // getAuthToken is no longer needed here as uploadFile handles auth via userId and AsyncStorage directly
-  // const getAuthToken = useCallback(async () => {
-  //   const token = await AsyncStorage.getItem("authToken");
-  //   if (!token) throw new Error("Missing auth token");
-  //   return token;
-  // }, []);
 
   const pickImage = async (setter) => {
     try {
@@ -57,23 +48,23 @@ const VisualGainsScreen = () => {
         setSuccessMessage("");
         setter(result.assets[0].uri);
       }
-    } catch (err) { // Catch specific error
-      setErrorText(i18n.t("visual.errorUpload") + (err.message ? `: ${err.message}` : ""));
+    } catch (err) {
+      setErrorText(
+        i18n.t("visual.errorUpload") + (err.message ? `: ${err.message}` : ""),
+      );
       Alert.alert(i18n.t("common.error"), i18n.t("visual.errorUpload"));
     }
   };
 
-  // Simplified uploadImage helper, now correctly calls uploadFile without token parameter
-  const uploadImage = async (uri) => { // REMOVED: token parameter
+  const uploadImage = async (uri) => {
     if (!userProfile?.id && !userId) {
       throw new Error("User ID not available for upload.");
     }
     return uploadFile({
       uri,
       type: "image",
-      userId: userProfile?.id || userId, // Ensure userId is passed
-      pathPrefix: "progress-photos", // More specific path for progress photos
-      // REMOVED: endpoint and token parameters, as uploadFile doesn't use them
+      userId: userProfile?.id || userId,
+      pathPrefix: "progress-photos",
     });
   };
 
@@ -90,27 +81,22 @@ const VisualGainsScreen = () => {
     setSuccessMessage("");
 
     try {
-      // getAuthToken is no longer needed as the backend route is authenticated by verifyUser
-      // and image uploads are handled by fileUploader which doesn't need token here.
-      // const token = await getAuthToken(); // REMOVED
-
       const [beforeUpload, afterUpload] = await Promise.all([
-        uploadImage(beforeImg), // REMOVED: token parameter
-        uploadImage(afterImg), // REMOVED: token parameter
+        uploadImage(beforeImg),
+        uploadImage(afterImg),
       ]);
 
       if (!beforeUpload?.url || !afterUpload?.url) {
         throw new Error(i18n.t("visual.errorUpload") || "Image upload failed.");
       }
 
-      // Make API call to backend for photo analysis
       const res = await fetch(
         `${process.env.EXPO_PUBLIC_API_BASE_URL}/api/photo-analysis`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${await AsyncStorage.getItem("authToken")}`, // Get token here for API call
+            Authorization: `Bearer ${await AsyncStorage.getItem("authToken")}`,
           },
           body: JSON.stringify({
             beforeUrl: beforeUpload.url,
@@ -120,39 +106,37 @@ const VisualGainsScreen = () => {
       );
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || i18n.t("visual.errorFallback"));
+      if (!res.ok)
+        throw new Error(data.error || i18n.t("visual.errorFallback"));
 
       setFeedback(data.message || i18n.t("visual.noFeedback"));
       setSuccessMessage(i18n.t("visual.successMessage"));
 
       await saveNewUserPlan({
-        userId: userId || userProfile?.id, // Ensure userId is passed
+        userId: userId || userProfile?.id,
         name: `Visual Gains - ${view} View`,
         type: "Progress",
-        exercises: [ // Storing progress as "exercises" in plan seems like a workaround.
-                     // Consider a more specific data structure if progress photos are distinct from workouts.
+        exercises: [
           { day: "Before Photo", workout: beforeUpload.url },
           { day: "After Photo", workout: afterUpload.url },
           { day: "Feedback", workout: data.message },
         ],
         createdAt: new Date().toISOString(),
         isPublic,
-        // Also save view: view if you want to store it explicitly
       });
-    } catch (err) { // Catch specific error
+    } catch (err) {
       setErrorText(err.message || i18n.t("visual.errorFallback"));
-      Alert.alert(i18n.t("common.error"), err.message || i18n.t("visual.errorFallback"));
-
-      // Fallback mechanism to save photos even if AI analysis fails
+      Alert.alert(
+        i18n.t("common.error"),
+        err.message || i18n.t("visual.errorFallback"),
+      );
       try {
-        // No need to re-upload, just get token for saveNewUserPlan
-        // const token = await getAuthToken(); // REMOVED
         await saveNewUserPlan({
           userId: userId || userProfile?.id,
           name: `Visual Gains - ${view} View (Failed AI)`,
           type: "Progress",
           exercises: [
-            { day: "Before Photo", workout: beforeImg }, // Use local URI if upload failed
+            { day: "Before Photo", workout: beforeImg },
             { day: "After Photo", workout: afterImg },
             { day: "Feedback", workout: i18n.t("visual.noAI") },
           ],
@@ -161,8 +145,11 @@ const VisualGainsScreen = () => {
         });
 
         setSuccessMessage(i18n.t("visual.fallbackSaved"));
-      } catch (saveErr) { // Catch specific error for saving
-        setErrorText(i18n.t("visual.saveFail") + (saveErr.message ? `: ${saveErr.message}` : ""));
+      } catch (saveErr) {
+        setErrorText(
+          i18n.t("visual.saveFail") +
+            (saveErr.message ? `: ${saveErr.message}` : ""),
+        );
         Alert.alert(i18n.t("common.error"), i18n.t("visual.saveFail"));
       }
     } finally {
@@ -228,27 +215,20 @@ const VisualGainsScreen = () => {
 
       {beforeImg && afterImg && (
         <TouchableOpacity
-          style={[styles.analyzeBtn, loading && {opacity: 0.5}]} // Added opacity for disabled state visual feedback
+          style={[
+            styles.analyzeBtn,
+            loading ? styles.analyzeBtnDisabled : null,
+          ]}
           onPress={handleAnalyze}
           disabled={loading}
         >
           {loading ? (
             <ActivityIndicator color={colors.textOnPrimary} />
           ) : (
-            <Text style={styles.analyzeText}>
-              {i18n.t("visual.analyze")}
-            </Text>
+            <Text style={styles.analyzeText}>{i18n.t("visual.analyze")}</Text>
           )}
         </TouchableOpacity>
       )}
-
-      {/* Replaced standalone ActivityIndicator if it's already part of the button */}
-      {/* {loading && (
-        <ActivityIndicator
-          color={colors.primary}
-          style={{ marginTop: spacing.md }}
-        />
-      )} */}
 
       {feedback && (
         <View style={styles.resultBlock}>
@@ -278,13 +258,16 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
     padding: spacing.md,
   },
+  analyzeBtnDisabled: {
+    opacity: 0.5, // Fix for inline style error
+  },
   analyzeText: {
     color: colors.textOnPrimary,
     fontWeight: "bold",
   },
   container: {
     backgroundColor: colors.background,
-    flexGrow: 1, // Use flexGrow for ScrollView contentContainerStyle
+    flexGrow: 1,
     padding: spacing.lg,
   },
   errorText: {

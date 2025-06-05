@@ -1,11 +1,11 @@
 // backend/functions/generateDailyChallenge.js
 
 import { db } from "../firebase/init.js";
-import { doc, setDoc, Timestamp } from "firebase/firestore";
+import { doc, setDoc } from "firebase/firestore";
 import { getUserTier } from "../utils/userUtils.js";
 import {
-  generatePushupsChallenge as generateBackendPushupsChallenge, // Rename to avoid conflict with frontend util
-  generateVolumeChallenge as generateBackendVolumeChallenge, // Rename to avoid conflict with frontend util
+  generatePushupsChallenge as generateBackendPushupsChallenge,
+  generateVolumeChallenge as generateBackendVolumeChallenge,
 } from "../utils/challengeGenerators.js";
 
 /**
@@ -28,32 +28,33 @@ const generateDailyChallenge = async (req, res) => {
     // Generate challenge based on tier, passing userId
     switch (tier) {
       case "Elite":
-        // Ensure that generateBackendVolumeChallenge accepts a userId parameter
         challenge = generateBackendVolumeChallenge(userId, { minVolume: 3000 });
         break;
       case "Pro":
-        // Ensure that generateBackendVolumeChallenge accepts a userId parameter
         challenge = generateBackendVolumeChallenge(userId, { minVolume: 2000 });
         break;
       default:
-        // Ensure that generateBackendPushupsChallenge accepts a userId parameter
         challenge = generateBackendPushupsChallenge(userId, { reps: 30 });
         break;
     }
 
-    const challengeData = {
+    // Save challenge directly, assuming challengeGenerators already includes assignedTo, createdAt, etc.
+    await setDoc(doc(db, "dailyChallenges", userId), {
       ...challenge,
-      userId, // Redundant if challenge object already has assignedTo/createdBy with userId
-      createdAt: Timestamp.now(),
-      completed: false,
-      // The `id` will come from the generator function
-    };
+      completed: false, // Force to false in DB regardless of generator
+    });
 
-    await setDoc(doc(db, "dailyChallenges", userId), challengeData);
-
-    res.status(200).json({ success: true, challenge: challengeData });
+    res.status(200).json({ success: true, challenge });
   } catch (err) {
-    console.error("Error generating daily challenge for user", userId, ":", err); // Log the actual error
+    if (process.env.NODE_ENV !== "production") {
+      // eslint-disable-next-line no-console
+      console.error(
+        "Error generating daily challenge for user",
+        userId,
+        ":",
+        err,
+      );
+    }
     res.status(500).json({ error: "Failed to generate daily challenge." });
   }
 };

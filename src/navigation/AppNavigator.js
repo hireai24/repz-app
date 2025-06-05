@@ -3,22 +3,19 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { Ionicons } from "@expo/vector-icons";
-import { View, ActivityIndicator, Text } from "react-native"; // FIX: Added View, ActivityIndicator, Text
+import { View, ActivityIndicator, Text, StyleSheet } from "react-native";
 
-// Context
 import { AuthContext } from "../context/AuthContext";
-
-// Theme
 import colors from "../theme/colors";
 
-// Screens - Main Tabs
+// Main Tab Screens
 import DashboardScreen from "../screens/DashboardScreen";
 import WorkoutLogScreen from "../screens/WorkoutLogScreen";
 import ChallengeScreen from "../screens/ChallengeScreen";
 import MarketplaceScreen from "../screens/MarketplaceScreen";
 import ProfileScreen from "../screens/ProfileScreen";
 
-// Screens - Stack Only
+// Stack Only Screens
 import PlanBuilderScreen from "../screens/PlanBuilderScreen";
 import FormGhostScreen from "../screens/FormGhostScreen";
 import VisualGainsScreen from "../screens/VisualGainsScreen";
@@ -41,13 +38,24 @@ import GymFeedEditorScreen from "../screens/GymFeedEditorScreen";
 // Purchase History
 import PurchaseHistoryScreen from "../screens/PurchaseHistoryScreen";
 
-// Authentication Screens (Placeholder - ensure these exist in your actual project)
-// FIX: Assuming auth screens are in a subfolder `auth` within `screens`
-import LoginScreen from "../screens/auth/LoginScreen";
-import SignupScreen from "../screens/auth/SignupScreen";
+// Onboarding (used for signup/login)
+import OnboardingScreen from "../screens/OnboardingScreen";
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
+
+const styles = StyleSheet.create({
+  loadingContainer: {
+    alignItems: "center",
+    backgroundColor: colors.background,
+    flex: 1,
+    justifyContent: "center",
+  },
+  loadingText: {
+    color: colors.textSecondary,
+    marginTop: 10,
+  },
+});
 
 const TabNavigator = () => (
   <Tab.Navigator
@@ -105,9 +113,9 @@ const AppNavigator = () => {
 
   if (loading) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: colors.background }}>
+      <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={{ color: colors.textSecondary, marginTop: 10 }}>Loading app...</Text>
+        <Text style={styles.loadingText}>Loading app...</Text>
       </View>
     );
   }
@@ -116,7 +124,6 @@ const AppNavigator = () => {
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {authUser ? (
-          // Authenticated User Screens
           <>
             <Stack.Screen name="Main" component={TabNavigator} />
             <Stack.Screen name="PlanBuilder" component={PlanBuilderScreen} />
@@ -124,10 +131,18 @@ const AppNavigator = () => {
             <Stack.Screen name="VisualGains" component={VisualGainsScreen} />
             <Stack.Screen name="UserPlans" component={UserPlansScreen} />
             <Stack.Screen name="GymDirectory" component={GymDirectoryScreen} />
-            {/* FIX: Changed GymProfile to use a generic name 'GymProfileScreen' to match other screens */}
-            <Stack.Screen name="GymProfileScreen" component={GymProfileScreen} />
-            <Stack.Screen name="ChallengeSetup" component={ChallengeSetupScreen} />
-            <Stack.Screen name="PartnerFinder" component={PartnerFinderScreen} />
+            <Stack.Screen
+              name="GymProfileScreen"
+              component={GymProfileScreen}
+            />
+            <Stack.Screen
+              name="ChallengeSetup"
+              component={ChallengeSetupScreen}
+            />
+            <Stack.Screen
+              name="PartnerFinder"
+              component={PartnerFinderScreen}
+            />
             <Stack.Screen name="MealPlanner" component={MealPlannerScreen} />
             <Stack.Screen name="MyGyms" component={MyGymsScreen} />
             <Stack.Screen
@@ -138,7 +153,10 @@ const AppNavigator = () => {
               name="PurchaseHistory"
               component={PurchaseHistoryScreen}
             />
-            <Stack.Screen name="GymOwnerLogin" component={GymOwnerLoginScreen} />
+            <Stack.Screen
+              name="GymOwnerLogin"
+              component={GymOwnerLoginScreen}
+            />
             <Stack.Screen name="GymFeedScreen" component={GymFeedScreen} />
             <Stack.Screen
               name="GymFeedEditorScreen"
@@ -146,11 +164,8 @@ const AppNavigator = () => {
             />
           </>
         ) : (
-          // Unauthenticated User Screens (e.g., login/signup)
           <>
-            <Stack.Screen name="Login" component={LoginScreen} />
-            <Stack.Screen name="Signup" component={SignupScreen} />
-            {/* Potentially other public screens like a welcome screen */}
+            <Stack.Screen name="Onboarding" component={OnboardingScreen} />
           </>
         )}
       </Stack.Navigator>

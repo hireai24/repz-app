@@ -52,8 +52,14 @@ const LeaderboardScreen = () => {
       if (result.success) {
         setLeaders(result.results || []);
         // Backend now returns userRank and userBestLift directly
-        if (result.userRank !== undefined && result.userBestLift !== undefined) {
-          setUserRankData({ rank: result.userRank, bestLift: result.userBestLift });
+        if (
+          result.userRank !== undefined &&
+          result.userBestLift !== undefined
+        ) {
+          setUserRankData({
+            rank: result.userRank,
+            bestLift: result.userBestLift,
+          });
         } else {
           setUserRankData(null); // User might not have an entry
         }
@@ -173,7 +179,9 @@ const LeaderboardScreen = () => {
                 </Text>
               </View>
               {item.videoUrl && ( // CHANGED: From item.video to item.videoUrl
-                <TouchableOpacity onPress={() => Linking.openURL(item.videoUrl)}>
+                <TouchableOpacity
+                  onPress={() => Linking.openURL(item.videoUrl)}
+                >
                   <Text style={styles.watch}>
                     {i18n.t("leaderboard.watch")}
                   </Text>
@@ -185,7 +193,8 @@ const LeaderboardScreen = () => {
             <Text style={styles.emptyState}>{i18n.t("leaderboard.empty")}</Text>
           }
           ListFooterComponent={
-            userRankData && userRankData.rank !== null && ( // Use userRankData
+            userRankData &&
+            userRankData.rank !== null && ( // Use userRankData
               <View style={styles.yourRankBox}>
                 <Text style={styles.yourRankText}>
                   {i18n.t("leaderboard.rank", {
@@ -194,13 +203,16 @@ const LeaderboardScreen = () => {
                   })}
                 </Text>
                 {/* Calculate 'toTop' based on userRankData.bestLift and leaders[0] */}
-                {userRankData.rank > 1 && leaders.length > 0 && userRankData.bestLift?.weight && leaders[0]?.weight && (
-                     <Text style={styles.yourRankSub}>
-                       {i18n.t("leaderboard.gainToBreakTop", {
-                           value: leaders[0].weight - userRankData.bestLift.weight,
-                       })}
-                     </Text>
-                 )}
+                {userRankData.rank > 1 &&
+                  leaders.length > 0 &&
+                  userRankData.bestLift?.weight &&
+                  leaders[0]?.weight && (
+                    <Text style={styles.yourRankSub}>
+                      {i18n.t("leaderboard.gainToBreakTop", {
+                        value: leaders[0].weight - userRankData.bestLift.weight,
+                      })}
+                    </Text>
+                  )}
               </View>
             )
           }

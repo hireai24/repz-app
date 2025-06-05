@@ -1,7 +1,4 @@
-// backend/functions/generateWorkout.js
-
 import { collection, addDoc } from "firebase/firestore";
-
 import { db } from "../firebase/init.js";
 import { parseAIWorkoutPlan } from "../utils/planUtils.js";
 import { generateWorkoutPlan } from "../ai/prompts/workoutPlanner.js"; // This calls /api/openai
@@ -23,14 +20,13 @@ const generateWorkout = async (
     preferredSplit = "",
     experienceLevel = "",
   },
-  authUser, // CHANGED: Now explicitly receiving authUser with tier info
+  authUser,
 ) => {
-  // ✅ Tier Restriction - now using authUser.tier
   if (!authUser?.tier || !["Pro", "Elite"].includes(authUser.tier)) {
     return {
       success: false,
       error: "Upgrade required to access this feature (Plan Builder).",
-      status: 403, // Add status for route handler
+      status: 403,
     };
   }
 
@@ -50,21 +46,20 @@ const generateWorkout = async (
       success: false,
       error:
         "Invalid input. Ensure userId, goal, availableDays, preferredSplit, and experienceLevel are valid.",
-      status: 400, // Add status for route handler
+      status: 400,
     };
   }
 
   try {
-    const aiTimeoutMs = 10000; // 10 seconds timeout for AI response
+    const aiTimeoutMs = 10000;
 
-    const aiPromise = generateWorkoutPlan({ // This itself calls /api/openai
+    const aiPromise = generateWorkoutPlan({
       goal,
       availableDays,
       injuries,
       equipment,
       preferredSplit,
       experienceLevel,
-      // gymContext: authUser.gym || "" // If you want to pass user's gym to AI prompt
     });
 
     const timeoutPromise = new Promise((_, reject) =>
@@ -74,24 +69,21 @@ const generateWorkout = async (
       ),
     );
 
-    // Use Promise.race to handle timeout
-    const aiResponse = await Promise.race([
-      aiPromise,
-      timeoutPromise,
-    ]);
+    const aiResponse = await Promise.race([aiPromise, timeoutPromise]);
 
     if (!aiResponse || !aiResponse.success || !aiResponse.planText) {
-      throw new Error(aiResponse?.error?.message || "AI failed to return a workout plan.");
+      throw new Error(
+        aiResponse?.error?.message || "AI failed to return a workout plan.",
+      );
     }
 
     const structuredPlan = parseAIWorkoutPlan(aiResponse.planText);
 
-    // Save the AI-generated plan to userPlans collection
     const docRef = await addDoc(collection(db, "userPlans"), {
       userId,
-      name: `AI Plan - ${goal}`, // Default name
-      type: "AI Workout", // Specific type
-      exercises: structuredPlan, // Array of {day, exercises}
+      name: `AI Plan - ${goal}`,
+      type: "AI Workout",
+      exercises: structuredPlan,
       goal,
       availableDays,
       injuries,
@@ -108,7 +100,8 @@ const generateWorkout = async (
       workoutPlan: structuredPlan,
     };
   } catch (err) {
-    console.error("Error in generateWorkout function:", err); // Server-side debugging
+    // eslint-disable-next-line no-console
+    console.error("Error in generateWorkout function:", err);
     return {
       success: false,
       error: err.message || "Unknown error generating workout plan.",

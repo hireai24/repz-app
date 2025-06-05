@@ -1,6 +1,13 @@
 import React, { useMemo } from "react";
 import PropTypes from "prop-types";
-import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  Alert,
+} from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -53,8 +60,11 @@ const AvatarSelector = ({ selectedAvatar, onSelect }) => {
           onSelect({ profilePicture: uploadedUrl });
         }
       }
-    } catch {
-      // Silent fail
+    } catch (err) {
+      Alert.alert(
+        "Upload Failed",
+        "There was a problem selecting or uploading your image. Please try again.",
+      );
     }
   };
 

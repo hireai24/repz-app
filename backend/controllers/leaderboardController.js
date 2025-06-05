@@ -20,7 +20,8 @@ const PAGE_SIZE = 20;
  * @returns {Promise<object>} - { success: boolean, entryId?: string, error?: string }
  */
 const submitLift = async (data) => {
-  const { exercise, weight, reps, gym, location, videoUrl, tier, userId } = data;
+  const { exercise, weight, reps, gym, location, videoUrl, tier, userId } =
+    data;
 
   const isValid =
     userId &&
@@ -65,7 +66,8 @@ const submitLift = async (data) => {
 
     return { success: true, entryId: docRef.id };
   } catch (err) {
-    console.error("Error submitting lift:", err); // For server-side debugging
+    // eslint-disable-next-line no-console
+    console.error("Error submitting lift:", err);
     return { success: false, error: "Failed to submit lift to leaderboard." };
   }
 };
@@ -112,7 +114,8 @@ const getTopLifts = async (exercise, scope, gymId = null) => {
 
     return results;
   } catch (err) {
-    console.error("Error fetching top lifts:", err); // For server-side debugging
+    // eslint-disable-next-line no-console
+    console.error("Error fetching top lifts:", err);
     throw new Error("Failed to fetch leaderboard data: " + err.message);
   }
 };
@@ -126,8 +129,15 @@ const getTopLifts = async (exercise, scope, gymId = null) => {
  * @returns {Promise<object>} - { rank: number|null, bestLift: object|null, message?: string }
  */
 const getUserRank = async (userId, exercise, scope, gymId = null) => {
-  if (!userId || !exercise || typeof exercise !== "string" || !exercise.trim()) {
-    throw new Error("Missing or invalid userId or exercise parameter for user rank.");
+  if (
+    !userId ||
+    !exercise ||
+    typeof exercise !== "string" ||
+    !exercise.trim()
+  ) {
+    throw new Error(
+      "Missing or invalid userId or exercise parameter for user rank.",
+    );
   }
 
   try {
@@ -144,19 +154,30 @@ const getUserRank = async (userId, exercise, scope, gymId = null) => {
     }
 
     const snapshot = await getDocs(q);
-    const rankedLifts = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    const rankedLifts = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
 
-    const userEntryIndex = rankedLifts.findIndex((entry) => entry.userId === userId);
+    const userEntryIndex = rankedLifts.findIndex(
+      (entry) => entry.userId === userId,
+    );
     const userRank = userEntryIndex !== -1 ? userEntryIndex + 1 : null;
-    const userBestLift = userEntryIndex !== -1 ? rankedLifts[userEntryIndex] : null;
+    const userBestLift =
+      userEntryIndex !== -1 ? rankedLifts[userEntryIndex] : null;
 
     if (userRank === null) {
-      return { rank: null, bestLift: null, message: "User has no entry in this category/location." };
+      return {
+        rank: null,
+        bestLift: null,
+        message: "User has no entry in this category/location.",
+      };
     }
 
     return { rank: userRank, bestLift: userBestLift };
   } catch (err) {
-    console.error("Error calculating user rank:", err); // For server-side debugging
+    // eslint-disable-next-line no-console
+    console.error("Error calculating user rank:", err);
     throw new Error("Failed to get user rank: " + err.message);
   }
 };

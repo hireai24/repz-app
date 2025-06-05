@@ -1,3 +1,5 @@
+// backend/controllers/userController.js
+
 import {
   doc,
   getDoc,
@@ -20,6 +22,7 @@ const REVENUECAT_API_URL = "https://api.revenuecat.com/v1/subscribers";
 const REVENUECAT_SECRET = process.env.REVENUECAT_WEBHOOK_SECRET;
 const FIREBASE_API_KEY = process.env.FIREBASE_API_KEY;
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
+const FRONTEND_URL = process.env.FRONTEND_URL; // <-- Make sure this is set in your .env
 
 const stripe = new Stripe(STRIPE_SECRET_KEY);
 
@@ -306,17 +309,16 @@ const getStripeOnboardingLink = async (req, res) => {
         metadata: { userId },
       });
 
-      // Generate onboarding link
+      // Generate onboarding link with ENV URLs (not hardcoded!)
       const accountLink = await stripe.accountLinks.create({
         account: account.id,
-        refresh_url: "https://repz-app.com/stripe/refresh",
-        return_url: "https://repz-app.com/stripe/complete",
+        refresh_url: `${FRONTEND_URL}/stripe/refresh`,
+        return_url: `${FRONTEND_URL}/stripe/complete`,
         type: "account_onboarding",
       });
 
       res.status(200).json({ success: true, link: accountLink.url });
     } catch (err) {
-      // console.error("Stripe onboarding error:", err); // Commented out to resolve no-console warning
       res.status(500).json({
         success: false,
         error: "Failed to get Stripe onboarding link.",

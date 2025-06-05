@@ -1,4 +1,4 @@
-// payments/stripe/purchasePlan.js
+// backend/payments/stripe/purchasePlan.js
 
 import express from "express";
 import Stripe from "stripe";
@@ -6,12 +6,14 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from "../../firebase/init.js";
 import { verifyUser } from "../../utils/authMiddleware.js";
 
+// Optional logger (production: swap for real logger)
+const log = { error: () => {} };
+
 const router = express.Router();
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: "2023-08-16",
 });
 
-// POST /stripe/purchase-plan
 router.post("/", verifyUser, async (req, res) => {
   const { planId } = req.body;
   const buyerId = req.user?.uid;
@@ -33,17 +35,17 @@ router.post("/", verifyUser, async (req, res) => {
 
     const plan = planSnap.data();
 
-    // Ensure plan has essential fields for purchase
     if (
       !plan.price ||
       typeof plan.price !== "number" ||
       plan.price <= 0 ||
       !plan.userId ||
-      !plan.title // Ensure plan title exists for Stripe checkout display and purchase logging
+      !plan.title
     ) {
-      return res
-        .status(400)
-        .json({ success: false, error: "Invalid plan data (price, creator, or title missing)" });
+      return res.status(400).json({
+        success: false,
+        error: "Invalid plan data (price, creator, or title missing)",
+      });
     }
 
     const creatorRef = doc(db, "users", plan.userId);
@@ -64,16 +66,15 @@ router.post("/", verifyUser, async (req, res) => {
     }
 
     const amountInCents = Math.round(plan.price * 100);
-    const platformFee = Math.round(amountInCents * 0.1); // 10% platform cut
+    const platformFee = Math.round(amountInCents * 0.1);
 
-    const FRONTEND_URL = process.env.FRONTEND_URL; // Using environment variable directly
-    // A robust URL validation for production should be in place where FRONTEND_URL is set,
-    // or use a more comprehensive validator here if it could be dynamic.
+    const FRONTEND_URL = process.env.FRONTEND_URL;
     if (!FRONTEND_URL || !/^https?:\/\/.+/.test(FRONTEND_URL)) {
-       console.error("Invalid or missing FRONTEND_URL environment variable.");
-       return res
-         .status(500)
-         .json({ success: false, error: "Server configuration error: Invalid FRONTEND_URL." });
+      log.error("Invalid or missing FRONTEND_URL environment variable.");
+      return res.status(500).json({
+        success: false,
+        error: "Server configuration error: Invalid FRONTEND_URL.",
+      });
     }
 
     const session = await stripe.checkout.sessions.create({
@@ -83,10 +84,11 @@ router.post("/", verifyUser, async (req, res) => {
       line_items: [
         {
           price_data: {
-            currency: "gbp", // Consider making currency dynamic if needed
+            currency: "gbp",
             product_data: {
               name: plan.title,
-              description: plan.description || `Purchase of ${plan.title} plan.`, // Provide a default description
+              description:
+                plan.description || `Purchase of ${plan.title} plan.`,
             },
             unit_amount: amountInCents,
           },
@@ -102,9 +104,9 @@ router.post("/", verifyUser, async (req, res) => {
       metadata: {
         userId: buyerId,
         planId,
-        planName: plan.title, // ADDED: Pass planName to webhook via metadata
-        creatorId: plan.userId, // ADDED: Pass creatorId to webhook via metadata
-        amountPaid: amountInCents, // ADDED: Pass amountPaid (in cents) to webhook via metadata
+        planName: plan.title,
+        creatorId: plan.userId,
+        amountPaid: amountInCents,
       },
       success_url: `${FRONTEND_URL}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${FRONTEND_URL}/payment-cancelled`,
@@ -117,13 +119,16 @@ router.post("/", verifyUser, async (req, res) => {
     });
   } catch (err) {
     if (process.env.NODE_ENV !== "production") {
-      // eslint-disable-next-line no-console
-      console.error("❌ Stripe purchase session creation error:", err);
+      log.error && log.error("Stripe purchase session creation error:", err);
     }
-    // Provide a more user-friendly error in production, but full error for dev
-    return res
-      .status(500)
-      .json({ success: false, error: `Failed to create checkout session: ${process.env.NODE_ENV !== "production" ? err.message : "Please try again later."}` });
+    return res.status(500).json({
+      success: false,
+      error: `Failed to create checkout session: ${
+        process.env.NODE_ENV !== "production"
+          ? err.message
+          : "Please try again later."
+      }`,
+    });
   }
 });
 

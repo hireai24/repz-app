@@ -38,7 +38,9 @@ export const uploadFile = async ({
 
   const fileSizeMB = fileInfo.size / (1024 * 1024);
   if (fileSizeMB > maxSizeMB) {
-    throw new Error(`File exceeds ${maxSizeMB}MB limit. Current: ${fileSizeMB.toFixed(2)}MB`);
+    throw new Error(
+      `File exceeds ${maxSizeMB}MB limit. Current: ${fileSizeMB.toFixed(2)}MB`,
+    );
   }
 
   const fileName = uri.split("/").pop();
@@ -55,7 +57,9 @@ export const uploadFile = async ({
   const mimeType = mimeMap[ext] || `${type}/*`;
 
   if (!allowedTypes.includes(mimeType)) {
-    throw new Error(`Unsupported file type: ${mimeType}. Only JPEG, PNG, MP4, MOV allowed.`);
+    throw new Error(
+      `Unsupported file type: ${mimeType}. Only JPEG, PNG, MP4, MOV allowed.`,
+    );
   }
 
   const filePath = `${pathPrefix}/${userId}/${Date.now()}_${fileName}`;

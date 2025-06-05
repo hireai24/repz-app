@@ -28,9 +28,10 @@ const retryWithBackoff = async (
   } catch (err) {
     if (retries === 0) {
       // For production, avoid exposing full error details if sensitive
-      const errorMessage = process.env.NODE_ENV === "production"
-        ? "Network error, please try again."
-        : err.message;
+      const errorMessage =
+        process.env.NODE_ENV === "production"
+          ? "Network error, please try again."
+          : err.message;
       throw new Error(errorMessage);
     }
     await new Promise((res) => setTimeout(res, delay));
@@ -55,7 +56,10 @@ export const fetchMarketplacePlans = async (filter = "") => {
     // Only log warnings/errors to console in development
     if (process.env.NODE_ENV !== "production") {
       // eslint-disable-next-line no-console
-      console.warn("⚠️ Failed to fetch marketplace plans. Attempting to load cached version...", error);
+      console.warn(
+        "⚠️ Failed to fetch marketplace plans. Attempting to load cached version...",
+        error,
+      );
     }
 
     try {
@@ -65,7 +69,7 @@ export const fetchMarketplacePlans = async (filter = "") => {
           success: true,
           cached: true,
           plans: JSON.parse(cached),
-          error: "Could not fetch latest plans, showing cached data." // Informative message
+          error: "Could not fetch latest plans, showing cached data.", // Informative message
         };
       }
     } catch (cacheErr) {
@@ -75,9 +79,11 @@ export const fetchMarketplacePlans = async (filter = "") => {
       }
     }
     // Provide a more generic error message for the user in production
-    const errorMessage = process.env.NODE_ENV === "production"
-      ? "Unable to fetch plans. Please check your internet connection."
-      : error.message || "Failed to fetch plans and no cached data available.";
+    const errorMessage =
+      process.env.NODE_ENV === "production"
+        ? "Unable to fetch plans. Please check your internet connection."
+        : error.message ||
+          "Failed to fetch plans and no cached data available.";
 
     return {
       success: false,

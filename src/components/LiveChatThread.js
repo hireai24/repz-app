@@ -24,7 +24,7 @@ import spacing from "../theme/spacing";
 import typography from "../theme/typography";
 import { useUser } from "../context/UserContext";
 
-// ✅ Hermes-safe static fallback avatar
+// Hermes-safe static fallback avatar
 import avatarFallback from "../assets/avatars/avatar1.png";
 
 const LiveChatThread = ({ challengeId }) => {
@@ -60,9 +60,10 @@ const LiveChatThread = ({ challengeId }) => {
       sender: user?.username || "Anonymous",
     });
 
+    // Notify backend to push notification for this challenge message
     try {
       await fetch(
-        `${process.env.EXPO_PUBLIC_API_BASE_URL}/api/notify/notifyChallengeMessage`,
+        `${process.env.EXPO_PUBLIC_API_BASE_URL}/api/notify`, // <-- Correct route
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -73,7 +74,11 @@ const LiveChatThread = ({ challengeId }) => {
           }),
         },
       );
-    } catch {
+    } catch (err) {
+      if (__DEV__) {
+        // eslint-disable-next-line no-console
+        console.error("Notification push failed:", err);
+      }
       // Silently fail in production
     }
 
@@ -88,7 +93,7 @@ const LiveChatThread = ({ challengeId }) => {
         renderItem={({ item }) => (
           <View style={styles.messageRow}>
             <Image
-              source={avatarFallback} // ✅ Safe static image
+              source={avatarFallback}
               style={styles.avatar}
               accessibilityLabel="Sender avatar"
             />

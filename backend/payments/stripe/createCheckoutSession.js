@@ -1,38 +1,36 @@
-// backend/payments/stripe/createCheckoutSession.js
-
 import express from "express";
 import Stripe from "stripe";
-import { verifyUser } from "../../utils/authMiddleware.js"; // Import verifyUser
+import { verifyUser } from "../../utils/authMiddleware.js";
 
 const router = express.Router();
-const STRIPE_API_VERSION = "2023-10-16"; // Standardize API Version
+const STRIPE_API_VERSION = "2023-10-16";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: STRIPE_API_VERSION,
 });
 
 // POST /stripe/checkout (for subscriptions)
-router.post("/", verifyUser, async (req, res) => { // ADDED: verifyUser middleware
-  // Get userId and email from the authenticated user, not req.body
+router.post("/", verifyUser, async (req, res) => {
   const userId = req.user?.uid;
   const email = req.user?.email;
-  const { priceId, metadata = {} } = req.body; // priceId still comes from body
+  const { priceId } = req.body; // metadata removed (wasn't used)
 
   if (
     !priceId ||
     typeof priceId !== "string" ||
     !userId ||
     typeof userId !== "string" ||
-    !email // Email is now mandatory if verified via auth
+    !email
   ) {
     return res.status(400).json({
       success: false,
-      error: "Missing or invalid parameters: priceId, userId, or email is required.",
+      error:
+        "Missing or invalid parameters: priceId, userId, or email is required.",
     });
   }
 
-  // Ensure redirect domains are safe
   const FRONTEND_URL = process.env.FRONTEND_URL;
-  if (!FRONTEND_URL || !/^https?:\/\/.+/.test(FRONTEND_URL)) { // More robust URL validation
+  if (!FRONTEND_URL || !/^https?:\/\/.+/.test(FRONTEND_URL)) {
+    // eslint-disable-next-line no-console
     console.error("Invalid or missing FRONTEND_URL environment variable.");
     return res.status(500).json({
       success: false,
@@ -41,7 +39,6 @@ router.post("/", verifyUser, async (req, res) => { // ADDED: verifyUser middlewa
   }
 
   try {
-    // Validate that the Price ID actually exists and is active
     const price = await stripe.prices.retrieve(priceId);
 
     if (!price || price.active !== true) {
@@ -62,10 +59,7 @@ router.post("/", verifyUser, async (req, res) => { // ADDED: verifyUser middlewa
       ],
       metadata: {
         userId,
-        email, // Pass email to webhook via metadata
-        // You might want to pass more specific subscription info here if needed by the webhook
-        // e.g., tier: "Pro" if tier information is available on the frontend or associated with priceId
-        // For now, assuming webhook derives tier from price or defaults to "Pro"
+        email,
       },
       success_url: `${FRONTEND_URL}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${FRONTEND_URL}/payment-cancelled`,
@@ -77,11 +71,16 @@ router.post("/", verifyUser, async (req, res) => { // ADDED: verifyUser middlewa
   } catch (err) {
     if (process.env.NODE_ENV !== "production") {
       // eslint-disable-next-line no-console
-      console.error("❌ Stripe checkout session error:", err.message, err.raw || err); // Log full error details for dev
+      console.error(
+        "❌ Stripe checkout session error:",
+        err.message,
+        err.raw || err,
+      );
     }
-    return res
-      .status(500)
-      .json({ success: false, error: `Failed to create checkout session: ${process.env.NODE_ENV !== "production" ? err.message : "Please try again later."}` });
+    return res.status(500).json({
+      success: false,
+      error: `Failed to create checkout session: ${process.env.NODE_ENV !== "production" ? err.message : "Please try again later."}`,
+    });
   }
 });
 

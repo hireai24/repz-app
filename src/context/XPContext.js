@@ -28,6 +28,7 @@ export const XPContext = createContext({
 
 const XP_STORAGE_KEY = "repz_total_xp";
 
+// Updated: xpToNext never negative; included xpRequiredForLevel if needed for UI
 const calculateLevel = (xp) => {
   let level = 1;
   let required = 100;
@@ -42,7 +43,8 @@ const calculateLevel = (xp) => {
   return {
     level,
     currentXP: remainingXP,
-    xpToNext: required - remainingXP,
+    xpToNext: Math.max(0, required - remainingXP),
+    xpRequiredForLevel: required,
   };
 };
 
@@ -153,7 +155,7 @@ export const XPProvider = ({ children }) => {
     [authUser, totalXP],
   );
 
-  const { level, currentXP, xpToNext } = useMemo(
+  const { level, currentXP, xpToNext, xpRequiredForLevel } = useMemo(
     () => calculateLevel(totalXP),
     [totalXP],
   );
@@ -163,6 +165,7 @@ export const XPProvider = ({ children }) => {
       totalXP,
       currentXP,
       xpToNext,
+      xpRequiredForLevel, // You can use this in your UI if you want
       level,
       addXP,
       resetXP,
@@ -175,6 +178,7 @@ export const XPProvider = ({ children }) => {
       totalXP,
       currentXP,
       xpToNext,
+      xpRequiredForLevel,
       level,
       addXP,
       resetXP,

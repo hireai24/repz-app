@@ -7,7 +7,13 @@ import TierBadge from "./TierBadge";
 
 const placeholderImage = "https://via.placeholder.com/150";
 
-const ChallengeCard = ({ challenge, onEnter, onView, progress = {} }) => {
+const ChallengeCard = ({
+  challenge,
+  onEnter,
+  onView,
+  progress = {},
+  participantUsernames = [], // Add this prop
+}) => {
   const {
     title,
     status,
@@ -64,6 +70,13 @@ const ChallengeCard = ({ challenge, onEnter, onView, progress = {} }) => {
         </Text>
         {requiredTier && <TierBadge tier={requiredTier} />}
       </View>
+
+      {/* Show participant usernames if available */}
+      {participantUsernames.length > 0 && (
+        <Text style={styles.participants} numberOfLines={1}>
+          👥 {participantUsernames.join(", ")}
+        </Text>
+      )}
 
       {gymName && (
         <Text
@@ -135,6 +148,7 @@ ChallengeCard.propTypes = {
     completed: PropTypes.bool,
     inProgress: PropTypes.bool,
   }),
+  participantUsernames: PropTypes.arrayOf(PropTypes.string),
 };
 
 const styles = StyleSheet.create({
@@ -176,6 +190,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flexDirection: "row",
     justifyContent: "space-between",
+  },
+  participants: {
+    color: colors.textPrimary,
+    fontSize: 13,
+    marginBottom: 2,
+    marginTop: 2,
   },
   reward: {
     color: colors.textSecondary,

@@ -1,11 +1,12 @@
-const admin = require("firebase-admin");
+// backend/server/routes/sendNotificationController.js
+import admin from "firebase-admin";
 
 /**
  * @desc Sends a notification using Firebase Cloud Messaging
  * @route POST /api/notify
  * @access Private (requires verified token)
  */
-const sendNotificationHandler = async (req, res) => {
+export const sendNotificationHandler = async (req, res) => {
   try {
     const { title, body, token } = req.body;
 
@@ -30,5 +31,3 @@ const sendNotificationHandler = async (req, res) => {
     return res.status(500).json({ success: false, message: error.message });
   }
 };
-
-module.exports = { sendNotificationHandler };

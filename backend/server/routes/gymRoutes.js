@@ -21,7 +21,6 @@ router.get("/mine", verifyUser, getMyGym);
 // FIX: Add route for fetching all gyms by a specific owner (used by MyGymsScreen)
 router.get("/owner", verifyUser, getGymsByOwner); // Assuming it uses the authenticated user's UID
 
-
 // ➕ Create gym
 router.post("/", verifyUser, createGym);
 

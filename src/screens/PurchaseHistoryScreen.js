@@ -35,7 +35,8 @@ const PurchaseHistoryScreen = () => {
   };
 
   const fetchPurchases = useCallback(async () => {
-    if (!user || !user.uid) { // Use user.uid for Firebase Auth ID
+    if (!user || !user.uid) {
+      // Use user.uid for Firebase Auth ID
       setLoading(false);
       setRefreshing(false);
       setError("User not logged in or ID missing.");
@@ -58,7 +59,7 @@ const PurchaseHistoryScreen = () => {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
       const data = await res.json();
 

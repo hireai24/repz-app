@@ -1,5 +1,3 @@
-// backend/controllers/partnerFinderController.js
-
 import { db } from "../firebase/init.js";
 import {
   collection,
@@ -21,7 +19,6 @@ import {
  */
 export const createPartnerSlot = async (req, res) => {
   try {
-    // Add note, avatar, tier for richer slot data
     const { userId, username, gymId, gymName, timeSlot, note, avatar, tier } =
       req.body;
 
@@ -38,17 +35,19 @@ export const createPartnerSlot = async (req, res) => {
       gymName: gymName || "",
       timeSlot,
       createdAt: serverTimestamp(),
-      participants: [userId], // creator is auto-added
-      note: note || null, // Allow null if not provided
-      avatar: avatar || null, // Allow null if not provided
-      tier: tier || "Free", // Default to "Free" if not provided
+      participants: [userId],
+      note: note || null,
+      avatar: avatar || null,
+      tier: tier || "Free",
     };
 
     const docRef = await addDoc(collection(db, "partnerSlots"), slotData);
 
     return res.status(200).json({ success: true, id: docRef.id });
   } catch (err) {
-    console.error("Failed to create slot:", err); // More detailed error logging
+    // Only log error for debugging
+    // eslint-disable-next-line no-console
+    console.error("Failed to create slot:", err);
     return res
       .status(500)
       .json({ success: false, error: "Failed to create slot." });
@@ -60,7 +59,7 @@ export const createPartnerSlot = async (req, res) => {
  */
 export const getPartnerSlots = async (req, res) => {
   try {
-    const { gymId } = req.query; // ✅ Changed from req.params to req.query
+    const { gymId } = req.query;
     if (!gymId) {
       return res.status(400).json({ success: false, error: "Missing gym ID." });
     }
@@ -68,8 +67,6 @@ export const getPartnerSlots = async (req, res) => {
     const q = query(
       collection(db, "partnerSlots"),
       where("gymId", "==", gymId),
-      // Future consideration: Add a filter for time to show only upcoming slots
-      // where("timeSlot", ">=", new Date().toISOString().substring(11, 16))
     );
 
     const querySnapshot = await getDocs(q);
@@ -86,7 +83,9 @@ export const getPartnerSlots = async (req, res) => {
 
     return res.status(200).json({ success: true, data: slots });
   } catch (err) {
-    console.error("Failed to fetch slots:", err); // More detailed error logging
+    // Only log error for debugging
+    // eslint-disable-next-line no-console
+    console.error("Failed to fetch slots:", err);
     return res
       .status(500)
       .json({ success: false, error: "Failed to fetch slots." });
@@ -99,7 +98,7 @@ export const getPartnerSlots = async (req, res) => {
 export const joinPartnerSlot = async (req, res) => {
   try {
     const { slotId } = req.params;
-    const { userId } = req.body; // userId now comes from req.body
+    const { userId } = req.body;
 
     if (!slotId || !userId) {
       return res
@@ -126,7 +125,9 @@ export const joinPartnerSlot = async (req, res) => {
 
     return res.status(200).json({ success: true });
   } catch (err) {
-    console.error("Failed to join slot:", err); // More detailed error logging
+    // Only log error for debugging
+    // eslint-disable-next-line no-console
+    console.error("Failed to join slot:", err);
     return res
       .status(500)
       .json({ success: false, error: "Failed to join slot." });
@@ -139,7 +140,7 @@ export const joinPartnerSlot = async (req, res) => {
 export const leavePartnerSlot = async (req, res) => {
   try {
     const { slotId } = req.params;
-    const { userId } = req.body; // userId now comes from req.body
+    const { userId } = req.body;
 
     if (!slotId || !userId) {
       return res
@@ -155,15 +156,16 @@ export const leavePartnerSlot = async (req, res) => {
 
     const data = slotSnap.data();
     if (data.participants && !data.participants.includes(userId)) {
-      return res
-        .status(400)
-        .json({ success: false, error: "User is not a participant of this slot." });
+      return res.status(400).json({
+        success: false,
+        error: "User is not a participant of this slot.",
+      });
     }
 
     const updatedParticipants = data.participants.filter((id) => id !== userId);
 
     if (updatedParticipants.length === 0) {
-      await deleteDoc(slotRef); // auto-delete if empty
+      await deleteDoc(slotRef);
     } else {
       await updateDoc(slotRef, {
         participants: arrayRemove(userId),
@@ -172,7 +174,9 @@ export const leavePartnerSlot = async (req, res) => {
 
     return res.status(200).json({ success: true });
   } catch (err) {
-    console.error("Failed to leave slot:", err); // More detailed error logging
+    // Only log error for debugging
+    // eslint-disable-next-line no-console
+    console.error("Failed to leave slot:", err);
     return res
       .status(500)
       .json({ success: false, error: "Failed to leave slot." });

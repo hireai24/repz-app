@@ -1,12 +1,8 @@
-// backend/functions/matchPartner.js
-
 import { db } from "../firebase/init.js";
 import { collection, query, where, getDocs } from "firebase/firestore";
 
 /**
  * Match users with similar time slots and same gym.
- * (Optional future: Filter by tier, past interactions, XP proximity)
- *
  * @param {string} gymId
  * @param {string} preferredTimeSlot - e.g. "18:00"
  * @param {string} userId
@@ -40,7 +36,7 @@ export const matchPartnerSlots = async ({
 
       const slotTime = data.timeSlot || "";
 
-      // Simple time window filter (e.g. match same hour ±1 hour)
+      // Simple time window filter (same hour ±1 hour)
       const hourOnly = parseInt(preferredTimeSlot.split(":")[0], 10);
       const candidateHour = parseInt(slotTime.split(":")[0], 10);
       const hourDiff = Math.abs(hourOnly - candidateHour);
@@ -53,13 +49,13 @@ export const matchPartnerSlots = async ({
       }
     });
 
-    // Sort: future enhancement → by XP proximity, tier match, social graph
     return {
       success: true,
       matches: candidates,
     };
   } catch (err) {
-    console.error("Error matching partner slots:", err.message); // Added console.error for debugging
+    // eslint-disable-next-line no-console
+    console.error("Error matching partner slots:", err.message);
     return {
       success: false,
       error: err.message || "Failed to match partners.",

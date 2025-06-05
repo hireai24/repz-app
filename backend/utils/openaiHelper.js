@@ -1,30 +1,39 @@
-import dotenv from "dotenv";
-dotenv.config();
+// backend/utils/openaiHelper.js
 
-import fetch from "node-fetch";
+import OpenAI from "openai";
+
+const openAiApiKey = process.env.OPENAI_API_KEY;
+if (!openAiApiKey) {
+  throw new Error("❌ Missing OPENAI_API_KEY environment variable.");
+}
+
+const openai = new OpenAI({ apiKey: openAiApiKey });
 
 /**
- * Fetches a chat completion from your backend OpenAI proxy route.
- * @param {Array} messages - Chat messages array for OpenAI (role/content)
- * @param {string} [token] - Optional bearer token for auth
- * @returns {Promise<any>} - The AI response result
- * @throws {Error} - If the backend or OpenAI request fails
+ * Get a chat completion from OpenAI directly.
+ * @param {Array} messages - Array of chat messages for OpenAI ([{role, content}])
+ * @param {string} [model="gpt-3.5-turbo"] - Model to use
+ * @returns {Promise<string>} - AI response text
+ * @throws {Error} - If OpenAI request fails
  */
-export const getOpenAIResponse = async (messages, token = "") => {
-  const response = await fetch(
-    `${process.env.EXPO_PUBLIC_API_BASE_URL}/api/openai`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(token && { Authorization: `Bearer ${token}` }),
-      },
-      body: JSON.stringify({ messages }),
-    },
-  );
+export const getOpenAIResponse = async (messages, model = "gpt-3.5-turbo") => {
+  try {
+    const response = await openai.chat.completions.create({
+      model,
+      messages,
+      temperature: 0.7,
+    });
 
-  const data = await response.json();
-  if (!response.ok) throw new Error(data.error || "AI request failed");
-
-  return data.result;
+    const message =
+      response?.choices?.[0]?.message?.content ||
+      response?.choices?.[0]?.content ||
+      "";
+    return message.trim();
+  } catch (err) {
+    throw new Error(
+      err?.error?.message ||
+        err?.message ||
+        "Unknown error from OpenAI in getOpenAIResponse",
+    );
+  }
 };

@@ -10,7 +10,7 @@ import {
   ScrollView,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { getMyGymProfile } from "../api/gymApi"; // This function seems to be missing in gymApi.js
+import { getMyGym } from "../api/gymApi"; // FIX: Correct function name
 import { getGymFeed } from "../api/gymFeedApi";
 import GymFeedCard from "../components/GymFeedCard";
 import colors from "../theme/colors";
@@ -28,53 +28,45 @@ const GymProfileScreen = ({ route }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // FIX: This call to getMyGymProfile is likely intended to be getMyGym from gymApi
-        // As getMyGymProfile is not defined in gymApi.js
-        // Assuming getMyGym from gymApi is the correct function to check if the current user owns a gym
-        const myGymRes = await getMyGymProfile(); // This line needs review/correction based on actual gymApi.js
+        // Use the correct gymApi function to fetch the user's own gym
+        const myGymRes = await getMyGym();
 
-        // Assuming getMyGymProfile (or getMyGym) returns an object with a 'gym' property
         if (myGymRes && myGymRes.gym) {
           setEditableGym(myGymRes.gym);
           if (myGymRes.gym.id) {
             const feed = await getGymFeed(myGymRes.gym.id);
-            // FIX: Access feed.posts as per gymFeedController and gymFeedApi
             setFeedItems(feed.posts || []);
           }
         } else if (passedGym) {
-            // If no owned gym, but a gym was passed via navigation, display that
-            setEditableGym(null); // Ensure editableGym is null if not the owner's gym
+          setEditableGym(null); // Not the owner, so editableGym is null
         }
       } catch (err) {
-        // console.error("❌ Failed to fetch gym profile or feed:", err.message);
-        // Consider displaying a user-friendly error message
+        // Optionally: Display user-friendly error
       } finally {
         setLoading(false);
       }
     };
 
-    // If a gym is passed via route params, display it immediately and then fetch feed.
-    // If no gym is passed, or if the passed gym might be the user's,
-    // then try to fetch the user's own gym profile to determine editability.
+    // If a gym is passed via route params, fetch feed for it.
+    // Always also try fetchData to see if this gym is owned by the user.
     if (passedGym) {
-        const fetchFeedForPassedGym = async () => {
-            setLoading(true);
-            try {
-                const feed = await getGymFeed(passedGym.id);
-                setFeedItems(feed.posts || []); // FIX: Access feed.posts
-            } catch (err) {
-                // console.error("❌ Failed to fetch feed for passed gym:", err.message);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchData(); // Still need to call this to correctly determine `isEditable` if `passedGym` *is* the user's.
-        fetchFeedForPassedGym();
+      const fetchFeedForPassedGym = async () => {
+        setLoading(true);
+        try {
+          const feed = await getGymFeed(passedGym.id);
+          setFeedItems(feed.posts || []);
+        } catch (err) {
+          // Optionally: Handle error
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchData(); // Always check if the passed gym is the user's (for edit access)
+      fetchFeedForPassedGym();
     } else {
-        fetchData();
+      fetchData();
     }
-
-  }, [passedGym]); // Added passedGym to dependency array to react to changes if this screen is re-used
+  }, [passedGym]);
 
   if (loading) {
     return (
@@ -86,9 +78,8 @@ const GymProfileScreen = ({ route }) => {
   }
 
   // Determine which gym to display: the one passed in params or the editable one fetched.
-  // Prioritize the passedGym if it exists, otherwise use editableGym.
   const gym = passedGym || editableGym;
-  // Determine if the currently displayed gym is the one owned by the user.
+  // Is the currently displayed gym the user's own (editable)?
   const isEditable = editableGym && gym && editableGym.id === gym.id;
 
   if (!gym) {
@@ -170,12 +161,9 @@ GymProfileScreen.propTypes = {
         location: PropTypes.string,
         description: PropTypes.string,
         features: PropTypes.string,
-        memberCount: PropTypes.oneOfType([
-            PropTypes.string,
-            PropTypes.number,
-        ]), // Can be string from input, or number from DB
+        memberCount: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
         pricing: PropTypes.string,
-        offers: PropTypes.string, // FIX: Changed from t_offers to offers
+        offers: PropTypes.string,
       }),
     }),
   }),

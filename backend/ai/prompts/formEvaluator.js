@@ -1,8 +1,7 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-// import fetch from "node-fetch"; // REMOVED: No longer direct fetch
-import { getOpenAIResponse } from "../../utils/openaiHelper.js"; // ADDED: Import openaiHelper
+import { getOpenAIResponse } from "../../utils/openaiHelper.js";
 
 /**
  * Evaluates exercise form based on rep-by-rep video transcript.
@@ -13,7 +12,7 @@ export const evaluateFormFromTranscript = async ({
   reps,
   transcript,
   gymContext = null,
-  token = null // ADDED: Accept token for authenticated AI call
+  token = null,
 }) => {
   if (
     typeof exercise !== "string" ||
@@ -98,11 +97,12 @@ Expert Cues:
 
   try {
     const messages = [{ role: "user", content: prompt }];
-    const feedback = await getOpenAIResponse(messages, token); // CHANGED: Use openaiHelper with token
+    const feedback = await getOpenAIResponse(messages, token);
 
     return { success: true, feedback };
   } catch (err) {
-    console.error("Error in evaluateFormFromTranscript:", err); // Server-side debugging
+    // eslint-disable-next-line no-console
+    console.error("Error in evaluateFormFromTranscript:", err);
     return {
       success: false,
       error: {

@@ -26,7 +26,9 @@ const fetchWithRetry = async (url, options = {}, retries = MAX_RETRIES) => {
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
         // Provide more detailed error message from backend if available
-        throw new Error(errorData.error || `HTTP error: ${res.status} for ${url}`);
+        throw new Error(
+          errorData.error || `HTTP error: ${res.status} for ${url}`,
+        );
       }
       return await res.json();
     } catch (err) {

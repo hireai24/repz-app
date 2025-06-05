@@ -1,6 +1,9 @@
 // backend/server/routes/mealManagement.routes.js
 import express from "express";
-import { saveMealPlan, getUserMealPlans } from "../../controllers/mealController.js";
+import {
+  saveMealPlan,
+  getUserMealPlans,
+} from "../../controllers/mealController.js";
 import { verifyUser } from "../../utils/authMiddleware.js";
 
 const router = express.Router();

@@ -37,18 +37,18 @@ const GymSubmissionScreen = () => {
   useEffect(() => {
     // Pre-fill if navigating from GymProfileScreen (edit mode)
     if (route.params?.gym) {
-        const { gym } = route.params;
-        setGymId(gym.id);
-        setName(gym.name || "");
-        setLocation(gym.location || "");
-        setDescription(gym.description || "");
-        setImageUrl(gym.image || "");
-        setFeatures(gym.features || "");
-        setMemberCount(String(gym.memberCount) || ""); // Ensure it's a string for TextInput
-        setPricing(gym.pricing || ""); // Use 'pricing' from gym object
-        setOffers(gym.offers || "");
-        setLoading(false); // No need to fetch if pre-filled
-        return;
+      const { gym } = route.params;
+      setGymId(gym.id);
+      setName(gym.name || "");
+      setLocation(gym.location || "");
+      setDescription(gym.description || "");
+      setImageUrl(gym.image || "");
+      setFeatures(gym.features || "");
+      setMemberCount(String(gym.memberCount) || ""); // Ensure it's a string for TextInput
+      setPricing(gym.pricing || ""); // Use 'pricing' from gym object
+      setOffers(gym.offers || "");
+      setLoading(false); // No need to fetch if pre-filled
+      return;
     }
 
     // If not editing, try to fetch the current user's gym
@@ -93,7 +93,10 @@ const GymSubmissionScreen = () => {
 
   const handleSubmit = async () => {
     if (!name || !location || !description) {
-      Alert.alert("Missing Fields", "Please complete all required fields (Name, Location, Description).");
+      Alert.alert(
+        "Missing Fields",
+        "Please complete all required fields (Name, Location, Description).",
+      );
       return;
     }
 

@@ -8,17 +8,16 @@ import spacing from "../theme/spacing";
 import i18n from "../locales/i18n";
 
 const DailyChallengeCard = ({ challenge, onComplete }) => {
-  const { title, description, completed } = challenge; // Destructure 'title' instead of 'type', 'value'
+  const { title, description, completed } = challenge;
 
   return (
     <View style={[styles.card, completed && styles.completedCard]}>
       <Text style={styles.title}>
         {title || i18n.t("dailyChallenge.defaultTitle")}
-      </Text> {/* Use challenge.title, provide a default translation key */}
+      </Text>
       <Text style={styles.desc}>
         {description || i18n.t("dailyChallenge.defaultDescription")}
-      </Text> {/* Use challenge.description, provide a default translation key */}
-
+      </Text>
       {completed ? (
         <Text style={styles.completedText}>{i18n.t("common.confirm")}</Text>
       ) : (
@@ -37,10 +36,10 @@ const DailyChallengeCard = ({ challenge, onComplete }) => {
 
 DailyChallengeCard.propTypes = {
   challenge: PropTypes.shape({
-    title: PropTypes.string, // Now expecting a title
+    title: PropTypes.string,
     description: PropTypes.string,
-    type: PropTypes.string.isRequired, // Still useful for internal logic/tracking
-    value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired, // Still useful for internal logic/tracking
+    type: PropTypes.string.isRequired,
+    value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
     completed: PropTypes.bool,
   }).isRequired,
   onComplete: PropTypes.func.isRequired,

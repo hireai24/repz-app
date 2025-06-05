@@ -10,20 +10,17 @@ import {
   TextInput,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
-import { UserContext } from "../context/UserContext";
 import { AuthContext } from "../context/AuthContext";
 import { generateMealPlan as callGenerateMealPlanAPI } from "../api/mealApi";
 import MealPlanCard from "../components/MealPlanCard";
 import { useTierAccess } from "../hooks/useTierAccess";
-
 import colors from "../theme/colors";
 import spacing from "../theme/spacing";
 import typography from "../theme/typography";
 
 const MealPlannerScreen = () => {
-  const { user } = useContext(UserContext); // user from UserContext (for profile data like ID)
-  const { authUser } = useContext(AuthContext); // authUser from AuthContext (for Firebase UID, token, and tier check)
-  const { locked } = useTierAccess("Pro"); // Meal planner is a Pro feature
+  const { authUser } = useContext(AuthContext); // Only using authUser
+  const { locked } = useTierAccess("Pro");
 
   const [goal, setGoal] = useState("fatLoss");
   const [dietType, setDietType] = useState("balanced");
@@ -31,60 +28,67 @@ const MealPlannerScreen = () => {
   const [carbs, setCarbs] = useState("");
   const [fats, setFats] = useState("");
   const [loading, setLoading] = useState(false);
-  const [mealPlan, setMealPlan] = useState(null); // Will store the parsed JSON array of meals
+  const [mealPlan, setMealPlan] = useState(null);
 
   const handleGenerate = async () => {
-    if (locked) { // Frontend tier check
-      Alert.alert("Upgrade Required", "You need a Pro or Elite tier subscription to access the meal planner.");
+    if (locked) {
+      Alert.alert(
+        "Upgrade Required",
+        "You need a Pro or Elite tier subscription to access the meal planner.",
+      );
       return;
     }
 
-    if (!authUser?.uid) { // Use authUser.uid for the actual authenticated user ID
+    if (!authUser?.uid) {
       Alert.alert("Error", "User not logged in or authentication failed.");
       return;
     }
 
-    // Basic input validation for macros
     const parsedProtein = Number(protein);
     const parsedCarbs = Number(carbs);
     const parsedFats = Number(fats);
 
-    if (isNaN(parsedProtein) || parsedProtein <= 0 ||
-        isNaN(parsedCarbs) || parsedCarbs <= 0 ||
-        isNaN(parsedFats) || parsedFats <= 0) {
-        Alert.alert("Invalid Input", "Please enter valid positive numbers for Protein, Carbs, and Fats.");
-        return;
+    if (
+      isNaN(parsedProtein) ||
+      parsedProtein <= 0 ||
+      isNaN(parsedCarbs) ||
+      parsedCarbs <= 0 ||
+      isNaN(parsedFats) ||
+      parsedFats <= 0
+    ) {
+      Alert.alert(
+        "Invalid Input",
+        "Please enter valid positive numbers for Protein, Carbs, and Fats.",
+      );
+      return;
     }
 
     setLoading(true);
-    setMealPlan(null); // Clear previous plan
+    setMealPlan(null);
 
     try {
       const payload = {
-        userId: authUser.uid, // Use authUser.uid as the definitive user ID for backend
-        goal, // Pass the selected goal
+        userId: authUser.uid,
+        goal,
         dietaryPreferences: dietType,
-        dailyCalories: (parsedProtein * 4) + (parsedCarbs * 4) + (parsedFats * 9), // Calculate total calories
+        dailyCalories: parsedProtein * 4 + parsedCarbs * 4 + parsedFats * 9,
         protein: parsedProtein,
         carbs: parsedCarbs,
-        fat: parsedFats, // Backend expects 'fat', not 'fats'
-        mealsPerDay: 4, // Assuming default 4 meals per day for now, can make configurable
+        fat: parsedFats,
+        mealsPerDay: 4,
       };
 
-      // Call backend API for meal plan generation
-      const response = await callGenerateMealPlanAPI(payload); // Removed authUser from here
-      console.log("Meal Plan API Response:", response);
-
-      if (response?.success && response.plan) { // Backend now returns 'plan' as structured array
-        // Assuming response.plan is already an array of meal objects
+      const response = await callGenerateMealPlanAPI(payload);
+      if (response?.success && response.plan) {
         setMealPlan(response.plan);
         Alert.alert("Success", "Meal plan generated!");
       } else {
-        const errorMessage = response?.error?.message || "Failed to generate meal plan. Please check your inputs.";
+        const errorMessage =
+          response?.error?.message ||
+          "Failed to generate meal plan. Please check your inputs.";
         throw new Error(errorMessage);
       }
     } catch (err) {
-      console.error("Meal generation error:", err);
       Alert.alert("Generation Failed", err.message);
     } finally {
       setLoading(false);
@@ -98,7 +102,6 @@ const MealPlannerScreen = () => {
       <View style={styles.planContainer}>
         <Text style={styles.sectionHeader}>Your Personalized Meal Plan</Text>
         {mealPlan.map((meal, index) => (
-          // MealPlanCard expects 'meal' directly, not a 'day' object
           <MealPlanCard key={index} meal={meal} index={index} />
         ))}
       </View>
@@ -108,8 +111,18 @@ const MealPlannerScreen = () => {
   if (locked) {
     return (
       <View style={styles.lockedContainer}>
-        <Text style={styles.lockedText}>Upgrade to Pro or Elite to access the AI Meal Planner.</Text>
-        <TouchableOpacity style={styles.button} onPress={() => Alert.alert("Go to Marketplace", "Navigate to subscription marketplace.")}>
+        <Text style={styles.lockedText}>
+          Upgrade to Pro or Elite to access the AI Meal Planner.
+        </Text>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() =>
+            Alert.alert(
+              "Go to Marketplace",
+              "Navigate to subscription marketplace.",
+            )
+          }
+        >
           <Text style={styles.buttonText}>Upgrade Now</Text>
         </TouchableOpacity>
       </View>
@@ -176,7 +189,11 @@ const MealPlannerScreen = () => {
         style={styles.input}
       />
 
-      <TouchableOpacity style={styles.button} onPress={handleGenerate} disabled={loading}>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={handleGenerate}
+        disabled={loading}
+      >
         {loading ? (
           <ActivityIndicator color={colors.white} />
         ) : (
@@ -206,22 +223,11 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     padding: spacing.lg,
   },
-  dayBlock: { // This style might become redundant if not structuring by day
-    backgroundColor: colors.surfaceLight,
-    borderRadius: 10,
-    marginBottom: spacing.lg,
-    padding: spacing.md,
-  },
-  dayTitle: { // This style might become redundant if not structuring by day
-    ...typography.h4,
-    marginBottom: spacing.sm,
-    color: colors.textPrimary,
-  },
   header: {
     ...typography.h2,
+    color: colors.textPrimary,
     marginBottom: spacing.md,
     textAlign: "center",
-    color: colors.textPrimary,
   },
   input: {
     backgroundColor: colors.inputBackground,
@@ -233,25 +239,8 @@ const styles = StyleSheet.create({
   },
   label: {
     ...typography.label,
-    marginTop: spacing.md,
     color: colors.textSecondary,
-  },
-  picker: {
-    backgroundColor: colors.surface,
-    borderRadius: 8,
-    color: colors.textPrimary,
-  },
-  pickerItem: { // Added for explicit styling of picker items
-    color: colors.textPrimary,
-  },
-  planContainer: {
-    marginTop: spacing.xl,
-  },
-  sectionHeader: { // New style for the meal plan section
-    ...typography.h3,
-    marginBottom: spacing.md,
-    color: colors.textPrimary,
-    textAlign: 'center',
+    marginTop: spacing.md,
   },
   lockedContainer: {
     alignItems: "center",
@@ -263,8 +252,25 @@ const styles = StyleSheet.create({
   lockedText: {
     color: colors.textSecondary,
     fontSize: 16,
-    textAlign: "center",
     marginBottom: spacing.md,
+    textAlign: "center",
+  },
+  picker: {
+    backgroundColor: colors.surface,
+    borderRadius: 8,
+    color: colors.textPrimary,
+  },
+  pickerItem: {
+    color: colors.textPrimary,
+  },
+  planContainer: {
+    marginTop: spacing.xl,
+  },
+  sectionHeader: {
+    ...typography.h3,
+    color: colors.textPrimary,
+    marginBottom: spacing.md,
+    textAlign: "center",
   },
 });
 

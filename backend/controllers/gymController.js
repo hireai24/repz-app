@@ -77,7 +77,6 @@ export const getGymsByOwner = async (req, res) => {
   }
 };
 
-
 /**
  * Update gym info.
  */
@@ -99,7 +98,7 @@ export const updateGym = async (req, res) => {
 
     // Filter out undefined/null values to only update provided fields
     const filteredUpdates = Object.fromEntries(
-      Object.entries(updates).filter(([, v]) => v !== undefined && v !== null)
+      Object.entries(updates).filter(([, v]) => v !== undefined && v !== null),
     );
 
     await gymService.updateGym(gymId, filteredUpdates); // Call the service
@@ -120,5 +119,4 @@ export const deleteGym = async (req, res) => {
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
-};
 };

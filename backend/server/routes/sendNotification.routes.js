@@ -1,6 +1,6 @@
 // backend/server/routes/sendNotification.routes.js
 import express from "express";
-import { sendNotificationHandler } from "../../functions/sendNotification.js";
+import { sendNotificationHandler } from "./sendNotificationController.js";
 import { verifyUser } from "../../utils/authMiddleware.js";
 
 const router = express.Router();

@@ -31,7 +31,9 @@ const ChallengeWagerCard = ({ challenge, onPress }) => {
     if (isUserWinner) return i18n.t("challengeWager.winner");
     if (isUserLoser) return i18n.t("challengeWager.loser");
     // Capitalize the first letter of the status for better display, if status is a string
-    return status ? status.charAt(0).toUpperCase() + status.slice(1) : "Pending";
+    return status
+      ? status.charAt(0).toUpperCase() + status.slice(1)
+      : "Pending";
   };
 
   const getCountdown = () => {
@@ -53,7 +55,9 @@ const ChallengeWagerCard = ({ challenge, onPress }) => {
       <Text style={styles.detail}>🧩 Type: {type?.toUpperCase() || "N/A"}</Text>
       <Text style={styles.detail}>
         ⚔️ {i18n.t("challengeWager.opponents")}:{" "}
-        {opponents.length > 0 ? opponents.join(", ") : i18n.t("challengeWager.noOpponentsYet")}
+        {opponents.length > 0
+          ? opponents.join(", ")
+          : i18n.t("challengeWager.noOpponentsYet")}
         {/* TODO: Opponent IDs should ideally be resolved to usernames for better UX. */}
       </Text>
       <Text style={styles.detail}>

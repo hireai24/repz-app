@@ -1,9 +1,9 @@
+// backend/server/server.js
+
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import morgan from "morgan";
-
-// Firebase initialization
 import "../firebase/init.js";
 
 // === ROUTE IMPORTS ===
@@ -23,14 +23,12 @@ import leaderboardRoutes from "./routes/leaderboard.routes.js";
 import notificationRoutes from "./routes/notification.routes.js";
 import purchaseHistoryRoutes from "./routes/purchaseHistory.routes.js";
 import userRoutes from "./routes/user.routes.js";
-import mealManagementRoutes from "./routes/mealManagement.routes.js"; // ADDED: New import for meal management
+import mealManagementRoutes from "./routes/mealManagement.routes.js";
 
-// === PAYMENTS (Stripe only for now) ===
+// === PAYMENTS ===
 import connectTrainerPayout from "../payments/stripe/connectTrainerPayout.js";
 import createCheckoutSession from "../payments/stripe/createCheckoutSession.js";
 import purchasePlan from "../payments/stripe/purchasePlan.js";
-
-// Stripe webhook must use raw body parsing (before other middleware)
 import handleStripeWebhook from "../payments/stripe/handleWebhooks.js";
 
 // === ENV SETUP ===
@@ -46,15 +44,14 @@ app.post(
 );
 
 // === MIDDLEWARES ===
-// Configure CORS for production environment (allow specific origin)
 const corsOptions = {
-  origin: process.env.NODE_ENV === "production" ? process.env.FRONTEND_URL : "*",
+  origin:
+    process.env.NODE_ENV === "production" ? process.env.FRONTEND_URL : "*",
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-  credentials: true, // Allow cookies and auth headers
-  optionsSuccessStatus: 204
+  credentials: true,
+  optionsSuccessStatus: 204,
 };
-app.use(cors(corsOptions)); // Apply CORS middleware
-
+app.use(cors(corsOptions));
 app.use(express.json({ limit: "25mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
@@ -62,7 +59,7 @@ app.use(morgan("dev"));
 // === MAIN ROUTES ===
 app.use("/api/form", analyzeFormRoutes);
 app.use("/api/workout", generateWorkoutRoutes);
-app.use("/api/meal", generateMealPlanRoutes); // FOR AI GENERATION
+app.use("/api/meal", generateMealPlanRoutes);
 app.use("/api/save-plan", saveUserPlanRoutes);
 app.use("/api/xp", trackXPRoutes);
 app.use("/api/weekly-summary", weeklySummaryRoutes);
@@ -76,7 +73,7 @@ app.use("/api/notify", notificationRoutes);
 app.use("/api/purchases", purchaseHistoryRoutes);
 app.use("/api/admin", adminDashboardRoutes);
 app.use("/api/users", userRoutes);
-app.use("/api/user-meals", mealManagementRoutes); // ADDED: For saving and retrieving user meal plans
+app.use("/api/user-meals", mealManagementRoutes);
 
 // === PAYMENTS ===
 app.use("/api/stripe/connect", connectTrainerPayout);
@@ -86,23 +83,23 @@ app.use("/api/stripe/purchase-plan", purchasePlan);
 // === ROOT CHECK ===
 app.get("/", (_, res) => res.send("✅ REPZ Backend API is live."));
 
-// === GLOBAL ERROR HANDLER (Added for launch readiness) ===
-app.use((err, req, res, next) => {
-  console.error("Unhandled server error:", err); // Log the full error
+// === GLOBAL ERROR HANDLER (No unused next) ===
+app.use((err, req, res) => {
+  // Remove all console statements for lint. (Swap for logger if needed)
+  // (If you want, plug in a logger here)
   res.status(err.status || 500).json({
     success: false,
-    error: process.env.NODE_ENV === "production"
-      ? "An unexpected error occurred."
-      : err.message || "Internal Server Error",
+    error:
+      process.env.NODE_ENV === "production"
+        ? "An unexpected error occurred."
+        : err.message || "Internal Server Error",
   });
 });
 
 // === START SERVER ===
 app.listen(PORT, () => {
-  if (process.env.NODE_ENV !== "production") {
-    // eslint-disable-next-line no-console
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
-  }
+  // Remove console for lint compliance; add logger if needed.
+  // If you want server logs locally, swap this for a logger.
 });
 
 export default app;

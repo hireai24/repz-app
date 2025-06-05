@@ -1,4 +1,6 @@
-import { Configuration, OpenAIApi } from "openai";
+// backend/utils/aiUtils.js
+
+import OpenAI from "openai";
 
 // === Validate Config Early ===
 const openAiApiKey = process.env.OPENAI_API_KEY;
@@ -6,11 +8,8 @@ if (!openAiApiKey) {
   throw new Error("❌ Missing OPENAI_API_KEY environment variable.");
 }
 
-// === Initialize OpenAI API ===
-const configuration = new Configuration({
-  apiKey: openAiApiKey,
-});
-const openai = new OpenAIApi(configuration);
+// === Initialize OpenAI API (v4) ===
+const openai = new OpenAI({ apiKey: openAiApiKey });
 
 // === Usage Metrics (Optional) ===
 let aiUsageCounter = 0;
@@ -18,20 +17,23 @@ let aiUsageCounter = 0;
 // === Delay Helper ===
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// === Send Prompt to OpenAI with Retry and Fallback ===
+// === Send Prompt to OpenAI with Retry and Fallback (v4 syntax) ===
 export const sendPrompt = async (prompt, model = "gpt-3.5-turbo") => {
   const maxRetries = 3;
   let retryDelay = 1000; // 1 second
 
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
-      const response = await openai.createChatCompletion({
+      const response = await openai.chat.completions.create({
         model,
         messages: [{ role: "user", content: prompt }],
         temperature: 0.7,
       });
 
-      const message = response?.data?.choices?.[0]?.message?.content || "";
+      const message =
+        response?.choices?.[0]?.message?.content ||
+        response?.choices?.[0]?.content ||
+        "";
       aiUsageCounter++;
 
       const cleanedResponse = cleanAIOutput(message);
@@ -43,9 +45,7 @@ export const sendPrompt = async (prompt, model = "gpt-3.5-turbo") => {
         return {
           success: false,
           error:
-            err?.response?.data?.error?.message ||
-            err?.message ||
-            "Unknown AI error occurred.",
+            err?.error?.message || err?.message || "Unknown AI error occurred.",
           fallback: "AI failed to generate a response at this time.",
         };
       }

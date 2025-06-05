@@ -19,7 +19,6 @@ import spacing from "../theme/spacing";
 const PlanCard = ({
   plan,
   onPress,
-  buyerId,
   creatorStripeAccountId,
   isLoading = false,
 }) => {
@@ -47,12 +46,7 @@ const PlanCard = ({
     try {
       setBuyLoading(true);
 
-      const result = await purchasePlan({
-        planId: plan.id,
-        buyerId,
-        creatorStripeAccountId,
-        priceInCents: Math.round(plan.price * 100),
-      });
+      const result = await purchasePlan(plan.id);
 
       if (result?.url) {
         Linking.openURL(result.url);
@@ -160,7 +154,6 @@ PlanCard.propTypes = {
     price: PropTypes.number,
   }).isRequired,
   onPress: PropTypes.func.isRequired,
-  buyerId: PropTypes.string.isRequired,
   creatorStripeAccountId: PropTypes.string,
   isLoading: PropTypes.bool,
 };

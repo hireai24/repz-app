@@ -1,5 +1,3 @@
-// backend/functions/sendNotification.js
-
 import fetch from "node-fetch";
 import { getDoc, doc } from "firebase/firestore";
 import { db } from "../firebase/init.js";
@@ -32,9 +30,12 @@ export const sendNotification = async (userId, message) => {
     }
 
     const userData = snap.data();
-    const expoPushToken = userData?.expoPushToken; // Assuming the field is expoPushToken
+    const expoPushToken = userData?.expoPushToken;
     if (!expoPushToken || !expoPushToken.startsWith("ExponentPushToken")) {
-      return { success: false, error: "Invalid or missing Expo push token for user." };
+      return {
+        success: false,
+        error: "Invalid or missing Expo push token for user.",
+      };
     }
 
     const payload = {
@@ -60,15 +61,21 @@ export const sendNotification = async (userId, message) => {
     if (result?.data?.status === "ok") {
       return { success: true, details: result.data };
     } else {
-      console.error(`Expo Push API error for user ${userId}:`, result); // Log Expo's specific error
+      // eslint-disable-next-line no-console
+      console.error(`Expo Push API error for user ${userId}:`, result);
       return {
         success: false,
-        error: result?.data?.message || "Failed to send notification via Expo API.",
+        error:
+          result?.data?.message || "Failed to send notification via Expo API.",
         details: result,
       };
     }
   } catch (error) {
-    console.error(`Internal server error sending notification to ${userId}:`, error);
+    // eslint-disable-next-line no-console
+    console.error(
+      `Internal server error sending notification to ${userId}:`,
+      error,
+    );
     return { success: false, error: "Internal server error." };
   }
 };
@@ -85,14 +92,21 @@ export const sendNotification = async (userId, message) => {
 export const sendNotificationHandler = async (req, res) => {
   const { userId, title, body, data } = req.body;
   if (!userId || !title || !body) {
-    return res.status(400).json({ success: false, error: "Missing required fields: userId, title, or body." });
+    return res.status(400).json({
+      success: false,
+      error: "Missing required fields: userId, title, or body.",
+    });
   }
 
   const result = await sendNotification(userId, { title, body, data });
 
   if (result.success) {
-    return res.status(200).json({ success: true, message: "Notification sent successfully." });
+    return res
+      .status(200)
+      .json({ success: true, message: "Notification sent successfully." });
   } else {
-    return res.status(500).json({ success: false, error: result.error, details: result.details });
+    return res
+      .status(500)
+      .json({ success: false, error: result.error, details: result.details });
   }
 };

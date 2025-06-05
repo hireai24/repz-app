@@ -7,7 +7,6 @@ import {
   RefreshControl,
   ActivityIndicator,
 } from "react-native";
-
 import { UserContext } from "../context/UserContext";
 import { getPartnerSlots, acceptPartnerInvite } from "../api/partnerApi";
 import PartnerSlotCard from "../components/PartnerSlotCard";
@@ -17,7 +16,7 @@ import spacing from "../theme/spacing";
 import typography from "../theme/typography";
 
 const PartnerFinderScreen = () => {
-  const { currentGym, userProfile } = useContext(UserContext); // ✅ Added userProfile
+  const { currentGym, userProfile } = useContext(UserContext);
   const [slots, setSlots] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -25,22 +24,24 @@ const PartnerFinderScreen = () => {
 
   const fetchSlots = useCallback(async () => {
     setLoading(true);
-    setError(""); // Clear previous errors
+    setError("");
     try {
       if (!currentGym) {
-        setError(i18n.t("partnerFinder.selectGymPrompt")); // Ensure this key exists in your i18n files
+        setError(i18n.t("partnerFinder.selectGymPrompt"));
         setSlots([]);
         return;
       }
       if (!userProfile || !userProfile.uid) {
-        setError(i18n.t("common.userNotAuthenticated")); // Ensure this key exists
+        setError(i18n.t("common.userNotAuthenticated"));
         setSlots([]);
         return;
       }
-
-      const { success, data, error: apiError } = await getPartnerSlots(currentGym);
+      const {
+        success,
+        data,
+        error: apiError,
+      } = await getPartnerSlots(currentGym);
       if (success) {
-        // Filter out slots that the current user has already created or joined
         const filteredSlots = data.filter(
           (slot) =>
             slot.userId !== userProfile.uid &&
@@ -51,22 +52,20 @@ const PartnerFinderScreen = () => {
         setError(apiError || i18n.t("common.error"));
       }
     } catch (err) {
-      console.error("Error in fetchSlots:", err);
-      setError(i18n.t("common.errorFetchingSlots")); // Ensure this key exists
+      setError(i18n.t("common.errorFetchingSlots"));
     } finally {
       setLoading(false);
     }
   }, [currentGym, userProfile]);
 
   useEffect(() => {
-    // Only fetch if userProfile and currentGym are available
     if (userProfile && userProfile.uid && currentGym) {
       fetchSlots();
     } else {
       setLoading(false);
-      setError(i18n.t("partnerFinder.noUserOrGymSelected")); // Add a new i18n key for this state
+      setError(i18n.t("partnerFinder.noUserOrGymSelected"));
     }
-  }, [fetchSlots, userProfile, currentGym]); // Add dependencies
+  }, [fetchSlots, userProfile, currentGym]);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -79,19 +78,18 @@ const PartnerFinderScreen = () => {
       setError(i18n.t("common.userNotAuthenticated"));
       return;
     }
-    setLoading(true); // Indicate action is in progress
+    setLoading(true);
     try {
       const { success, error: apiError } = await acceptPartnerInvite(
         slotId,
         userProfile.uid,
-      ); // ✅ Pass userId
+      );
       if (success) {
-        await fetchSlots(); // Refresh the list to remove the joined slot
+        await fetchSlots();
       } else {
-        setError(apiError || i18n.t("common.errorAcceptingInvite")); // Ensure this key exists
+        setError(apiError || i18n.t("common.errorAcceptingInvite"));
       }
     } catch (err) {
-      console.error("Error in handleAccept:", err);
       setError(i18n.t("common.error"));
     } finally {
       setLoading(false);
@@ -105,7 +103,6 @@ const PartnerFinderScreen = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{i18n.t("dashboard.toolPartnerFinder")}</Text>
-
       {loading ? (
         <ActivityIndicator size="large" color={colors.primary} />
       ) : error ? (
@@ -135,6 +132,12 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: spacing.lg,
   },
+  emptyListText: {
+    ...typography.body,
+    color: colors.textSecondary,
+    marginTop: spacing.lg,
+    textAlign: "center",
+  },
   error: {
     color: colors.error,
     marginTop: spacing.lg,
@@ -147,12 +150,6 @@ const styles = StyleSheet.create({
     ...typography.heading2,
     color: colors.textPrimary,
     marginBottom: spacing.md,
-  },
-  emptyListText: {
-    ...typography.body,
-    color: colors.textSecondary,
-    textAlign: "center",
-    marginTop: spacing.lg,
   },
 });
 

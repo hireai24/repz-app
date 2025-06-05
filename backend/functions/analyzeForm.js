@@ -1,27 +1,20 @@
-// backend/functions/analyzeForm.js
-
 import path from "path";
-import fs from "fs";
+import fs from "fs/promises";
+import { existsSync, mkdirSync } from "fs";
 import { fileURLToPath } from "url";
-import { promisify } from 'util'; // ADDED: for fs.unlink
 
-import * as tf from "@tensorflow/tfjs-node"; // CHANGED: Use tfjs-node for backend
+import * as tf from "@tensorflow/tfjs-node";
 import * as poseDetection from "@tensorflow-models/pose-detection";
 import ffmpeg from "fluent-ffmpeg";
 import { createCanvas, loadImage } from "canvas";
 import { collection, addDoc } from "firebase/firestore";
 
 import { db } from "../firebase/init.js";
-import { getOpenAIResponse as callOpenAIApi } from "../utils/openaiHelper.js"; // CHANGED: Use openaiHelper
-// import { evaluateFormFromTranscript } from "../ai/prompts/formEvaluator.js"; // REMOVED: Now call directly
+import { getOpenAIResponse as callOpenAIApi } from "../utils/openaiHelper.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const TEMP_DIR = path.join(__dirname, "../../tempFrames");
-
-// Ensure ffmpeg path is set if not in PATH (e.g., on Windows)
-// ffmpeg.setFfmpegPath('/path/to/ffmpeg');
-// ffmpeg.setFfprobePath('/path/to/ffprobe');
 
 let detector;
 
@@ -33,18 +26,22 @@ let detector;
  * @param {Object} authUser - User object from verifyUser middleware (contains tier info)
  * @returns {Object} { success, analysisId, results, error?, status? }
  */
-const analyzeForm = async (userId, videoPath, exerciseType, authUser) => { // ADDED: authUser param
+const analyzeForm = async (userId, videoPath, exerciseType, authUser) => {
   // 🔐 Enforce tier access
   if (!authUser?.tier || !["Pro", "Elite"].includes(authUser.tier)) {
     return {
       success: false,
       error: "Upgrade required to access this feature (Form Ghost).",
-      status: 403, // Add status for route handler
+      status: 403,
     };
   }
 
   if (!userId || !videoPath || !exerciseType) {
-    return { success: false, error: "Missing or invalid input fields.", status: 400 };
+    return {
+      success: false,
+      error: "Missing or invalid input fields.",
+      status: 400,
+    };
   }
 
   if (!videoPath.endsWith(".mp4") && !videoPath.endsWith(".mov")) {
@@ -55,63 +52,64 @@ const analyzeForm = async (userId, videoPath, exerciseType, authUser) => { // AD
     };
   }
 
-  // Use promisify for fs.rmSync to make it async for finally block
-  const unlinkAsync = promisify(fs.unlink);
-  const rmAsync = promisify(fs.rm); // For Node.js 14+
-
   try {
-    if (!fs.existsSync(TEMP_DIR)) fs.mkdirSync(TEMP_DIR, { recursive: true });
+    // Create TEMP_DIR if needed
+    if (!existsSync(TEMP_DIR)) mkdirSync(TEMP_DIR, { recursive: true });
 
     await extractFrames(videoPath, TEMP_DIR);
 
     if (!detector) {
-      // Use tfjs-node backend
-      // await tf.setBackend('tensorflow'); // Optional, but can force backend.
       detector = await poseDetection.createDetector(
         poseDetection.SupportedModels.MoveNet,
-        // Optional detector config
-        // { modelType: poseDetection.movenet.modelType.SINGLEPOSE_THUNDER }
       );
     }
 
-    const frames = fs.readdirSync(TEMP_DIR);
+    const frames = await fs.readdir(TEMP_DIR);
     const analysisResults = [];
-    let allFramesAnalyzedSuccessfully = true;
 
     for (const frameFile of frames) {
       const filePath = path.join(TEMP_DIR, frameFile);
-      // Ensure file exists before reading
-      if (!fs.existsSync(filePath)) {
-          console.warn(`Frame file not found: ${filePath}, skipping.`);
-          continue;
-      }
-      const imageBuffer = fs.readFileSync(filePath);
-      const img = await loadImage(imageBuffer);
-      const canvas = createCanvas(img.width, img.height);
-      const ctx = canvas.getContext("2d");
-      ctx.drawImage(img, 0, 0);
-      const tensor = tf.browser.fromPixels(canvas); // Still tf.browser for canvas integration
 
       try {
-        const poses = await detector.estimatePoses(tensor);
+        const imageBuffer = await fs.readFile(filePath);
+        const img = await loadImage(imageBuffer);
+        const canvas = createCanvas(img.width, img.height);
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0);
+        const tensor = tf.browser.fromPixels(canvas);
 
-        const feedback = poses[0]
-          ? evaluatePose(poses[0], exerciseType)
-          : await fallbackAIAnalysis(exerciseType, authUser?.token); // PASSED: authUser.token
+        let feedback;
+        try {
+          const poses = await detector.estimatePoses(tensor);
+
+          feedback = poses[0]
+            ? evaluatePose(poses[0], exerciseType)
+            : await fallbackAIAnalysis(exerciseType, authUser?.token);
+        } catch (frameErr) {
+          // eslint-disable-next-line no-console
+          console.error(`Error analyzing frame ${frameFile}:`, frameErr);
+          feedback = {
+            status: "Frame analysis error",
+            comment: frameErr.message || "Error analyzing frame.",
+          };
+        } finally {
+          tensor.dispose();
+        }
 
         analysisResults.push({ frame: frameFile, feedback });
-      } catch (frameErr) {
-        console.error(`Error analyzing frame ${frameFile}:`, frameErr);
-        allFramesAnalyzedSuccessfully = false;
+      } catch (readErr) {
+        // eslint-disable-next-line no-console
+        console.error(
+          `Error reading or processing frame: ${filePath}`,
+          readErr,
+        );
         analysisResults.push({
           frame: frameFile,
           feedback: {
-            status: "Frame analysis error",
-            comment: frameErr.message || "Error analyzing frame.",
+            status: "Frame load error",
+            comment: readErr.message || "Unable to process frame.",
           },
         });
-      } finally {
-        tensor.dispose();
       }
     }
 
@@ -120,33 +118,38 @@ const analyzeForm = async (userId, videoPath, exerciseType, authUser) => { // AD
       const docRef = await addDoc(collection(db, "formAnalysis"), {
         userId,
         exerciseType,
-        videoPath, // Path to the original video (might be a temp path or a URL if passed differently)
+        videoPath,
         results: analysisResults,
         createdAt: new Date(),
       });
       return { success: true, analysisId: docRef.id, results: analysisResults };
     } else {
-      return { success: false, error: "No frames could be analyzed.", status: 400 };
+      return {
+        success: false,
+        error: "No frames could be analyzed.",
+        status: 400,
+      };
     }
   } catch (err) {
-    console.error("Error in analyzeForm function:", err); // Server-side debugging
+    // eslint-disable-next-line no-console
+    console.error("Error in analyzeForm function:", err);
     return {
       success: false,
       error: err.message || "Unexpected error analyzing form.",
       status: 500,
     };
   } finally {
-    if (fs.existsSync(TEMP_DIR)) {
-      try {
-        await rmAsync(TEMP_DIR, { recursive: true, force: true }); // Use async rm
-      } catch (err) {
-        console.error("Error cleaning up tempFrames directory:", err);
-      }
+    try {
+      // Safe async temp dir cleanup
+      await fs.rm(TEMP_DIR, { recursive: true, force: true });
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error("Error cleaning up tempFrames directory:", err);
     }
   }
 };
 
-// --- Helper Functions (Remaining unchanged in logic) ---
+// --- Helper Functions ---
 
 function extractFrames(videoPath, outputDir) {
   return new Promise((resolve, reject) => {
@@ -154,10 +157,10 @@ function extractFrames(videoPath, outputDir) {
       .on("end", () => resolve())
       .on("error", (err) => reject(new Error(`FFmpeg error: ${err.message}`)))
       .screenshots({
-        count: 10, // Extract 10 frames
+        count: 10,
         folder: outputDir,
-        filename: "frame-%s.png", // Use %s for timestamp for unique names
-        size: '640x?', // Scale frames to 640px width, maintaining aspect ratio
+        filename: "frame-%s.png",
+        size: "640x?", // Scale to 640px width, maintain aspect
       });
   });
 }
@@ -252,21 +255,28 @@ function evaluateDeadlift(keypoints) {
   };
 }
 
-// Fallback AI analysis using openaiHelper
-async function fallbackAIAnalysis(exerciseType, token) { // PASSED: token
+async function fallbackAIAnalysis(exerciseType, token) {
   const timeoutMs = 8000;
-  const messages = [{ role: "user", content: `Analyze the form for a ${exerciseType}. Pose detection was unavailable for this frame. Provide a general form feedback.` }];
+  const messages = [
+    {
+      role: "user",
+      content: `Analyze the form for a ${exerciseType}. Pose detection was unavailable for this frame. Provide a general form feedback.`,
+    },
+  ];
 
   try {
-    const aiPromise = callOpenAIApi(messages, token); // Use openaiHelper
+    const aiPromise = callOpenAIApi(messages, token);
     const timeoutPromise = new Promise((_, reject) =>
       setTimeout(() => reject(new Error("Fallback AI timeout")), timeoutMs),
     );
-
     const result = await Promise.race([aiPromise, timeoutPromise]);
-    return { status: "Fallback AI analysis", comment: result || "No feedback." }; // Return structured feedback
+    return {
+      status: "Fallback AI analysis",
+      comment: result || "No feedback.",
+    };
   } catch (err) {
-    console.error("Fallback AI analysis failed:", err); // Server-side debugging
+    // eslint-disable-next-line no-console
+    console.error("Fallback AI analysis failed:", err);
     return {
       status: "Fallback AI analysis failed.",
       comment: err.message || "Unable to analyze frame.",
@@ -275,4 +285,3 @@ async function fallbackAIAnalysis(exerciseType, token) { // PASSED: token
 }
 
 export default analyzeForm;
-// export const analyzeFormTranscript = analyzeForm; // This export is redundant if default is used

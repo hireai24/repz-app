@@ -47,9 +47,10 @@ GymCard.propTypes = {
     image: PropTypes.string, // FIX: Made optional, as image might be missing. If required, enforce validation.
     name: PropTypes.string.isRequired,
     location: PropTypes.string.isRequired,
-    memberCount: PropTypes.oneOfType([ // FIX: Added number type as well
+    memberCount: PropTypes.oneOfType([
+      // FIX: Added number type as well
       PropTypes.string,
-      PropTypes.number
+      PropTypes.number,
     ]),
     features: PropTypes.string,
   }).isRequired,

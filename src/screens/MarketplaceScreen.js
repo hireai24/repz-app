@@ -1,3 +1,5 @@
+// src/screens/MarketplaceScreen.js
+
 import React, {
   useState,
   useEffect,
@@ -15,13 +17,12 @@ import {
   Dimensions,
   RefreshControl,
   Animated,
-  Linking, // Import Linking for opening Stripe URL
-  Alert, // Import Alert for user feedback
+  Linking,
+  Alert,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native"; // Import useNavigation
-
-import PlanCard from "../components/PlanCard"; // Ensure PlanCard accepts necessary props and has an onPress handler
-import { fetchMarketplacePlans, initiatePlanPurchase } from "../services/planService";
+import { useNavigation } from "@react-navigation/native";
+import PlanCard from "../components/PlanCard";
+import { fetchMarketplacePlans, purchasePlan } from "../api/marketplaceApi"; // FIX: Correct import
 import { useTierAccess } from "../hooks/useTierAccess";
 import { UserContext } from "../context/UserContext";
 import i18n from "../locales/i18n";
@@ -40,14 +41,14 @@ const filters = [
 const screenWidth = Dimensions.get("window").width;
 
 const MarketplaceScreen = () => {
-  const navigation = useNavigation(); // Initialize useNavigation hook
+  const navigation = useNavigation();
   const [selectedFilter, setSelectedFilter] = useState("Fat Loss");
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(false);
   const [errorText, setErrorText] = useState("");
   const [refreshing, setRefreshing] = useState(false);
   const { locked } = useTierAccess("Pro");
-  const { user } = useContext(UserContext); // Access full user object, not just userId
+  const { user } = useContext(UserContext);
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   const loadPlans = useCallback(async () => {
@@ -63,12 +64,11 @@ const MarketplaceScreen = () => {
           useNativeDriver: true,
         }).start();
       } else {
-        // Display specific error from service if available, otherwise generic
         throw new Error(response.error || i18n.t("marketplace.errorLoad"));
       }
     } catch (err) {
       setPlans([]);
-      setErrorText(err.message || i18n.t("marketplace.errorLoad")); // Use actual error message
+      setErrorText(err.message || i18n.t("marketplace.errorLoad"));
     } finally {
       setLoading(false);
     }
@@ -85,35 +85,39 @@ const MarketplaceScreen = () => {
   };
 
   // Handler for initiating a plan purchase
-  const handlePurchasePlan = useCallback(async (planId) => {
-    if (!user || !user.uid) {
-      Alert.alert(i18n.t("common.error"), i18n.t("marketplace.loginRequired"));
-      return;
-    }
-
-    setLoading(true); // Show loading indicator during purchase initiation
-    try {
-      const response = await initiatePlanPurchase({ planId });
-      if (response.success && response.url) {
-        await Linking.openURL(response.url);
-        // After opening URL, consider if you need to navigate or show a success message
-        // The Stripe webhook will handle logging the purchase on the backend.
-        // You might want to navigate to a "pending purchase" screen or just dashboard.
-      } else {
+  const handlePurchasePlan = useCallback(
+    async (planId) => {
+      if (!user || !user.uid) {
         Alert.alert(
           i18n.t("common.error"),
-          response.error || i18n.t("marketplace.purchaseFailed")
+          i18n.t("marketplace.loginRequired"),
         );
+        return;
       }
-    } catch (err) {
-      Alert.alert(
-        i18n.t("common.error"),
-        err.message || i18n.t("marketplace.purchaseFailed")
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
+
+      setLoading(true);
+      try {
+        // CRITICAL: Call purchasePlan with planId ONLY (not an object)
+        const response = await purchasePlan(planId);
+        if (response.success && response.url) {
+          await Linking.openURL(response.url);
+        } else {
+          Alert.alert(
+            i18n.t("common.error"),
+            response.error || i18n.t("marketplace.purchaseFailed"),
+          );
+        }
+      } catch (err) {
+        Alert.alert(
+          i18n.t("common.error"),
+          err.message || i18n.t("marketplace.purchaseFailed"),
+        );
+      } finally {
+        setLoading(false);
+      }
+    },
+    [user],
+  );
 
   if (locked) {
     return (
@@ -178,10 +182,11 @@ const MarketplaceScreen = () => {
             renderItem={({ item }) => (
               <PlanCard
                 plan={item}
-                onPurchase={() => handlePurchasePlan(item.id)} // Pass purchase handler to PlanCard
-                // buyerId and creatorStripeAccountId are NOT needed in PlanCard as per updated purchasePlan.js backend
-                // buyerId={user?.uid} // Only needed for local logic if any, but not for API call direct.
-                // creatorStripeAccountId={item.creatorStripeAccountId} // Not directly needed by frontend for purchase call
+                onPurchase={() => handlePurchasePlan(item.id)} // Correct: handler passes only the plan ID
+                onPress={() =>
+                  navigation.navigate("PlanDetailScreen", { plan: item })
+                }
+                // buyerId and creatorStripeAccountId are not required for purchase
               />
             )}
             refreshControl={
