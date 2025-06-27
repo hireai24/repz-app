@@ -1,3 +1,4 @@
+// src/theme/colors.js
 const darkColors = {
   background: "#0E0E0E",
   surface: "#1A1A1A",
@@ -89,7 +90,7 @@ const lightColors = {
 const colors = {
   dark: darkColors,
   light: lightColors,
-  ...lightColors, // default theme fallback
+  ...lightColors, // default fallback
 };
 
 export default colors;

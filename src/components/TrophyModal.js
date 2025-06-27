@@ -1,3 +1,5 @@
+// src/components/TrophyModal.js
+
 import React from "react";
 import {
   Modal,
@@ -81,14 +83,17 @@ const TrophyModal = ({ visible, onClose, milestone, type = "workout" }) => {
     >
       <View style={styles.overlay}>
         <View style={styles.modal}>
-          {trophyImg && (
-            <Image
-              source={trophyImg}
-              style={styles.trophy}
-              resizeMode="contain"
-              accessibilityLabel={`Trophy - ${milestone} ${type}`}
-            />
-          )}
+          <View style={styles.trophyWrapper}>
+            {trophyImg && (
+              <Image
+                source={trophyImg}
+                style={styles.trophy}
+                resizeMode="contain"
+                accessibilityLabel={`Trophy - ${milestone} ${type}`}
+              />
+            )}
+            <View style={styles.glow} />
+          </View>
           <Text style={styles.title}>{i18n.t("trophy.congrats")}</Text>
           <Text style={styles.body}>
             {isBattle
@@ -115,46 +120,66 @@ TrophyModal.propTypes = {
 };
 
 const styles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: colors.overlayDark,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modal: {
+    backgroundColor: colors.surface,
+    borderRadius: 16,
+    padding: spacing.lg,
+    alignItems: "center",
+    width: "85%",
+    shadowColor: "#000",
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    elevation: 6,
+  },
+  trophyWrapper: {
+    position: "relative",
+    marginBottom: spacing.md,
+  },
+  trophy: {
+    width: 140,
+    height: 140,
+    zIndex: 2,
+  },
+  glow: {
+    position: "absolute",
+    top: 10,
+    left: 10,
+    right: 10,
+    bottom: 10,
+    borderRadius: 70,
+    backgroundColor: colors.primary,
+    opacity: 0.1,
+    zIndex: 1,
+  },
+  title: {
+    ...typography.heading2,
+    color: colors.primary,
+    marginBottom: spacing.xs,
+    textAlign: "center",
+  },
   body: {
     ...typography.body,
     color: colors.textPrimary,
-    marginBottom: spacing.sm,
+    marginBottom: spacing.xs,
     textAlign: "center",
   },
   button: {
     backgroundColor: colors.primary,
     borderRadius: 8,
-    paddingHorizontal: spacing.lg,
+    paddingHorizontal: spacing.xl,
     paddingVertical: spacing.sm,
+    marginTop: spacing.md,
   },
   buttonText: {
-    color: colors.white,
+    color: colors.textOnPrimary,
     fontWeight: "bold",
-  },
-  modal: {
-    alignItems: "center",
-    backgroundColor: colors.surface,
-    borderRadius: 12,
-    elevation: 5,
-    padding: spacing.lg,
-    width: "85%",
-  },
-  overlay: {
-    alignItems: "center",
-    backgroundColor: colors.overlayDark,
-    flex: 1,
-    justifyContent: "center",
-  },
-  title: {
-    ...typography.heading3,
-    color: colors.primary,
-    marginBottom: spacing.sm,
-    textAlign: "center",
-  },
-  trophy: {
-    height: 120,
-    marginBottom: spacing.md,
-    width: 120,
+    fontSize: 16,
   },
 });
 

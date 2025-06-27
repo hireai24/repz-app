@@ -1,14 +1,15 @@
-// src/screens/GymFeedScreen.js
 import React, { useEffect, useState } from "react";
 import {
   View,
   ScrollView,
   StyleSheet,
   Text,
+  Image,
+  TouchableOpacity,
   ActivityIndicator,
 } from "react-native";
-import { useRoute } from "@react-navigation/native";
-import { getGymFeed } from "../api/gymFeedApi";
+import { useRoute, useNavigation } from "@react-navigation/native";
+import { getGymFeed, getGymDetails } from "../api/gymFeedApi";
 import GymFeedCard from "../components/GymFeedCard";
 import colors from "../theme/colors";
 import spacing from "../theme/spacing";
@@ -16,61 +17,153 @@ import typography from "../theme/typography";
 
 const GymFeedScreen = () => {
   const route = useRoute();
+  const navigation = useNavigation();
   const { gymId } = route.params;
+
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [gym, setGym] = useState(null);
 
   useEffect(() => {
-    const fetchFeed = async () => {
+    const fetchFeedAndDetails = async () => {
       try {
-        const data = await getGymFeed(gymId);
-        setPosts(data.posts || []);
-      } catch (err) {
-        // console.error("Error loading gym feed:", err); // Commented out to resolve no-console warning
-        // You might want to display a user-friendly error message here instead
-        // For example: Alert.alert("Error", "Failed to load gym feed.");
+        const [feedData, gymData] = await Promise.all([
+          getGymFeed(gymId),
+          getGymDetails(gymId),
+        ]);
+        setPosts(feedData.posts || []);
+        setGym(gymData.gym || null);
+      } catch {
+        // Optional: show alert here
       } finally {
         setLoading(false);
       }
     };
-    fetchFeed();
+    fetchFeedAndDetails();
   }, [gymId]);
 
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color={colors.accent} />
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
   return (
     <ScrollView style={styles.container}>
+      {gym && (
+        <View>
+          <View style={styles.bannerWrapper}>
+            <Image
+              source={
+                gym.banner
+                  ? { uri: gym.banner }
+                  : require("../assets/gymFeed/cover1.png")
+              }
+              style={styles.banner}
+            />
+            <View style={styles.overlay} />
+            <View style={styles.bannerContent}>
+              <Image
+                source={
+                  gym.logo
+                    ? { uri: gym.logo }
+                    : require("../assets/gymFeed/gym-icon.png")
+                }
+                style={styles.avatar}
+              />
+              <View style={styles.gymInfo}>
+                <Text style={styles.gymName}>{gym.name}</Text>
+                <TouchableOpacity
+                  style={styles.joinBtn}
+                  onPress={() => navigation.navigate("JoinGym", { gymId })}
+                >
+                  <Text style={styles.joinText}>Join Gym</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </View>
+      )}
+
       {posts.length === 0 ? (
         <Text style={styles.empty}>No posts yet.</Text>
       ) : (
-        posts.map((post) => <GymFeedCard key={post.id} post={post} />)
+        posts.map((post) => (
+          <View key={post.id} style={styles.postWrapper}>
+            <GymFeedCard post={post} />
+          </View>
+        ))
       )}
     </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
-  centered: {
-    alignItems: "center",
-    flex: 1,
-    justifyContent: "center",
-  },
   container: {
     backgroundColor: colors.background,
     flex: 1,
-    padding: spacing.md,
+  },
+  centered: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  bannerWrapper: {
+    position: "relative",
+    height: 200,
+    marginBottom: spacing.lg,
+  },
+  banner: {
+    width: "100%",
+    height: "100%",
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.4)",
+  },
+  bannerContent: {
+    position: "absolute",
+    bottom: spacing.md,
+    left: spacing.md,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  avatar: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    borderWidth: 2,
+    borderColor: colors.white,
+  },
+  gymInfo: {
+    marginLeft: spacing.md,
+  },
+  gymName: {
+    ...typography.heading3,
+    color: colors.white,
+    marginBottom: spacing.xs,
+  },
+  joinBtn: {
+    backgroundColor: colors.primary,
+    borderRadius: 6,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  joinText: {
+    color: colors.textOnPrimary,
+    fontWeight: "600",
   },
   empty: {
     ...typography.body,
     color: colors.textSecondary,
-    marginTop: spacing.lg,
     textAlign: "center",
+    marginVertical: spacing.lg,
+  },
+  postWrapper: {
+    marginBottom: spacing.md,
+    paddingHorizontal: spacing.lg,
   },
 });
 

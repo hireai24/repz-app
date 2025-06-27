@@ -1,7 +1,6 @@
-// src/components/ChallengeWagerCard.js
 import React from "react";
 import PropTypes from "prop-types";
-import { Text, StyleSheet, TouchableOpacity } from "react-native";
+import { Text, StyleSheet, TouchableOpacity, View } from "react-native";
 import colors from "../theme/colors";
 import typography from "../theme/typography";
 import spacing from "../theme/spacing";
@@ -16,7 +15,7 @@ const ChallengeWagerCard = ({ challenge, onPress }) => {
     status,
     opponents = [],
     winnerId,
-    userId, // This prop should be passed from the parent component (e.g., from UserContext)
+    userId,
     verified,
     flagged,
     type,
@@ -30,10 +29,9 @@ const ChallengeWagerCard = ({ challenge, onPress }) => {
   const getStatusLabel = () => {
     if (isUserWinner) return i18n.t("challengeWager.winner");
     if (isUserLoser) return i18n.t("challengeWager.loser");
-    // Capitalize the first letter of the status for better display, if status is a string
     return status
       ? status.charAt(0).toUpperCase() + status.slice(1)
-      : "Pending";
+      : i18n.t("challengeWager.pending");
   };
 
   const getCountdown = () => {
@@ -47,22 +45,33 @@ const ChallengeWagerCard = ({ challenge, onPress }) => {
   };
 
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress}>
-      <Text style={styles.title}>{title || "XP Challenge"}</Text>
+    <TouchableOpacity
+      style={[styles.card, isUserWinner && styles.winnerGlow]}
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={`View challenge: ${title || "XP Challenge"}`}
+    >
+      <Text style={styles.title}>{title || i18n.t("challengeWager.defaultTitle")}</Text>
+
       <Text style={styles.detail}>
-        💪 {i18n.t("challengeWager.selectExercise")}: {exercise}
+        💪 {i18n.t("challengeWager.selectExercise")}: {exercise || "N/A"}
       </Text>
-      <Text style={styles.detail}>🧩 Type: {type?.toUpperCase() || "N/A"}</Text>
+
+      <Text style={styles.detail}>
+        🧩 {i18n.t("challengeWager.type")}: {type?.toUpperCase() || "N/A"}
+      </Text>
+
       <Text style={styles.detail}>
         ⚔️ {i18n.t("challengeWager.opponents")}:{" "}
         {opponents.length > 0
           ? opponents.join(", ")
           : i18n.t("challengeWager.noOpponentsYet")}
-        {/* TODO: Opponent IDs should ideally be resolved to usernames for better UX. */}
       </Text>
+
       <Text style={styles.detail}>
         🎯 {i18n.t("challengeWager.wagerAmount")}: {xp} XP
       </Text>
+
       <Text style={styles.detail}>💰 Pot: {xpPot || xp} XP</Text>
 
       {expiresAt && <Text style={styles.countdown}>{getCountdown()}</Text>}
@@ -75,19 +84,21 @@ const ChallengeWagerCard = ({ challenge, onPress }) => {
 
       {flagged && (
         <Text style={styles.flagged}>
-          ⚠️ {i18n.t("challengeWager.flagged") || "Flagged for review"}
+          ⚠️ {i18n.t("challengeWager.flagged")}
         </Text>
       )}
 
-      <Text
-        style={[
-          styles.status,
-          isUserWinner && styles.winner,
-          isUserLoser && styles.loser,
-        ]}
-      >
-        {getStatusLabel()}
-      </Text>
+      <View style={styles.statusContainer}>
+        <Text
+          style={[
+            styles.status,
+            isUserWinner && styles.winner,
+            isUserLoser && styles.loser,
+          ]}
+        >
+          {getStatusLabel()}
+        </Text>
+      </View>
     </TouchableOpacity>
   );
 };
@@ -99,15 +110,14 @@ ChallengeWagerCard.propTypes = {
     xp: PropTypes.number,
     xpPot: PropTypes.number,
     status: PropTypes.string,
-    // creatorName: PropTypes.string, // Removed: no longer used
     opponents: PropTypes.arrayOf(PropTypes.string),
     winnerId: PropTypes.string,
-    userId: PropTypes.string, // Explicitly define this prop
+    userId: PropTypes.string,
     verified: PropTypes.bool,
     flagged: PropTypes.bool,
     type: PropTypes.string,
     votes: PropTypes.number,
-    expiresAt: PropTypes.object, // Firebase Timestamp object
+    expiresAt: PropTypes.object,
   }).isRequired,
   onPress: PropTypes.func,
 };
@@ -115,18 +125,30 @@ ChallengeWagerCard.propTypes = {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.surface,
-    borderRadius: 10,
-    marginBottom: spacing.md,
+    borderRadius: 12,
     padding: spacing.md,
+    marginBottom: spacing.md,
+    elevation: 2,
+  },
+  title: {
+    ...typography.heading4,
+    color: colors.textPrimary,
+    marginBottom: spacing.sm,
+  },
+  detail: {
+    color: colors.textSecondary,
+    fontSize: 14,
+    marginBottom: 4,
   },
   countdown: {
     color: colors.warning,
     fontSize: 13,
     marginBottom: 4,
   },
-  detail: {
-    color: colors.textSecondary,
-    fontSize: 14,
+  verified: {
+    color: colors.accentBlue,
+    fontSize: 13,
+    fontWeight: "600",
     marginBottom: 4,
   },
   flagged: {
@@ -135,27 +157,28 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     marginBottom: 4,
   },
-  loser: {
-    color: colors.error,
+  statusContainer: {
+    marginTop: spacing.sm,
+    alignItems: "flex-start",
   },
   status: {
     color: colors.textSecondary,
     fontWeight: "bold",
-    marginTop: spacing.sm,
-  },
-  title: {
-    ...typography.heading4,
-    color: colors.textPrimary,
-    marginBottom: 6,
-  },
-  verified: {
-    color: colors.accentBlue,
-    fontSize: 13,
-    fontWeight: "600",
-    marginBottom: 4,
+    fontSize: 14,
   },
   winner: {
     color: colors.success,
+  },
+  loser: {
+    color: colors.error,
+  },
+  winnerGlow: {
+    borderColor: colors.gold,
+    borderWidth: 2,
+    shadowColor: colors.gold,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.4,
+    shadowRadius: 6,
   },
 });
 

@@ -1,3 +1,4 @@
+// src/screens/MyGymsScreen.js
 import React, { useContext, useEffect, useState, useCallback } from "react";
 import {
   View,
@@ -9,11 +10,9 @@ import {
   Alert,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-
 import { UserContext } from "../context/UserContext";
 import { getGymsByOwner } from "../api/gymApi";
 import GymCard from "../components/GymCard";
-
 import colors from "../theme/colors";
 import spacing from "../theme/spacing";
 import typography from "../theme/typography";
@@ -24,7 +23,6 @@ const MyGymsScreen = () => {
   const [gyms, setGyms] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // FIX: Wrap in useCallback to safely use in useEffect dependency array
   const loadGyms = useCallback(async () => {
     setLoading(true);
     try {
@@ -50,13 +48,17 @@ const MyGymsScreen = () => {
       <Text style={styles.title}>My Gym Profiles</Text>
 
       {loading ? (
-        <ActivityIndicator size="large" color={colors.primary} />
+        <View style={styles.loadingWrapper}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
       ) : (
         <FlatList
           data={gyms}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => <GymCard gym={item} />}
-          contentContainerStyle={styles.list}
+          contentContainerStyle={
+            gyms.length === 0 ? styles.emptyWrapper : styles.listContent
+          }
           ListEmptyComponent={
             <Text style={styles.emptyText}>
               You haven&apos;t added any gyms yet.
@@ -66,44 +68,56 @@ const MyGymsScreen = () => {
       )}
 
       <TouchableOpacity
-        style={styles.button}
+        style={styles.addButton}
         onPress={() => navigation.navigate("GymSubmissionScreen")}
+        accessibilityRole="button"
+        accessibilityLabel="Add new gym"
       >
-        <Text style={styles.buttonText}>+ Add New Gym</Text>
+        <Text style={styles.addButtonText}>+ Add New Gym</Text>
       </TouchableOpacity>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  button: {
-    alignItems: "center",
-    backgroundColor: colors.primary,
-    borderRadius: 8,
-    marginTop: spacing.md,
-    padding: spacing.md,
-  },
-  buttonText: {
-    color: colors.white,
-    ...typography.buttonText,
-  },
   container: {
-    backgroundColor: colors.background,
     flex: 1,
+    backgroundColor: colors.background,
     padding: spacing.lg,
   },
-  emptyText: {
-    color: colors.textSecondary,
-    marginTop: spacing.md,
-    textAlign: "center",
-  },
-  list: {
-    flexGrow: 1,
-  },
   title: {
-    ...typography.h3,
-    marginBottom: spacing.lg,
+    ...typography.heading2,
+    color: colors.textPrimary,
     textAlign: "center",
+    marginBottom: spacing.md,
+  },
+  loadingWrapper: {
+    flex: 1,
+    justifyContent: "center",
+  },
+  emptyWrapper: {
+    flexGrow: 1,
+    justifyContent: "center",
+  },
+  emptyText: {
+    ...typography.body,
+    color: colors.textSecondary,
+    textAlign: "center",
+  },
+  listContent: {
+    paddingBottom: spacing.xl,
+  },
+  addButton: {
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+    paddingVertical: spacing.md,
+    alignItems: "center",
+    marginTop: spacing.md,
+  },
+  addButtonText: {
+    color: colors.textOnPrimary,
+    fontSize: 16,
+    fontWeight: "bold",
   },
 });
 

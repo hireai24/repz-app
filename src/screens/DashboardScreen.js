@@ -1,4 +1,9 @@
-import React, { useContext, useEffect, useState, useCallback } from "react";
+import React, {
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+} from "react";
 import {
   View,
   Text,
@@ -6,20 +11,19 @@ import {
   TouchableOpacity,
   ScrollView,
   Image,
-  TextInput,
-  Animated,
   FlatList,
   RefreshControl,
   ActivityIndicator,
+  Dimensions,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
+import LottieView from "lottie-react-native";
 
 import { UserContext } from "../context/UserContext";
 import useStreakTracker from "../hooks/useStreakTracker";
-import { getUserPlans } from "../api/userApi";
+import { getUserPlans } from "../api/userPlansApi";
 import TierBadge from "../components/TierBadge";
-import ChallengeCard from "../components/ChallengeCard";
 import DailyChallengeCard from "../components/DailyChallengeCard";
 import UserPlanCard from "../components/UserPlanCard";
 import TrophyModal from "../components/TrophyModal";
@@ -34,7 +38,7 @@ import defaultAvatar from "../assets/avatars/avatar1.png";
 const STREAK_MILESTONES = [3, 7, 14];
 
 const DashboardScreen = () => {
-  const { userProfile, userId } = useContext(UserContext);
+  const { userProfile, userId, loadingProfile } = useContext(UserContext);
   const fadeAnim = useFadeIn(200);
   const navigation = useNavigation();
 
@@ -46,38 +50,37 @@ const DashboardScreen = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
 
+  const { streak } = useStreakTracker(userId);
+
   const name =
     userProfile?.name || userProfile?.username || i18n.t("dashboard.defaultName");
   const avatar = userProfile?.profilePicture
     ? { uri: userProfile.profilePicture }
     : defaultAvatar;
 
-  const nextWorkout = i18n.t("dashboard.nextWorkoutTitle");
-  const challenge = {
-    title: i18n.t("dashboard.challengeTitle"),
-    status: "Active",
-    xpReward: 120,
-  };
-
-  const { streak } = useStreakTracker(userId);
-
   useEffect(() => {
-    loadPlans();
-    loadDailyChallenge();
-  }, []);
+    if (userId) {
+      loadPlans();
+      loadDailyChallenge();
+    }
+  }, [userId]);
 
   useEffect(() => {
     if (!userId || !streak || streak < 3) return;
 
     const checkMilestone = async () => {
-      const docRef = doc(db, "users", userId);
-      const userSnap = await getDoc(docRef);
-      const lastTrophy = userSnap.data()?.lastTrophyShown || 0;
+      try {
+        const docRef = doc(db, "users", userId);
+        const userSnap = await getDoc(docRef);
+        const lastTrophy = userSnap.data()?.lastTrophyShown || 0;
 
-      if (STREAK_MILESTONES.includes(streak) && streak > lastTrophy) {
-        setCurrentMilestone(streak);
-        setShowTrophy(true);
-        await updateDoc(docRef, { lastTrophyShown: streak });
+        if (STREAK_MILESTONES.includes(streak) && streak > lastTrophy) {
+          setCurrentMilestone(streak);
+          setShowTrophy(true);
+          await updateDoc(docRef, { lastTrophyShown: streak });
+        }
+      } catch {
+        // Silent fail
       }
     };
 
@@ -111,7 +114,7 @@ const DashboardScreen = () => {
         setDailyChallenge(snap.data());
       }
     } catch {
-      // Silent fail in production
+      // Silent fail
     }
   }, [userId]);
 
@@ -122,6 +125,14 @@ const DashboardScreen = () => {
     );
   }, [loadPlans, loadDailyChallenge]);
 
+  if (loadingProfile || !userId) {
+    return (
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
+
   return (
     <>
       <ScrollView
@@ -130,40 +141,39 @@ const DashboardScreen = () => {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        <Animated.View style={[styles.header, { opacity: fadeAnim }]}>
-          <Image source={avatar} style={styles.avatar} />
-          <View style={styles.headerText}>
-            <Text style={styles.welcome}>{i18n.t("dashboard.welcome")}</Text>
+        {/* Hero */}
+        <View style={styles.heroContainer}>
+          <Image
+            source={require("../assets/dashboard/dashboard-bg.png")}
+            style={styles.heroBackground}
+          />
+          <View style={styles.heroOverlay} />
+          <View style={styles.heroContent}>
+            <Image source={avatar} style={styles.avatarLarge} />
             <Text style={styles.name}>{name}</Text>
+            <TierBadge tier={userProfile?.tier} />
+            <View style={styles.xpRingWrapper}>
+              <LottieView
+                source={require("../assets/xp/xp-ring.json")}
+                autoPlay
+                loop
+                style={styles.xpRing}
+              />
+              <Text style={styles.xpRingLabel}>
+                {userProfile?.xp || 0} XP
+              </Text>
+            </View>
           </View>
-          <TierBadge tier={userProfile?.tier} />
-        </Animated.View>
+        </View>
 
+        {/* Daily Challenge */}
         {dailyChallenge && (
           <View style={styles.section}>
             <DailyChallengeCard challenge={dailyChallenge} />
           </View>
         )}
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            {i18n.t("dashboard.nextWorkout")}
-          </Text>
-          <TouchableOpacity
-            style={styles.card}
-            onPress={() => navigation.navigate("WorkoutLog")}
-          >
-            <Text style={styles.cardText}>{nextWorkout}</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            {i18n.t("dashboard.challenges")}
-          </Text>
-          <ChallengeCard challenge={challenge} progress={{}} />
-        </View>
-
+        {/* My Plans */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{i18n.t("dashboard.myPlans")}</Text>
           {error ? (
@@ -190,94 +200,45 @@ const DashboardScreen = () => {
           )}
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            {i18n.t("dashboard.gymsNearby")}
-          </Text>
+        {/* Actions */}
+        <View style={styles.sectionRow}>
           <TouchableOpacity
             style={styles.card}
-            onPress={() => navigation.navigate("GymDirectory")}
+            onPress={() => navigation.navigate("WorkoutLog")}
           >
-            <Text style={styles.cardText}>{i18n.t("dashboard.viewGyms")}</Text>
+            <Text style={styles.cardText}>{i18n.t("dashboard.nextWorkout")}</Text>
           </TouchableOpacity>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            {i18n.t("dashboard.findTrainingPartner")}
-          </Text>
           <TouchableOpacity
             style={styles.card}
             onPress={() => navigation.navigate("PartnerFinder")}
           >
-            <Text style={styles.cardText}>
-              {i18n.t("dashboard.viewPartners")}
-            </Text>
+            <Text style={styles.cardText}>{i18n.t("dashboard.findTrainingPartner")}</Text>
           </TouchableOpacity>
         </View>
 
+        {/* Pro Tools */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            {i18n.t("dashboard.proTools")}
-          </Text>
+          <Text style={styles.sectionTitle}>{i18n.t("dashboard.proTools")}</Text>
           <View style={styles.toolRow}>
-            <TouchableOpacity
-              style={styles.toolButton}
-              onPress={() => navigation.navigate("PlanBuilder")}
-            >
-              <Text style={styles.toolText}>
-                {i18n.t("dashboard.toolPlanBuilder")}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.toolButton}
-              onPress={() => navigation.navigate("FormGhost")}
-            >
-              <Text style={styles.toolText}>
-                {i18n.t("dashboard.toolFormGhost")}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.toolButton}
-              onPress={() => navigation.navigate("VisualGains")}
-            >
-              <Text style={styles.toolText}>
-                {i18n.t("dashboard.toolVisualGains")}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.toolButton}
-              onPress={() => navigation.navigate("UserPlans")}
-            >
-              <Text style={styles.toolText}>
-                {i18n.t("dashboard.toolUserPlans")}
-              </Text>
-            </TouchableOpacity>
+            {[
+              { title: i18n.t("dashboard.toolPlanBuilder"), screen: "PlanBuilder" },
+              { title: i18n.t("dashboard.toolFormGhost"), screen: "FormGhost" },
+              { title: i18n.t("dashboard.toolVisualGains"), screen: "VisualGains" },
+              { title: i18n.t("dashboard.toolUserPlans"), screen: "UserPlans" },
+            ].map((tool) => (
+              <TouchableOpacity
+                key={tool.screen}
+                style={styles.toolButton}
+                onPress={() => navigation.navigate(tool.screen)}
+              >
+                <Text style={styles.toolText}>{tool.title}</Text>
+              </TouchableOpacity>
+            ))}
           </View>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{i18n.t("dashboard.feed")}</Text>
-          <TextInput
-            style={styles.input}
-            placeholder={i18n.t("dashboard.feedPlaceholder")}
-            placeholderTextColor={colors.textSecondary}
-          />
-        </View>
-
-        <View style={styles.navBar}>
-          {["🏠", "🏋️", "⚔️", "🧑‍🤝‍🧑", "⚙️"].map((icon, idx) => (
-            <TouchableOpacity
-              key={idx}
-              accessibilityRole="tab"
-              accessibilityLabel={`Nav icon ${idx}`}
-            >
-              <Text style={styles.navIcon}>{icon}</Text>
-            </TouchableOpacity>
-          ))}
         </View>
       </ScrollView>
 
+      {/* Trophy Modal */}
       {showTrophy && currentMilestone && (
         <TrophyModal
           milestone={currentMilestone}
@@ -292,110 +253,116 @@ const DashboardScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  avatar: {
-    borderRadius: 999,
-    height: 52,
-    width: 52,
-  },
-  card: {
-    backgroundColor: colors.surface,
-    borderRadius: 8,
-    padding: spacing.md,
-  },
-  cardText: {
-    ...typography.body,
-    color: colors.textPrimary,
-  },
-  centered: {
-    alignItems: "center",
-    backgroundColor: colors.background,
-    flex: 1,
-    justifyContent: "center",
-  },
   container: {
     backgroundColor: colors.background,
     flex: 1,
-    padding: spacing.lg,
   },
-  emptyText: {
-    color: colors.textSecondary,
-    fontSize: 14,
-    marginTop: spacing.md,
-    textAlign: "center",
+  heroContainer: {
+    position: "relative",
+    height: 260,
+    marginBottom: spacing.lg,
   },
-  errorText: {
-    color: colors.error,
-    fontSize: 14,
-    marginTop: spacing.md,
-    textAlign: "center",
+  heroBackground: {
+    ...StyleSheet.absoluteFillObject,
+    width: "100%",
+    height: "100%",
   },
-  header: {
-    alignItems: "center",
-    flexDirection: "row",
-    marginBottom: spacing.md,
+  heroOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.5)",
   },
-  headerText: {
+  heroContent: {
     flex: 1,
-    marginLeft: spacing.md,
+    justifyContent: "center",
+    alignItems: "center",
   },
-  input: {
-    backgroundColor: colors.surface,
-    borderRadius: 8,
-    color: colors.textPrimary,
-    padding: spacing.md,
+  avatarLarge: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    marginBottom: spacing.sm,
   },
-  locked: {
-    color: colors.textSecondary,
-    fontSize: 16,
-    padding: spacing.lg,
+  xpRingWrapper: {
+    position: "relative",
+    width: 100,
+    height: 100,
+    marginTop: spacing.sm,
+  },
+  xpRing: {
+    width: 100,
+    height: 100,
+  },
+  xpRingLabel: {
+    position: "absolute",
+    top: "40%",
+    left: 0,
+    right: 0,
     textAlign: "center",
+    color: colors.textPrimary,
+    ...typography.heading3,
   },
   name: {
     ...typography.heading2,
-    color: colors.textPrimary,
-  },
-  navBar: {
-    borderTopColor: colors.surface,
-    borderTopWidth: 1,
-    flexDirection: "row",
-    justifyContent: "space-around",
-    marginTop: spacing.sm,
-    paddingVertical: spacing.md,
-  },
-  navIcon: {
-    color: colors.primary,
-    fontSize: 22,
-  },
-  planListContent: {
-    paddingBottom: spacing.lg,
+    color: colors.textOnPrimary,
   },
   section: {
-    marginBottom: spacing.xl,
+    paddingHorizontal: spacing.lg,
+    marginBottom: spacing.lg,
+  },
+  sectionRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingHorizontal: spacing.lg,
+    marginBottom: spacing.lg,
   },
   sectionTitle: {
     ...typography.heading3,
     color: colors.textPrimary,
     marginBottom: spacing.sm,
   },
-  toolButton: {
+  card: {
     backgroundColor: colors.surface,
-    borderRadius: 8,
-    marginBottom: spacing.sm,
-    marginRight: spacing.sm,
-    padding: spacing.sm,
+    borderRadius: 16,
+    padding: spacing.lg,
+    flex: 1,
+    marginHorizontal: spacing.xs,
+    alignItems: "center",
+    elevation: 4,
+  },
+  cardText: {
+    color: colors.textPrimary,
+    ...typography.body,
   },
   toolRow: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: spacing.sm,
+  },
+  toolButton: {
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    margin: spacing.xs,
   },
   toolText: {
     color: colors.textPrimary,
-    fontSize: 13,
+    ...typography.small,
   },
-  welcome: {
-    ...typography.body,
+  emptyText: {
+    textAlign: "center",
     color: colors.textSecondary,
+  },
+  errorText: {
+    textAlign: "center",
+    color: colors.error,
+  },
+  centered: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  planListContent: {
+    paddingBottom: spacing.lg,
   },
 });
 

@@ -1,5 +1,4 @@
 // src/screens/MarketplaceScreen.js
-
 import React, {
   useState,
   useEffect,
@@ -14,16 +13,17 @@ import {
   FlatList,
   TouchableOpacity,
   ActivityIndicator,
-  Dimensions,
   RefreshControl,
   Animated,
   Linking,
   Alert,
+  Image,
+  ScrollView,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import PlanCard from "../components/PlanCard";
-import { fetchMarketplacePlans, purchasePlan } from "../api/marketplaceApi"; // FIX: Correct import
-import useTierAccess  from "../hooks/useTierAccess";
+import { fetchMarketplacePlans, purchasePlan } from "../api/marketplaceApi";
+import useTierAccess from "../hooks/useTierAccess";
 import { UserContext } from "../context/UserContext";
 import i18n from "../locales/i18n";
 import colors from "../theme/colors";
@@ -38,7 +38,6 @@ const filters = [
   "Meal",
   "Bundle",
 ];
-const screenWidth = Dimensions.get("window").width;
 
 const MarketplaceScreen = () => {
   const navigation = useNavigation();
@@ -52,9 +51,9 @@ const MarketplaceScreen = () => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   const loadPlans = useCallback(async () => {
+    setLoading(true);
+    setErrorText("");
     try {
-      setLoading(true);
-      setErrorText("");
       const response = await fetchMarketplacePlans(selectedFilter);
       if (response.success) {
         setPlans(response.plans || []);
@@ -84,39 +83,33 @@ const MarketplaceScreen = () => {
     setRefreshing(false);
   };
 
-  // Handler for initiating a plan purchase
   const handlePurchasePlan = useCallback(
     async (planId) => {
       if (!user || !user.uid) {
-        Alert.alert(
-          i18n.t("common.error"),
-          i18n.t("marketplace.loginRequired"),
-        );
+        Alert.alert(i18n.t("common.error"), i18n.t("marketplace.loginRequired"));
         return;
       }
-
       setLoading(true);
       try {
-        // CRITICAL: Call purchasePlan with planId ONLY (not an object)
         const response = await purchasePlan(planId);
         if (response.success && response.url) {
           await Linking.openURL(response.url);
         } else {
           Alert.alert(
             i18n.t("common.error"),
-            response.error || i18n.t("marketplace.purchaseFailed"),
+            response.error || i18n.t("marketplace.purchaseFailed")
           );
         }
       } catch (err) {
         Alert.alert(
           i18n.t("common.error"),
-          err.message || i18n.t("marketplace.purchaseFailed"),
+          err.message || i18n.t("marketplace.purchaseFailed")
         );
       } finally {
         setLoading(false);
       }
     },
-    [user],
+    [user]
   );
 
   if (locked) {
@@ -129,9 +122,29 @@ const MarketplaceScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{i18n.t("marketplace.title")}</Text>
+      {/* Header */}
+      <View style={styles.headerRow}>
+        <Text style={styles.title}>{i18n.t("marketplace.title")}</Text>
+        <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel={i18n.t("marketplace.sortAccessibility")}
+          onPress={() => {
+            // You can hook up a modal here later
+          }}
+        >
+          <Image
+            source={require("../assets/icons/icon-sort.png")}
+            style={styles.sortIcon}
+          />
+        </TouchableOpacity>
+      </View>
 
-      <View style={styles.filtersRow}>
+      {/* Filter Chips */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.filtersRow}
+      >
         {filters.map((f) => (
           <TouchableOpacity
             key={f}
@@ -140,8 +153,6 @@ const MarketplaceScreen = () => {
               selectedFilter === f && styles.filterChipActive,
             ]}
             onPress={() => setSelectedFilter(f)}
-            accessibilityRole="button"
-            accessibilityLabel={`${i18n.t("marketplace.filters." + f.toLowerCase())} filter`}
           >
             <Text
               style={
@@ -154,14 +165,11 @@ const MarketplaceScreen = () => {
             </Text>
           </TouchableOpacity>
         ))}
-      </View>
+      </ScrollView>
 
+      {/* Main Content */}
       {loading ? (
-        <ActivityIndicator
-          size="large"
-          color={colors.primary}
-          style={styles.loadingIndicator}
-        />
+        <ActivityIndicator size="large" color={colors.primary} style={styles.loadingIndicator} />
       ) : errorText ? (
         <View style={styles.emptyState}>
           <Text style={styles.errorText}>{errorText}</Text>
@@ -182,11 +190,10 @@ const MarketplaceScreen = () => {
             renderItem={({ item }) => (
               <PlanCard
                 plan={item}
-                onPurchase={() => handlePurchasePlan(item.id)} // Correct: handler passes only the plan ID
+                onPurchase={() => handlePurchasePlan(item.id)}
                 onPress={() =>
                   navigation.navigate("PlanDetailScreen", { plan: item })
                 }
-                // buyerId and creatorStripeAccountId are not required for purchase
               />
             )}
             refreshControl={
@@ -201,17 +208,57 @@ const MarketplaceScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  animatedList: {
-    flex: 1,
-  },
   container: {
     backgroundColor: colors.background,
     flex: 1,
-    padding: spacing.lg,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.lg,
+  },
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: spacing.md,
+  },
+  title: {
+    ...typography.heading2,
+    color: colors.textPrimary,
+  },
+  sortIcon: {
+    width: 24,
+    height: 24,
+    tintColor: colors.textPrimary,
+  },
+  filtersRow: {
+    paddingBottom: spacing.md,
+    gap: spacing.sm,
+  },
+  filterChip: {
+    backgroundColor: colors.surface,
+    borderRadius: 20,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+  },
+  filterChipActive: {
+    backgroundColor: colors.primary,
+  },
+  filterText: {
+    color: colors.textSecondary,
+    fontSize: 13,
+  },
+  filterTextActive: {
+    color: colors.textOnPrimary,
+    fontWeight: "bold",
+  },
+  loadingIndicator: {
+    marginTop: spacing.lg,
+  },
+  animatedList: {
+    flex: 1,
   },
   emptyState: {
     alignItems: "center",
-    marginTop: 40,
+    marginTop: spacing.xl,
   },
   emptyText: {
     color: colors.textSecondary,
@@ -222,72 +269,39 @@ const styles = StyleSheet.create({
   errorText: {
     color: colors.error,
     fontSize: 14,
-    marginBottom: 10,
+    marginBottom: spacing.sm,
     textAlign: "center",
-  },
-  filterChip: {
-    alignItems: "center",
-    backgroundColor: colors.surface,
-    borderRadius: 20,
-    minWidth: screenWidth * 0.24,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-  },
-  filterChipActive: {
-    backgroundColor: colors.primary,
-  },
-  filterText: {
-    color: colors.textSecondary,
-    fontSize: 13,
-  },
-  filterTextActive: {
-    color: colors.textPrimary,
-    fontWeight: "bold",
-  },
-  filtersRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 12,
-    marginBottom: spacing.md,
   },
   hintText: {
     color: colors.textSecondary,
     fontSize: 13,
     textAlign: "center",
   },
-  listContent: {
-    paddingBottom: spacing.xl,
+  retryButton: {
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+    marginTop: spacing.md,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
   },
-  loadingIndicator: {
-    marginTop: spacing.lg,
+  retryButtonText: {
+    color: colors.textOnPrimary,
+    fontWeight: "bold",
   },
   lockedContainer: {
-    alignItems: "center",
-    backgroundColor: colors.background,
     flex: 1,
     justifyContent: "center",
-    padding: spacing.xl,
+    alignItems: "center",
+    backgroundColor: colors.background,
+    padding: spacing.lg,
   },
   lockedText: {
     color: colors.textSecondary,
     fontSize: 16,
     textAlign: "center",
   },
-  retryButton: {
-    backgroundColor: colors.primary,
-    borderRadius: 8,
-    marginTop: 10,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-  },
-  retryButtonText: {
-    color: colors.white,
-    fontWeight: "bold",
-  },
-  title: {
-    ...typography.heading2,
-    color: colors.textPrimary,
-    marginBottom: spacing.md,
+  listContent: {
+    paddingBottom: spacing.xl,
   },
 });
 

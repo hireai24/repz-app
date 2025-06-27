@@ -1,3 +1,4 @@
+// src/components/FormFeedbackCard.js
 import React from "react";
 import PropTypes from "prop-types";
 import { View, Text, StyleSheet } from "react-native";
@@ -33,7 +34,10 @@ const FormFeedbackCard = ({ rep }) => {
 
   return (
     <View
-      style={[styles.card, { borderLeftColor: getColor(color) }]}
+      style={[
+        styles.card,
+        { borderLeftColor: getColor(color) }
+      ]}
       accessibilityRole="summary"
       accessibilityLabel={`Feedback for rep ${repNumber ?? "unknown"}`}
       testID={`form-feedback-rep-${repNumber ?? "unknown"}`}
@@ -44,11 +48,10 @@ const FormFeedbackCard = ({ rep }) => {
         )}
         {score !== undefined && (
           <Text style={styles.scoreText}>
-            {`${getEmojiForScore(score)}  ${score}/10`}
+            {getEmojiForScore(score)} {score}/10
           </Text>
         )}
       </View>
-
       <Text style={styles.feedbackText}>
         {feedback || "No specific feedback provided."}
       </Text>
@@ -69,24 +72,19 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.surface,
     borderLeftWidth: 4,
-    borderRadius: spacing.borderRadius,
-    elevation: 4,
+    borderRadius: 12,
     marginBottom: spacing.md,
     padding: spacing.md,
     shadowColor: colors.overlayDark,
     shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.15,
+    shadowOpacity: 0.1,
     shadowRadius: 6,
-  },
-  feedbackText: {
-    ...typography.small,
-    color: colors.textSecondary,
-    marginTop: spacing.xs,
+    elevation: 2,
   },
   headerRow: {
-    alignItems: "center",
     flexDirection: "row",
     justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: spacing.xs,
   },
   repText: {
@@ -97,6 +95,11 @@ const styles = StyleSheet.create({
     ...typography.smallBold,
     color: colors.success,
   },
+  feedbackText: {
+    ...typography.body,
+    color: colors.textSecondary,
+    marginTop: spacing.xs,
+  },
 });
 
-export default FormFeedbackCard;
+export default React.memo(FormFeedbackCard);

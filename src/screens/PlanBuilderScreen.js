@@ -1,3 +1,5 @@
+// src/screens/PlanBuilderScreen.js
+
 import React, { useState, useContext } from "react";
 import {
   View,
@@ -6,9 +8,11 @@ import {
   StyleSheet,
   ScrollView,
   ActivityIndicator,
-  Animated,
   Alert,
+  Image,
+  Animated,
 } from "react-native";
+import * as ImagePicker from "expo-image-picker";
 import { UserContext } from "../context/UserContext";
 import useTierAccess from "../hooks/useTierAccess";
 import useFadeIn from "../animations/fadeIn";
@@ -29,9 +33,24 @@ const PlanBuilderScreen = () => {
   const [goal, setGoal] = useState("");
   const [split, setSplit] = useState("");
   const [days, setDays] = useState(4);
+  const [video, setVideo] = useState(null);
   const [loading, setLoading] = useState(false);
   const [plan, setPlan] = useState(null);
   const [error, setError] = useState("");
+
+  const pickVideo = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Videos,
+        quality: 1,
+      });
+      if (!result.canceled && result.assets?.[0]?.uri) {
+        setVideo(result.assets[0].uri);
+      }
+    } catch {
+      Alert.alert(i18n.t("common.error"), i18n.t("form.uploadError"));
+    }
+  };
 
   const generatePlan = async () => {
     if (!goal || !split || !days) {
@@ -78,66 +97,81 @@ const PlanBuilderScreen = () => {
 
   return (
     <ScrollView style={styles.container}>
+      <Image
+        source={require("../assets/plan-bg-gradient.png")}
+        style={styles.headerImage}
+        resizeMode="cover"
+      />
+
       <Animated.View style={{ opacity: fadeAnim }}>
         <Text style={styles.title}>{i18n.t("plan.title")}</Text>
 
-        <Text style={styles.label}>{i18n.t("plan.goal")}</Text>
-        <View style={styles.optionsRow}>
-          {goals.map((g) => (
-            <TouchableOpacity
-              key={g}
-              onPress={() => setGoal(g)}
-              style={[styles.option, goal === g && styles.optionActive]}
-              accessibilityRole="button"
-              accessibilityState={{ selected: goal === g }}
-            >
-              <Text
-                style={goal === g ? styles.optionTextActive : styles.optionText}
+        {/* Goal Selection */}
+        <View style={styles.section}>
+          <Text style={styles.label}>{i18n.t("plan.goal")}</Text>
+          <View style={styles.optionsRow}>
+            {goals.map((g) => (
+              <TouchableOpacity
+                key={g}
+                style={[styles.option, goal === g && styles.optionActive]}
+                onPress={() => setGoal(g)}
               >
-                {g}
-              </Text>
-            </TouchableOpacity>
-          ))}
+                <Text style={goal === g ? styles.optionTextActive : styles.optionText}>
+                  {g}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
 
-        <Text style={styles.label}>{i18n.t("plan.split")}</Text>
-        <View style={styles.optionsRow}>
-          {splits.map((s) => (
-            <TouchableOpacity
-              key={s}
-              onPress={() => setSplit(s)}
-              style={[styles.option, split === s && styles.optionActive]}
-              accessibilityRole="button"
-              accessibilityState={{ selected: split === s }}
-            >
-              <Text
-                style={
-                  split === s ? styles.optionTextActive : styles.optionText
-                }
+        {/* Split Selection */}
+        <View style={styles.section}>
+          <Text style={styles.label}>{i18n.t("plan.split")}</Text>
+          <View style={styles.optionsRow}>
+            {splits.map((s) => (
+              <TouchableOpacity
+                key={s}
+                style={[styles.option, split === s && styles.optionActive]}
+                onPress={() => setSplit(s)}
               >
-                {s}
-              </Text>
-            </TouchableOpacity>
-          ))}
+                <Text style={split === s ? styles.optionTextActive : styles.optionText}>
+                  {s}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
 
-        <Text style={styles.label}>{i18n.t("plan.days")}</Text>
-        <View style={styles.optionsRow}>
-          {[3, 4, 5, 6].map((n) => (
-            <TouchableOpacity
-              key={n}
-              onPress={() => setDays(n)}
-              style={[styles.option, days === n && styles.optionActive]}
-              accessibilityRole="button"
-              accessibilityState={{ selected: days === n }}
-            >
-              <Text
-                style={days === n ? styles.optionTextActive : styles.optionText}
+        {/* Days Selection */}
+        <View style={styles.section}>
+          <Text style={styles.label}>{i18n.t("plan.days")}</Text>
+          <View style={styles.optionsRow}>
+            {[3, 4, 5, 6].map((n) => (
+              <TouchableOpacity
+                key={n}
+                style={[styles.option, days === n && styles.optionActive]}
+                onPress={() => setDays(n)}
               >
-                {n} {i18n.t("plan.daysShort")}
-              </Text>
-            </TouchableOpacity>
-          ))}
+                <Text style={days === n ? styles.optionTextActive : styles.optionText}>
+                  {n} {i18n.t("plan.daysShort")}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
+        {/* Video Upload */}
+        <View style={styles.section}>
+          <Text style={styles.label}>{i18n.t("plan.videoNote")}</Text>
+          <TouchableOpacity style={styles.videoBtn} onPress={pickVideo}>
+            <Image
+              source={require("../assets/icons/video-icon.png")}
+              style={styles.videoIcon}
+            />
+            <Text style={styles.videoText}>
+              {video ? i18n.t("plan.videoSelected") : i18n.t("plan.uploadVideo")}
+            </Text>
+          </TouchableOpacity>
         </View>
 
         {error !== "" && <Text style={styles.errorText}>{error}</Text>}
@@ -146,7 +180,6 @@ const PlanBuilderScreen = () => {
           style={[styles.generateBtn, loading && styles.disabledGenerateBtn]}
           onPress={generatePlan}
           disabled={loading}
-          accessibilityRole="button"
         >
           {loading ? (
             <ActivityIndicator color={colors.textOnPrimary} />
@@ -161,17 +194,14 @@ const PlanBuilderScreen = () => {
             {plan.map((dayBlock, index) => (
               <View key={index} style={styles.dayBlock}>
                 <Text style={styles.dayTitle}>{dayBlock.day}</Text>
-                {dayBlock.exercises.map((exercise, exIndex) => (
-                  <Text key={exIndex} style={styles.workoutText}>
+                {dayBlock.exercises.map((exercise, idx) => (
+                  <Text key={idx} style={styles.workoutText}>
                     {exercise.name}: {exercise.details}
                   </Text>
                 ))}
               </View>
             ))}
-            <TouchableOpacity
-              style={styles.startBtn}
-              accessibilityRole="button"
-            >
+            <TouchableOpacity style={styles.startBtn}>
               <Text style={styles.startText}>{i18n.t("plan.startToday")}</Text>
             </TouchableOpacity>
           </View>
@@ -183,58 +213,32 @@ const PlanBuilderScreen = () => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.background,
     flexGrow: 1,
-    padding: spacing.lg,
+    backgroundColor: colors.background,
   },
-  dayBlock: {
-    marginBottom: spacing.md,
+  headerImage: {
+    width: "100%",
+    height: 120,
   },
-  dayTitle: {
-    color: colors.success,
-    fontSize: 16,
-    fontWeight: "bold",
-    marginBottom: spacing.xs,
-  },
-  disabledGenerateBtn: {
-    opacity: 0.6,
-  },
-  errorText: {
-    color: colors.error,
-    fontSize: 13,
-    marginBottom: spacing.sm,
-    marginTop: spacing.sm,
-    textAlign: "center",
-  },
-  generateBtn: {
-    alignItems: "center",
-    backgroundColor: colors.primary,
-    borderRadius: 8,
+  title: {
+    ...typography.heading2,
+    color: colors.textPrimary,
     marginTop: spacing.lg,
-    padding: spacing.md,
+    paddingHorizontal: spacing.lg,
   },
-  generateText: {
-    color: colors.textOnPrimary,
-    fontWeight: "bold",
-    textAlign: "center",
+  section: {
+    paddingHorizontal: spacing.lg,
+    marginTop: spacing.lg,
   },
   label: {
     ...typography.label,
     color: colors.textSecondary,
     marginBottom: spacing.sm,
-    marginTop: spacing.lg,
   },
-  lockedContainer: {
-    alignItems: "center",
-    backgroundColor: colors.background,
-    flex: 1,
-    justifyContent: "center",
-    padding: spacing.lg,
-  },
-  lockedText: {
-    color: colors.textSecondary,
-    fontSize: 16,
-    textAlign: "center",
+  optionsRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: spacing.sm,
   },
   option: {
     backgroundColor: colors.surface,
@@ -251,15 +255,46 @@ const styles = StyleSheet.create({
     color: colors.textOnPrimary,
     fontWeight: "bold",
   },
-  optionsRow: {
+  videoBtn: {
     flexDirection: "row",
-    flexWrap: "wrap",
-    gap: spacing.sm,
+    alignItems: "center",
+    backgroundColor: colors.surface,
+    borderRadius: 8,
+    padding: spacing.sm,
+  },
+  videoIcon: {
+    width: 24,
+    height: 24,
+    marginRight: spacing.sm,
+  },
+  videoText: {
+    color: colors.textSecondary,
+  },
+  errorText: {
+    color: colors.error,
+    textAlign: "center",
+    marginTop: spacing.sm,
+  },
+  generateBtn: {
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+    marginTop: spacing.lg,
+    marginHorizontal: spacing.lg,
+    padding: spacing.md,
+    alignItems: "center",
+  },
+  disabledGenerateBtn: {
+    opacity: 0.6,
+  },
+  generateText: {
+    color: colors.textOnPrimary,
+    fontWeight: "bold",
   },
   planBox: {
     backgroundColor: colors.surface,
     borderRadius: 10,
     marginTop: spacing.xl,
+    marginHorizontal: spacing.lg,
     padding: spacing.md,
   },
   planTitle: {
@@ -268,27 +303,40 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
     textAlign: "center",
   },
-  startBtn: {
-    alignItems: "center",
-    backgroundColor: colors.success,
-    borderRadius: 8,
-    marginTop: spacing.md,
-    padding: spacing.md,
-  },
-  startText: {
-    color: colors.textOnSuccess,
-    fontWeight: "bold",
-    textAlign: "center",
-  },
-  title: {
-    ...typography.heading2,
-    color: colors.textPrimary,
+  dayBlock: {
     marginBottom: spacing.md,
+  },
+  dayTitle: {
+    color: colors.success,
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: spacing.xs,
   },
   workoutText: {
     color: colors.textPrimary,
     fontSize: 14,
-    marginBottom: 4,
+  },
+  startBtn: {
+    backgroundColor: colors.success,
+    borderRadius: 8,
+    marginTop: spacing.md,
+    padding: spacing.md,
+    alignItems: "center",
+  },
+  startText: {
+    color: colors.textOnSuccess,
+    fontWeight: "bold",
+  },
+  lockedContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: spacing.lg,
+  },
+  lockedText: {
+    color: colors.textSecondary,
+    fontSize: 16,
+    textAlign: "center",
   },
 });
 

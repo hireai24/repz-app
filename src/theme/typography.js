@@ -1,3 +1,4 @@
+// src/theme/typography.js
 import { Dimensions, PixelRatio } from "react-native";
 
 const { width } = Dimensions.get("window");
@@ -31,7 +32,6 @@ const typography = {
     fontWeight: "600",
     lineHeight: scale(26),
   },
-
   body: {
     fontSize: scale(16),
     fontWeight: "400",
@@ -42,7 +42,6 @@ const typography = {
     fontWeight: "600",
     lineHeight: scale(24),
   },
-
   small: {
     fontSize: scale(14),
     fontWeight: "400",
@@ -53,7 +52,6 @@ const typography = {
     fontWeight: "600",
     lineHeight: scale(20),
   },
-
   caption: {
     fontSize: scale(12),
     fontWeight: "400",

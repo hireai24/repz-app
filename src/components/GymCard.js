@@ -1,16 +1,25 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { Text, Image, TouchableOpacity, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  StyleSheet,
+  ImageBackground,
+} from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import colors from "../theme/colors";
 import spacing from "../theme/spacing";
 import typography from "../theme/typography";
 
+const fallbackBanner = require("../assets/gymFeed/cover1.png");
+const fallbackIcon = require("../assets/gymFeed/gym-icon.png");
+
 const GymCard = ({ gym }) => {
   const navigation = useNavigation();
 
   const handlePress = () => {
-    // FIX: Changed navigation target to 'GymProfileScreen'
     navigation.navigate("GymProfileScreen", { gym });
   };
 
@@ -18,75 +27,137 @@ const GymCard = ({ gym }) => {
     <TouchableOpacity
       onPress={handlePress}
       style={styles.card}
+      activeOpacity={0.8}
       accessibilityRole="button"
       accessibilityLabel={`View gym profile for ${gym.name}`}
     >
-      <Image
-        source={{ uri: gym.image }}
-        style={styles.image}
-        accessibilityLabel={`Gym photo for ${gym.name}`}
-      />
-      <Text style={styles.name}>{gym.name}</Text>
-      <Text style={styles.location}>{gym.location}</Text>
-
-      {gym.memberCount ? (
-        <Text style={styles.detail}>{gym.memberCount} members</Text>
-      ) : null}
-
-      {gym.features ? (
-        <Text style={styles.detail} numberOfLines={1} ellipsizeMode="tail">
-          {gym.features}
-        </Text>
-      ) : null}
+      <ImageBackground
+        source={
+          gym.coverImage || gym.image
+            ? { uri: gym.coverImage || gym.image }
+            : fallbackBanner
+        }
+        defaultSource={fallbackBanner}
+        style={styles.banner}
+        imageStyle={styles.bannerImage}
+      >
+        <View style={styles.overlay} />
+        <View style={styles.avatarWrapper}>
+          <Image
+            source={
+              gym.logo
+                ? { uri: gym.logo }
+                : fallbackIcon
+            }
+            defaultSource={fallbackIcon}
+            style={styles.avatar}
+            accessibilityRole="image"
+            accessibilityLabel={`${gym.name} logo`}
+          />
+        </View>
+        <View style={styles.textWrapper}>
+          <Text style={styles.name}>{gym.name || "Unnamed Gym"}</Text>
+          <Text style={styles.location}>
+            {gym.location || "Location not specified"}
+          </Text>
+          {gym.description ? (
+            <Text
+              style={styles.description}
+              numberOfLines={2}
+              ellipsizeMode="tail"
+            >
+              {gym.description}
+            </Text>
+          ) : null}
+          <TouchableOpacity
+            style={styles.ctaButton}
+            accessibilityRole="button"
+            accessibilityLabel="Visit Gym"
+          >
+            <Text style={styles.ctaText}>Visit Gym</Text>
+          </TouchableOpacity>
+        </View>
+      </ImageBackground>
     </TouchableOpacity>
   );
 };
 
 GymCard.propTypes = {
   gym: PropTypes.shape({
-    image: PropTypes.string, // FIX: Made optional, as image might be missing. If required, enforce validation.
+    coverImage: PropTypes.string,
+    image: PropTypes.string,
+    logo: PropTypes.string,
     name: PropTypes.string.isRequired,
     location: PropTypes.string.isRequired,
-    memberCount: PropTypes.oneOfType([
-      // FIX: Added number type as well
-      PropTypes.string,
-      PropTypes.number,
-    ]),
-    features: PropTypes.string,
+    description: PropTypes.string,
   }).isRequired,
 };
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.surface,
-    borderRadius: 10,
+    borderRadius: 12,
+    overflow: "hidden",
+    marginBottom: spacing.lg,
     elevation: 2,
-    marginBottom: spacing.md,
-    padding: spacing.md,
-    shadowColor: colors.shadow,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
   },
-  detail: {
-    ...typography.small,
-    color: colors.textTertiary,
-  },
-  image: {
-    borderRadius: 10,
-    height: 120,
-    marginBottom: spacing.sm,
+  banner: {
     width: "100%",
+    height: 180,
+    justifyContent: "flex-end",
+  },
+  bannerImage: {
+    resizeMode: "cover",
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.4)",
+  },
+  avatarWrapper: {
+    position: "absolute",
+    top: spacing.md,
+    left: spacing.md,
+    borderRadius: 32,
+    overflow: "hidden",
+    borderWidth: 2,
+    borderColor: colors.surface,
+  },
+  avatar: {
+    width: 48,
+    height: 48,
+  },
+  textWrapper: {
+    padding: spacing.md,
+  },
+  name: {
+    ...typography.heading3,
+    color: colors.textOnPrimary,
   },
   location: {
     ...typography.small,
-    color: colors.textSecondary,
-    marginBottom: 2,
+    color: colors.textOnPrimary,
+    marginTop: 2,
   },
-  name: {
-    ...typography.heading4,
-    color: colors.textPrimary,
-    marginBottom: 2,
+  description: {
+    ...typography.small,
+    color: colors.textOnPrimary,
+    marginTop: spacing.xs,
+  },
+  ctaButton: {
+    backgroundColor: colors.primary,
+    alignSelf: "flex-start",
+    marginTop: spacing.sm,
+    borderRadius: 6,
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.md,
+  },
+  ctaText: {
+    color: colors.textOnPrimary,
+    fontWeight: "bold",
+    fontSize: 13,
   },
 });
 

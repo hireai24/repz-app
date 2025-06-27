@@ -11,6 +11,7 @@ import {
   Switch,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+
 import { UserContext } from "../context/UserContext";
 import { XPContext } from "../context/XPContext";
 import { createChallenge } from "../api/challengeWagerApi";
@@ -35,14 +36,14 @@ const ChallengeSetupScreen = () => {
   const [submitting, setSubmitting] = useState(false);
 
   const canSubmit = () => {
-    const parsedWagerXP = parseInt(wagerXP, 10);
+    const parsedWager = parseInt(wagerXP, 10);
     return (
-      exercise.trim() !== "" &&
-      !isNaN(parsedWagerXP) &&
-      parsedWagerXP >= 50 &&
-      parsedWagerXP <= 500 &&
-      opponents.trim() !== "" &&
-      type !== "" &&
+      exercise.trim() &&
+      !isNaN(parsedWager) &&
+      parsedWager >= 50 &&
+      parsedWager <= 500 &&
+      opponents.trim() &&
+      type &&
       !submitting
     );
   };
@@ -52,18 +53,16 @@ const ChallengeSetupScreen = () => {
 
     if (!canSubmit()) {
       Alert.alert(
-        i18n.t("challengeSetup.invalidInputTitle") || "Invalid Input",
-        i18n.t("challengeSetup.invalidInputMessage") ||
-          "Please fill in all fields properly and ensure XP wager is between 50-500.",
+        i18n.t("challengeSetup.invalidInputTitle"),
+        i18n.t("challengeSetup.invalidInputMessage")
       );
       return;
     }
 
     if (wager > xp) {
       Alert.alert(
-        i18n.t("challengeSetup.notEnoughXpTitle") || "Not enough XP",
-        i18n.t("challengeSetup.notEnoughXpMessage") ||
-          "You don’t have enough XP to wager.",
+        i18n.t("challengeSetup.notEnoughXpTitle"),
+        i18n.t("challengeSetup.notEnoughXpMessage")
       );
       return;
     }
@@ -87,24 +86,20 @@ const ChallengeSetupScreen = () => {
 
       if (res.success) {
         Alert.alert(
-          i18n.t("challengeSetup.successTitle") || "✅ Challenge Created",
-          i18n.t("challengeSetup.successMessage") ||
-            "Waiting for opponent(s) to accept.",
+          i18n.t("challengeSetup.successTitle"),
+          i18n.t("challengeSetup.successMessage")
         );
         navigation.goBack();
       } else {
         Alert.alert(
-          i18n.t("common.error") || "Error",
-          (res.error && res.error.message) ||
-            i18n.t("challengeSetup.createErrorMessage") ||
-            "Could not create challenge.",
+          i18n.t("common.error"),
+          res.error || i18n.t("challengeSetup.createErrorMessage")
         );
       }
-    } catch (err) {
-      // Removed console.error for lint compliance
+    } catch {
       Alert.alert(
-        i18n.t("common.error") || "Error",
-        i18n.t("common.somethingWentWrong") || "Something went wrong.",
+        i18n.t("common.error"),
+        i18n.t("common.somethingWentWrong")
       );
     } finally {
       setSubmitting(false);
@@ -113,28 +108,20 @@ const ChallengeSetupScreen = () => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>
-        {i18n.t("challengeSetup.title") || "Create Workout Battle"}
-      </Text>
+      <Text style={styles.title}>{i18n.t("challengeSetup.title")}</Text>
 
       <TextInput
         style={styles.input}
-        placeholder={
-          i18n.t("challengeSetup.exercisePlaceholder") ||
-          "Exercise (e.g., Bench Press)"
-        }
-        placeholderTextColor={colors.textSecondary}
+        placeholder={i18n.t("challengeSetup.exercisePlaceholder")}
+        placeholderTextColor={colors.textTertiary}
         value={exercise}
         onChangeText={setExercise}
       />
 
       <TextInput
         style={styles.input}
-        placeholder={
-          i18n.t("challengeSetup.opponentsPlaceholder") ||
-          "Opponent IDs (comma separated)"
-        }
-        placeholderTextColor={colors.textSecondary}
+        placeholder={i18n.t("challengeSetup.opponentsPlaceholder")}
+        placeholderTextColor={colors.textTertiary}
         value={opponents}
         onChangeText={setOpponents}
         autoCapitalize="none"
@@ -142,10 +129,8 @@ const ChallengeSetupScreen = () => {
 
       <TextInput
         style={styles.input}
-        placeholder={
-          i18n.t("challengeSetup.xpWagerPlaceholder") || "XP Wager (50–500)"
-        }
-        placeholderTextColor={colors.textSecondary}
+        placeholder={i18n.t("challengeSetup.xpWagerPlaceholder")}
+        placeholderTextColor={colors.textTertiary}
         value={wagerXP}
         onChangeText={(text) => setWagerXP(text.replace(/[^0-9]/g, ""))}
         keyboardType="numeric"
@@ -155,11 +140,8 @@ const ChallengeSetupScreen = () => {
 
       <TextInput
         style={styles.textArea}
-        placeholder={
-          i18n.t("challengeSetup.descriptionPlaceholder") ||
-          "Challenge Description or Rules"
-        }
-        placeholderTextColor={colors.textSecondary}
+        placeholder={i18n.t("challengeSetup.descriptionPlaceholder")}
+        placeholderTextColor={colors.textTertiary}
         value={description}
         onChangeText={setDescription}
         multiline
@@ -167,9 +149,7 @@ const ChallengeSetupScreen = () => {
       />
 
       <View style={styles.toggleRow}>
-        <Text style={styles.toggleLabel}>
-          🎯 {i18n.t("challengeSetup.winnerTakesAll") || "Winner Takes All"}
-        </Text>
+        <Text style={styles.toggleLabel}>🎯 {i18n.t("challengeSetup.winnerTakesAll")}</Text>
         <Switch
           value={winnerTakesAll}
           onValueChange={setWinnerTakesAll}
@@ -179,9 +159,7 @@ const ChallengeSetupScreen = () => {
       </View>
 
       <View style={styles.toggleRow}>
-        <Text style={styles.toggleLabel}>
-          🏋️ {i18n.t("challengeSetup.representGym") || "Represent Your Gym"}
-        </Text>
+        <Text style={styles.toggleLabel}>🏋️ {i18n.t("challengeSetup.representGym")}</Text>
         <Switch
           value={representGym}
           onValueChange={setRepresentGym}
@@ -190,10 +168,10 @@ const ChallengeSetupScreen = () => {
           disabled={!userProfile?.gymName}
         />
       </View>
+
       {!userProfile?.gymName && representGym && (
         <Text style={styles.disabledToggleHint}>
-          {i18n.t("challengeSetup.noGymHint") ||
-            "You need to be part of a gym to represent one."}
+          {i18n.t("challengeSetup.noGymHint")}
         </Text>
       )}
 
@@ -203,11 +181,9 @@ const ChallengeSetupScreen = () => {
         disabled={!canSubmit()}
       >
         {submitting ? (
-          <ActivityIndicator color={colors.white} />
+          <ActivityIndicator color={colors.textOnPrimary} />
         ) : (
-          <Text style={styles.submitText}>
-            {i18n.t("challengeSetup.submit") || "Create Challenge"}
-          </Text>
+          <Text style={styles.submitText}>{i18n.t("challengeSetup.submit")}</Text>
         )}
       </TouchableOpacity>
     </ScrollView>
@@ -220,58 +196,62 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     padding: spacing.lg,
   },
-  disabledBtn: {
-    backgroundColor: colors.disabled,
-    opacity: 0.7,
-  },
-  disabledToggleHint: {
-    color: colors.textSecondary,
-    fontSize: 12,
-    marginBottom: spacing.md,
-    textAlign: "right",
-  },
-  input: {
-    backgroundColor: colors.surface,
-    borderRadius: 8,
-    color: colors.textPrimary,
-    marginBottom: spacing.md,
-    padding: spacing.md,
-  },
-  submitBtn: {
-    alignItems: "center",
-    backgroundColor: colors.primary,
-    borderRadius: 8,
-    marginTop: spacing.md,
-    padding: spacing.md,
-  },
-  submitText: {
-    color: colors.white,
-    fontWeight: "bold",
-  },
-  textArea: {
-    backgroundColor: colors.surface,
-    borderRadius: 8,
-    color: colors.textPrimary,
-    height: 120,
-    marginBottom: spacing.md,
-    padding: spacing.md,
-    textAlignVertical: "top",
-  },
   title: {
     ...typography.heading2,
     color: colors.textPrimary,
+    marginBottom: spacing.lg,
+  },
+  input: {
+    backgroundColor: colors.surface,
+    borderRadius: spacing.borderRadius,
+    borderWidth: 1,
+    borderColor: colors.border,
+    color: colors.textPrimary,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
+    marginBottom: spacing.md,
+  },
+  textArea: {
+    backgroundColor: colors.surface,
+    borderRadius: spacing.borderRadius,
+    borderWidth: 1,
+    borderColor: colors.border,
+    color: colors.textPrimary,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
+    marginBottom: spacing.md,
+    minHeight: 100,
+    textAlignVertical: "top",
+  },
+  toggleRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: spacing.md,
   },
   toggleLabel: {
+    ...typography.body,
     color: colors.textPrimary,
-    fontSize: 15,
-    fontWeight: "500",
   },
-  toggleRow: {
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-between",
+  disabledToggleHint: {
+    ...typography.caption,
+    color: colors.textSecondary,
     marginBottom: spacing.md,
+    textAlign: "right",
+  },
+  submitBtn: {
+    backgroundColor: colors.primary,
+    borderRadius: spacing.borderRadius,
+    paddingVertical: spacing.md,
+    alignItems: "center",
+    marginTop: spacing.lg,
+  },
+  submitText: {
+    ...typography.bodyBold,
+    color: colors.textOnPrimary,
+  },
+  disabledBtn: {
+    backgroundColor: colors.disabled,
   },
 });
 

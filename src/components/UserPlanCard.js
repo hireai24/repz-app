@@ -14,7 +14,7 @@ const UserPlanCard = ({ plan, onPress, onDelete }) => {
   const confirmDelete = () => {
     Alert.alert(
       "Delete Plan",
-      `Are you sure you want to delete "${plan.name}"? This action cannot be undone.`,
+      `Are you sure you want to delete "${plan.name}"?\nThis action cannot be undone.`,
       [
         { text: "Cancel", style: "cancel" },
         {
@@ -22,7 +22,7 @@ const UserPlanCard = ({ plan, onPress, onDelete }) => {
           style: "destructive",
           onPress: () => onDelete(plan.id),
         },
-      ],
+      ]
     );
   };
 
@@ -47,8 +47,12 @@ const UserPlanCard = ({ plan, onPress, onDelete }) => {
         </TouchableOpacity>
       </View>
 
-      <Text style={styles.type}>{plan.type}</Text>
-      <Text style={styles.detail}>{plan.exercises?.length || 0} Exercises</Text>
+      <View style={styles.details}>
+        <Text style={styles.type}>{plan.type || "Custom Plan"}</Text>
+        <Text style={styles.exercises}>
+          {plan.exercises?.length || 0} Exercises
+        </Text>
+      </View>
 
       <View style={styles.meta}>
         <Ionicons
@@ -77,44 +81,51 @@ UserPlanCard.propTypes = {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.surface,
-    borderRadius: 10,
-    marginBottom: spacing.md,
-    padding: spacing.md,
-  },
-  date: {
-    color: colors.textSecondary,
-    fontSize: 12,
-    marginLeft: 6,
-  },
-  deleteBtn: {
-    padding: 4,
-  },
-  detail: {
-    color: colors.textSecondary,
-    fontSize: 13,
-    marginBottom: spacing.xs,
+    borderRadius: 16,
+    marginBottom: spacing.lg,
+    padding: spacing.lg,
+    shadowColor: "#000",
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
   },
   header: {
-    alignItems: "center",
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: spacing.xs,
-  },
-  meta: {
     alignItems: "center",
-    flexDirection: "row",
-    marginTop: spacing.sm,
+    marginBottom: spacing.sm,
   },
   name: {
-    ...typography.heading3,
+    ...typography.heading4,
     color: colors.textPrimary,
-    flex: 1,
-    marginRight: 10,
+    flexShrink: 1,
+    marginRight: spacing.sm,
+  },
+  deleteBtn: {
+    padding: spacing.xs,
+  },
+  details: {
+    marginBottom: spacing.sm,
   },
   type: {
     color: colors.primary,
     fontWeight: "600",
-    marginBottom: spacing.xs,
+    fontSize: 14,
+    marginBottom: 2,
+  },
+  exercises: {
+    color: colors.textSecondary,
+    fontSize: 13,
+  },
+  meta: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: spacing.sm,
+  },
+  date: {
+    color: colors.textSecondary,
+    fontSize: 12,
+    marginLeft: spacing.xs,
   },
 });
 

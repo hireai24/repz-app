@@ -10,9 +10,11 @@ import {
   ScrollView,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { getMyGym } from "../api/gymApi"; // FIX: Correct function name
+
+import { getMyGym } from "../api/gymApi";
 import { getGymFeed } from "../api/gymFeedApi";
 import GymFeedCard from "../components/GymFeedCard";
+
 import colors from "../theme/colors";
 import spacing from "../theme/spacing";
 import typography from "../theme/typography";
@@ -28,58 +30,37 @@ const GymProfileScreen = ({ route }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Use the correct gymApi function to fetch the user's own gym
         const myGymRes = await getMyGym();
-
-        if (myGymRes && myGymRes.gym) {
+        if (myGymRes?.gym) {
           setEditableGym(myGymRes.gym);
           if (myGymRes.gym.id) {
             const feed = await getGymFeed(myGymRes.gym.id);
             setFeedItems(feed.posts || []);
           }
-        } else if (passedGym) {
-          setEditableGym(null); // Not the owner, so editableGym is null
+        } else if (passedGym?.id) {
+          const feed = await getGymFeed(passedGym.id);
+          setFeedItems(feed.posts || []);
         }
-      } catch (err) {
-        // Optionally: Display user-friendly error
+      } catch {
+        // Silent fail
       } finally {
         setLoading(false);
       }
     };
 
-    // If a gym is passed via route params, fetch feed for it.
-    // Always also try fetchData to see if this gym is owned by the user.
-    if (passedGym) {
-      const fetchFeedForPassedGym = async () => {
-        setLoading(true);
-        try {
-          const feed = await getGymFeed(passedGym.id);
-          setFeedItems(feed.posts || []);
-        } catch (err) {
-          // Optionally: Handle error
-        } finally {
-          setLoading(false);
-        }
-      };
-      fetchData(); // Always check if the passed gym is the user's (for edit access)
-      fetchFeedForPassedGym();
-    } else {
-      fetchData();
-    }
+    fetchData();
   }, [passedGym]);
 
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color={colors.accent} />
+        <ActivityIndicator size="large" color={colors.primary} />
         <Text style={styles.loadingText}>Loading gym profile...</Text>
       </View>
     );
   }
 
-  // Determine which gym to display: the one passed in params or the editable one fetched.
   const gym = passedGym || editableGym;
-  // Is the currently displayed gym the user's own (editable)?
   const isEditable = editableGym && gym && editableGym.id === gym.id;
 
   if (!gym) {
@@ -112,18 +93,24 @@ const GymProfileScreen = ({ route }) => {
         <Text style={styles.meta}>🏋️ Features: {gym.features}</Text>
       )}
       {gym.memberCount && (
-        <Text style={styles.meta}>👥 Members: {gym.memberCount}</Text>
+        <Text style={styles.meta}>
+          👥 Members: {gym.memberCount}
+        </Text>
       )}
       {gym.pricing && (
         <Text style={styles.meta}>💸 Pricing: {gym.pricing}</Text>
       )}
-      {gym.offers && <Text style={styles.meta}>🎁 Offers: {gym.offers}</Text>}
+      {gym.offers && (
+        <Text style={styles.meta}>🎁 Offers: {gym.offers}</Text>
+      )}
 
       {isEditable && (
         <>
           <TouchableOpacity
             style={styles.editButton}
             onPress={() => navigation.navigate("GymSubmissionScreen", { gym })}
+            accessibilityRole="button"
+            accessibilityLabel="Edit Gym Profile"
           >
             <Text style={styles.editButtonText}>Edit Profile</Text>
           </TouchableOpacity>
@@ -133,6 +120,8 @@ const GymProfileScreen = ({ route }) => {
             onPress={() =>
               navigation.navigate("GymFeedEditorScreen", { gymId: gym.id })
             }
+            accessibilityRole="button"
+            accessibilityLabel="Add Gym Feed Post"
           >
             <Text style={styles.feedButtonText}>Add Feed Post</Text>
           </TouchableOpacity>
@@ -171,16 +160,46 @@ GymProfileScreen.propTypes = {
 
 const styles = StyleSheet.create({
   centered: {
-    alignItems: "center",
-    backgroundColor: colors.background,
     flex: 1,
     justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: colors.background,
   },
   container: {
-    alignItems: "center",
     backgroundColor: colors.background,
     flexGrow: 1,
     padding: spacing.lg,
+    alignItems: "center",
+  },
+  image: {
+    width: "100%",
+    height: 180,
+    borderRadius: 12,
+    marginBottom: spacing.md,
+  },
+  imagePlaceholder: {
+    width: "100%",
+    height: 180,
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: spacing.md,
+  },
+  imagePlaceholderText: {
+    ...typography.body,
+    color: colors.textSecondary,
+  },
+  name: {
+    ...typography.heading2,
+    color: colors.textPrimary,
+    textAlign: "center",
+  },
+  location: {
+    ...typography.body,
+    color: colors.textSecondary,
+    marginBottom: spacing.sm,
+    textAlign: "center",
   },
   description: {
     ...typography.body,
@@ -188,31 +207,33 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
     textAlign: "center",
   },
+  meta: {
+    ...typography.body,
+    color: colors.textPrimary,
+    marginBottom: spacing.sm,
+    textAlign: "center",
+  },
   editButton: {
     backgroundColor: colors.primary,
-    borderRadius: 10,
-    marginTop: spacing.md,
-    paddingHorizontal: spacing.lg,
+    borderRadius: 8,
     paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    marginTop: spacing.md,
   },
   editButtonText: {
-    color: colors.white,
-    ...typography.buttonText,
-  },
-  errorText: {
-    ...typography.body,
-    color: colors.error,
+    color: colors.textOnPrimary,
+    fontWeight: "bold",
   },
   feedButton: {
     backgroundColor: colors.accent,
-    borderRadius: 10,
-    marginTop: spacing.sm,
-    paddingHorizontal: spacing.lg,
+    borderRadius: 8,
     paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    marginTop: spacing.sm,
   },
   feedButtonText: {
-    color: colors.white,
-    ...typography.buttonText,
+    color: colors.textOnPrimary,
+    fontWeight: "bold",
   },
   feedContainer: {
     marginTop: spacing.lg,
@@ -223,46 +244,14 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     marginBottom: spacing.sm,
   },
-  image: {
-    borderRadius: 12,
-    height: 180,
-    marginBottom: spacing.md,
-    width: "100%",
-  },
-  imagePlaceholder: {
-    alignItems: "center",
-    backgroundColor: colors.surface,
-    borderRadius: 12,
-    height: 180,
-    justifyContent: "center",
-    marginBottom: spacing.md,
-    width: "100%",
-  },
-  imagePlaceholderText: {
-    color: colors.textSecondary,
+  errorText: {
     ...typography.body,
+    color: colors.error,
   },
   loadingText: {
+    ...typography.body,
+    color: colors.textSecondary,
     marginTop: spacing.md,
-    ...typography.body,
-    color: colors.textSecondary,
-  },
-  location: {
-    ...typography.body,
-    color: colors.textSecondary,
-    marginBottom: spacing.sm,
-    textAlign: "center",
-  },
-  meta: {
-    ...typography.body,
-    color: colors.textPrimary,
-    marginBottom: spacing.sm,
-    textAlign: "center",
-  },
-  name: {
-    ...typography.heading2,
-    color: colors.textPrimary,
-    textAlign: "center",
   },
 });
 

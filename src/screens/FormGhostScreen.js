@@ -5,6 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
+  Image,
   ActivityIndicator,
   RefreshControl,
   Alert,
@@ -20,6 +21,9 @@ import i18n from "../locales/i18n";
 import colors from "../theme/colors";
 import spacing from "../theme/spacing";
 import typography from "../theme/typography";
+
+import ghostIcon from "../assets/icons/ghost.png";
+import uploadIcon from "../assets/icons/upload-btn.png";
 
 const FormGhostScreen = () => {
   const { userProfile } = useContext(UserContext);
@@ -47,7 +51,7 @@ const FormGhostScreen = () => {
       }
     } catch (err) {
       setErrorText(
-        i18n.t("form.uploadError") + (err.message ? `: ${err.message}` : ""),
+        i18n.t("form.uploadError") + (err.message ? `: ${err.message}` : "")
       );
       Alert.alert(i18n.t("common.error"), i18n.t("form.uploadError"));
     }
@@ -60,12 +64,9 @@ const FormGhostScreen = () => {
     setAnalysis([]);
 
     if (!userProfile?.id) {
-      setErrorText("User profile not loaded. Cannot analyze form.");
+      setErrorText(i18n.t("form.userError"));
       setLoading(false);
-      Alert.alert(
-        i18n.t("common.error"),
-        "User profile not loaded. Please try again.",
-      );
+      Alert.alert(i18n.t("common.error"), i18n.t("form.userError"));
       return;
     }
 
@@ -92,11 +93,7 @@ const FormGhostScreen = () => {
         setErrorText(result?.error || i18n.t("form.noFeedback"));
       }
     } catch (err) {
-      setErrorText(
-        i18n.t("form.error") ||
-          err.message ||
-          "Something went wrong during analysis.",
-      );
+      setErrorText(err.message || i18n.t("form.error"));
       Alert.alert(i18n.t("common.error"), err.message || i18n.t("form.error"));
     } finally {
       setLoading(false);
@@ -109,7 +106,7 @@ const FormGhostScreen = () => {
     setAnalysis([]);
     setErrorText("");
     setConfirmationText("");
-    setTimeout(() => setRefreshing(false), 600);
+    setTimeout(() => setRefreshing(false), 500);
   }, []);
 
   const handleChallengeSubmit = () => {
@@ -132,7 +129,10 @@ const FormGhostScreen = () => {
         <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
       }
     >
-      <Text style={styles.title}>{i18n.t("form.title")}</Text>
+      <View style={styles.headerRow}>
+        <Image source={ghostIcon} style={styles.ghostIcon} />
+        <Text style={styles.title}>{i18n.t("form.title")}</Text>
+      </View>
 
       <TouchableOpacity
         style={styles.uploadBox}
@@ -142,10 +142,13 @@ const FormGhostScreen = () => {
       >
         {videoUri ? (
           <Text style={styles.uploadText}>
-            Video Selected: {videoUri.split("/").pop()}
+            🎥 {videoUri.split("/").pop()}
           </Text>
         ) : (
-          <Text style={styles.uploadText}>{i18n.t("form.upload")}</Text>
+          <>
+            <Image source={uploadIcon} style={styles.uploadIcon} />
+            <Text style={styles.uploadText}>{i18n.t("form.upload")}</Text>
+          </>
         )}
       </TouchableOpacity>
 
@@ -158,7 +161,7 @@ const FormGhostScreen = () => {
         <ActivityIndicator
           size="large"
           color={colors.primary}
-          style={{ marginTop: spacing.md }}
+          style={styles.loading}
         />
       )}
 
@@ -180,7 +183,6 @@ const FormGhostScreen = () => {
           style={styles.cta}
           onPress={handleChallengeSubmit}
           accessibilityRole="button"
-          accessibilityLabel="Submit Challenge"
         >
           <Text style={styles.ctaText}>{i18n.t("form.challenge")}</Text>
         </TouchableOpacity>
@@ -190,11 +192,49 @@ const FormGhostScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  analysisBlock: {
+  container: {
+    backgroundColor: colors.background,
+    flexGrow: 1,
+    padding: spacing.lg,
+  },
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: spacing.lg,
+  },
+  ghostIcon: {
+    width: 32,
+    height: 32,
+    marginRight: spacing.sm,
+    opacity: 0.8,
+  },
+  title: {
+    ...typography.heading2,
+    color: colors.textPrimary,
+  },
+  uploadBox: {
+    alignItems: "center",
+    justifyContent: "center",
     backgroundColor: colors.surface,
     borderRadius: 12,
-    marginTop: spacing.md,
-    padding: spacing.md,
+    padding: spacing.lg,
+    marginBottom: spacing.md,
+  },
+  uploadIcon: {
+    width: 48,
+    height: 48,
+    marginBottom: spacing.xs,
+  },
+  uploadText: {
+    color: colors.textSecondary,
+    fontSize: 14,
+  },
+  errorText: {
+    color: colors.error,
+    fontSize: 13,
+    marginTop: spacing.sm,
+    textAlign: "center",
   },
   confirmationText: {
     color: colors.success,
@@ -202,21 +242,19 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
     textAlign: "center",
   },
-  container: {
-    backgroundColor: colors.background,
-    flexGrow: 1,
-    padding: spacing.lg,
+  loading: {
+    marginTop: spacing.md,
   },
-  cta: {
-    alignItems: "center",
-    backgroundColor: colors.primary,
-    borderRadius: 10,
-    marginTop: spacing.lg,
+  analysisBlock: {
+    backgroundColor: colors.surface,
+    borderRadius: 12,
     padding: spacing.md,
+    marginTop: spacing.md,
   },
-  ctaText: {
-    color: colors.white,
-    fontWeight: "bold",
+  subTitle: {
+    ...typography.heading3,
+    color: colors.success,
+    marginBottom: spacing.sm,
   },
   emptyState: {
     color: colors.textSecondary,
@@ -224,17 +262,22 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
     textAlign: "center",
   },
-  errorText: {
-    color: colors.error,
-    fontSize: 13,
-    marginTop: 10,
-    textAlign: "center",
+  cta: {
+    backgroundColor: colors.primary,
+    borderRadius: 10,
+    alignItems: "center",
+    padding: spacing.md,
+    marginTop: spacing.lg,
+  },
+  ctaText: {
+    color: colors.white,
+    fontWeight: "bold",
   },
   lockedContainer: {
-    alignItems: "center",
-    backgroundColor: colors.background,
     flex: 1,
     justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: colors.background,
     padding: spacing.lg,
   },
   lockedText: {
@@ -242,31 +285,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: "center",
   },
-  subTitle: {
-    color: colors.success,
-    fontSize: 16,
-    fontWeight: "bold",
-    marginBottom: 10,
-  },
-  title: {
-    ...typography.heading2,
-    color: colors.textPrimary,
-    marginBottom: spacing.lg,
-  },
-  uploadBox: {
-    alignItems: "center",
-    aspectRatio: 1.6,
-    backgroundColor: colors.surface,
-    borderRadius: 12,
-    justifyContent: "center",
-    marginBottom: spacing.md,
-    overflow: "hidden",
-    width: "100%",
-  },
-  uploadText: {
-    color: colors.textTertiary,
-    fontSize: 14,
-  },
 });
 
-export default FormGhostScreen;
+export default React.memo(FormGhostScreen);

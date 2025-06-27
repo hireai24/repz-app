@@ -1,3 +1,4 @@
+// src/screens/OnboardingScreen.js
 import React, { useState, useContext } from "react";
 import {
   View,
@@ -15,17 +16,15 @@ import {
 } from "react-native";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
-
 import { auth, db } from "../firebase/firebaseClient";
 import { AuthContext } from "../context/AuthContext";
 import { UserContext } from "../context/UserContext";
 import AvatarSelector from "../components/AvatarSelector";
-import useFadeIn from "../animations/fadeIn";
+import useFadeIn from "../animations/useFadeIn";
 import colors from "../theme/colors";
 import spacing from "../theme/spacing";
 import typography from "../theme/typography";
 import i18n from "../locales/i18n";
-
 import defaultAvatar from "../assets/avatars/avatar1.png";
 import logoImage from "../assets/logo.png";
 
@@ -66,11 +65,7 @@ const OnboardingScreen = () => {
 
     try {
       setLoading(true);
-      const userCred = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password,
-      );
+      const userCred = await createUserWithEmailAndPassword(auth, email, password);
       const userId = userCred.user.uid;
 
       const userData = {
@@ -88,10 +83,7 @@ const OnboardingScreen = () => {
       setUserProfile(userData);
       signIn();
 
-      Alert.alert(
-        i18n.t("onboarding.successTitle"),
-        i18n.t("onboarding.successMessage"),
-      );
+      Alert.alert(i18n.t("onboarding.successTitle"), i18n.t("onboarding.successMessage"));
     } catch (err) {
       setErrors({ general: err.message || i18n.t("common.error") });
     } finally {
@@ -122,7 +114,6 @@ const OnboardingScreen = () => {
             autoCapitalize="none"
             placeholder="you@example.com"
             placeholderTextColor={colors.textSecondary}
-            accessibilityLabel="email"
           />
           {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
 
@@ -134,7 +125,6 @@ const OnboardingScreen = () => {
             secureTextEntry
             placeholder="••••••••"
             placeholderTextColor={colors.textSecondary}
-            accessibilityLabel="password"
           />
           {errors.password && (
             <Text style={styles.errorText}>{errors.password}</Text>
@@ -147,7 +137,6 @@ const OnboardingScreen = () => {
             onChangeText={setUsername}
             placeholder="e.g. BeastMode94"
             placeholderTextColor={colors.textSecondary}
-            accessibilityLabel="username"
           />
           {errors.username && (
             <Text style={styles.errorText}>{errors.username}</Text>
@@ -160,7 +149,6 @@ const OnboardingScreen = () => {
             onChangeText={setGym}
             placeholder="e.g. PureGym London"
             placeholderTextColor={colors.textSecondary}
-            accessibilityLabel="gym"
           />
 
           <Text style={styles.label}>{i18n.t("onboarding.goalPrompt")}</Text>
@@ -213,6 +201,58 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
     padding: spacing.lg,
   },
+  logo: {
+    aspectRatio: 1,
+    width: "50%",
+    marginBottom: spacing.md,
+  },
+  formWrapper: {
+    width: "100%",
+  },
+  title: {
+    ...typography.heading1,
+    color: colors.textPrimary,
+    marginBottom: spacing.lg,
+    textAlign: "center",
+  },
+  label: {
+    alignSelf: "flex-start",
+    color: colors.textSecondary,
+    fontSize: 15,
+    fontWeight: "500",
+    marginTop: spacing.md,
+  },
+  input: {
+    backgroundColor: colors.surface,
+    borderRadius: 8,
+    color: colors.textPrimary,
+    marginTop: 6,
+    padding: spacing.md,
+    width: "100%",
+  },
+  optionRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+    marginTop: 10,
+  },
+  option: {
+    backgroundColor: colors.surface,
+    borderRadius: 8,
+    marginBottom: 10,
+    marginRight: 10,
+    padding: spacing.sm,
+  },
+  optionActive: {
+    backgroundColor: colors.primary,
+  },
+  optionText: {
+    color: colors.textSecondary,
+  },
+  optionTextActive: {
+    color: colors.textOnPrimary,
+    fontWeight: "bold",
+  },
   cta: {
     alignItems: "center",
     backgroundColor: colors.primary,
@@ -234,59 +274,6 @@ const styles = StyleSheet.create({
     color: colors.error,
     fontSize: 13,
     marginTop: 4,
-  },
-  formWrapper: {
-    width: "100%",
-  },
-  input: {
-    backgroundColor: colors.surface,
-    borderRadius: 8,
-    color: colors.textPrimary,
-    marginTop: 6,
-    padding: spacing.md,
-    width: "100%",
-  },
-  label: {
-    alignSelf: "flex-start",
-    color: colors.textSecondary,
-    fontSize: 15,
-    fontWeight: "500",
-    marginTop: spacing.md,
-  },
-  logo: {
-    aspectRatio: 1,
-    height: undefined,
-    marginBottom: spacing.md,
-    width: "50%",
-  },
-  option: {
-    backgroundColor: colors.surface,
-    borderRadius: 8,
-    marginBottom: 10,
-    marginRight: 10,
-    padding: spacing.sm,
-  },
-  optionActive: {
-    backgroundColor: colors.primary,
-  },
-  optionRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-    marginTop: 10,
-  },
-  optionText: {
-    color: colors.textSecondary,
-  },
-  optionTextActive: {
-    color: colors.textOnPrimary,
-    fontWeight: "bold",
-  },
-  title: {
-    ...typography.heading1,
-    color: colors.textPrimary,
-    marginBottom: spacing.lg,
-    textAlign: "center",
   },
 });
 

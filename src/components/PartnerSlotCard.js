@@ -6,7 +6,6 @@ import colors from "../theme/colors";
 import spacing from "../theme/spacing";
 import typography from "../theme/typography";
 
-// ✅ Static import of fallback avatar image
 import defaultAvatar from "../assets/avatars/avatar1.png";
 
 const PartnerSlotCard = ({ slot, onAccept }) => {
@@ -21,19 +20,23 @@ const PartnerSlotCard = ({ slot, onAccept }) => {
         style={styles.avatar}
         accessibilityLabel="User avatar"
       />
+
       <View style={styles.details}>
         <Text style={styles.name}>{username || "REPZ User"}</Text>
-        <Text style={styles.meta}>
-          {timeSlot} • {gymName}
-        </Text>
+        <Text style={styles.meta}>{timeSlot} • {gymName}</Text>
         {note ? <Text style={styles.note}>{note}</Text> : null}
-        <Text style={styles.tierLabel}>Tier: {tier || "Free"}</Text>
+
+        <View style={styles.tierBadge}>
+          <Text style={styles.tierText}>{tier || "Free"} Tier</Text>
+        </View>
       </View>
+
       <TouchableOpacity
         style={styles.joinBtn}
         onPress={onAccept}
         accessibilityRole="button"
         accessibilityLabel="Accept training session"
+        testID={`accept-partner-${username?.toLowerCase().replace(/\s+/g, "-") || "user"}`}
       >
         <Text style={styles.joinText}>Join</Text>
       </TouchableOpacity>
@@ -49,49 +52,42 @@ PartnerSlotCard.propTypes = {
     tier: PropTypes.string,
     avatar: PropTypes.string,
     note: PropTypes.string,
-    // Ensure participants is also in PropTypes if you plan to use it for display
     participants: PropTypes.arrayOf(PropTypes.string),
-    userId: PropTypes.string, // The ID of the user who created the slot
+    userId: PropTypes.string,
   }).isRequired,
   onAccept: PropTypes.func.isRequired,
 };
 
 const styles = StyleSheet.create({
-  avatar: {
-    borderRadius: 24,
-    height: 48,
-    marginRight: spacing.md,
-    width: 48,
-  },
   card: {
+    flexDirection: "row",
     alignItems: "center",
     backgroundColor: colors.surface,
-    borderRadius: 10,
-    flexDirection: "row",
-    marginBottom: spacing.md,
+    borderRadius: 12,
     padding: spacing.md,
+    marginBottom: spacing.md,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  avatar: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    marginRight: spacing.md,
   },
   details: {
     flex: 1,
   },
-  joinBtn: {
-    backgroundColor: colors.primary,
-    borderRadius: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-  joinText: {
-    color: colors.white,
-    fontWeight: "600",
+  name: {
+    ...typography.heading4,
+    color: colors.textPrimary,
   },
   meta: {
     color: colors.textSecondary,
     fontSize: 13,
     marginTop: 2,
-  },
-  name: {
-    ...typography.heading4,
-    color: colors.textPrimary,
   },
   note: {
     color: colors.textSecondary,
@@ -99,10 +95,28 @@ const styles = StyleSheet.create({
     fontStyle: "italic",
     marginTop: 4,
   },
-  tierLabel: {
-    color: colors.accentBlue,
-    fontSize: 12,
-    marginTop: 4,
+  tierBadge: {
+    marginTop: spacing.xs,
+    alignSelf: "flex-start",
+    backgroundColor: colors.accentBlue,
+    borderRadius: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  tierText: {
+    color: colors.white,
+    fontSize: 11,
+    fontWeight: "600",
+  },
+  joinBtn: {
+    backgroundColor: colors.primary,
+    borderRadius: 6,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  joinText: {
+    color: colors.textOnPrimary,
+    fontWeight: "600",
   },
 });
 

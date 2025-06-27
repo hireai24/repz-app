@@ -14,6 +14,8 @@ import { Ionicons } from "@expo/vector-icons";
 import avatars from "../assets/avatars";
 import { uploadImageAsync } from "../utils/fileUploader";
 import colors from "../theme/colors";
+import spacing from "../theme/spacing";
+import typography from "../theme/typography";
 
 const AvatarSelector = ({ selectedAvatar, onSelect }) => {
   const isCustomSelected = selectedAvatar?.profilePicture;
@@ -35,7 +37,10 @@ const AvatarSelector = ({ selectedAvatar, onSelect }) => {
           accessibilityRole="imagebutton"
           accessibilityLabel={`Avatar ${index + 1}`}
           accessibilityState={{ selected: isSelected }}
-          style={[styles.avatarWrap, isSelected && styles.avatarSelected]}
+          style={[
+            styles.avatarWrap,
+            isSelected && styles.avatarSelected,
+          ]}
           onPress={handleAvatarSelect}
         >
           <Image source={avatar} style={styles.avatar} />
@@ -54,7 +59,7 @@ const AvatarSelector = ({ selectedAvatar, onSelect }) => {
 
       if (!result.canceled && (result.assets?.[0]?.uri || result.uri)) {
         const uploadedUrl = await uploadImageAsync(
-          result.assets?.[0]?.uri || result.uri,
+          result.assets?.[0]?.uri || result.uri
         );
         if (uploadedUrl) {
           onSelect({ profilePicture: uploadedUrl });
@@ -63,7 +68,7 @@ const AvatarSelector = ({ selectedAvatar, onSelect }) => {
     } catch (err) {
       Alert.alert(
         "Upload Failed",
-        "There was a problem selecting or uploading your image. Please try again.",
+        "There was a problem selecting or uploading your image. Please try again."
       );
     }
   };
@@ -76,13 +81,15 @@ const AvatarSelector = ({ selectedAvatar, onSelect }) => {
           accessible
           accessibilityRole="imagebutton"
           accessibilityLabel="Upload custom avatar"
-          style={[styles.avatarWrap, isCustomSelected && styles.avatarSelected]}
+          style={[
+            styles.avatarWrap,
+            styles.uploadSlot,
+            isCustomSelected && styles.avatarSelected,
+          ]}
           onPress={handleImageUpload}
         >
-          <View style={styles.uploadSlot}>
-            <Ionicons name="camera" size={24} color={colors.white} />
-            <Text style={styles.uploadText}>Upload</Text>
-          </View>
+          <Ionicons name="camera" size={20} color={colors.textOnPrimary} />
+          <Text style={styles.uploadText}>Upload</Text>
         </TouchableOpacity>
         {avatarItems}
       </View>
@@ -99,47 +106,50 @@ AvatarSelector.propTypes = {
 };
 
 const styles = StyleSheet.create({
-  avatar: {
-    borderRadius: 999,
-    height: "100%",
-    width: "100%",
+  container: {
+    marginTop: spacing.lg,
+  },
+  title: {
+    ...typography.heading4,
+    color: colors.textPrimary,
+    marginBottom: spacing.sm,
   },
   avatarRow: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 10,
-  },
-  avatarSelected: {
-    borderColor: colors.primaryRed,
   },
   avatarWrap: {
     alignItems: "center",
-    backgroundColor: colors.darkGray,
+    justifyContent: "center",
+    backgroundColor: colors.surface,
     borderColor: colors.transparent,
     borderRadius: 999,
     borderWidth: 2,
-    height: 64,
-    justifyContent: "center",
-    overflow: "hidden",
     width: 64,
+    height: 64,
+    marginRight: spacing.sm,
+    marginBottom: spacing.sm,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
-  container: {
-    marginTop: 20,
+  avatarSelected: {
+    borderColor: colors.primary,
+    borderWidth: 2,
   },
-  title: {
-    color: colors.gray,
-    fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 10,
+  avatar: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 999,
   },
   uploadSlot: {
-    alignItems: "center",
-    justifyContent: "center",
+    backgroundColor: colors.primary,
   },
   uploadText: {
-    color: colors.white,
+    color: colors.textOnPrimary,
     fontSize: 10,
-    marginTop: 4,
+    marginTop: 2,
   },
 });
 

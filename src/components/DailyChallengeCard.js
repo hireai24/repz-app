@@ -1,4 +1,5 @@
 // src/components/DailyChallengeCard.js
+
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import PropTypes from "prop-types";
@@ -11,16 +12,29 @@ const DailyChallengeCard = ({ challenge, onComplete }) => {
   const { title, description, completed } = challenge;
 
   return (
-    <View style={[styles.card, completed && styles.completedCard]}>
-      <Text style={styles.title}>
-        {title || i18n.t("dailyChallenge.defaultTitle")}
-      </Text>
+    <View
+      style={[
+        styles.card,
+        completed && styles.completedCard,
+      ]}
+      accessibilityRole="summary"
+      accessibilityLabel={`Daily challenge: ${title || "Untitled"}`}
+    >
+      <View style={styles.header}>
+        {/* Optionally, you could add an icon here */}
+        <Text style={styles.title}>
+          {title || i18n.t("dailyChallenge.defaultTitle")}
+        </Text>
+        {completed && (
+          <View style={styles.badge}>
+            <Text style={styles.badgeText}>{i18n.t("common.done")}</Text>
+          </View>
+        )}
+      </View>
       <Text style={styles.desc}>
         {description || i18n.t("dailyChallenge.defaultDescription")}
       </Text>
-      {completed ? (
-        <Text style={styles.completedText}>{i18n.t("common.confirm")}</Text>
-      ) : (
+      {completed ? null : (
         <TouchableOpacity
           style={styles.button}
           onPress={onComplete}
@@ -46,29 +60,41 @@ DailyChallengeCard.propTypes = {
 };
 
 const styles = StyleSheet.create({
-  button: {
-    alignSelf: "flex-start",
-    backgroundColor: colors.primary,
-    borderRadius: 6,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-  },
-  buttonText: {
-    color: colors.white,
-    fontWeight: "600",
-  },
   card: {
     backgroundColor: colors.surface,
-    borderRadius: 12,
-    marginBottom: spacing.md,
-    padding: spacing.md,
+    borderRadius: 16,
+    padding: spacing.lg,
+    marginBottom: spacing.lg,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
   },
   completedCard: {
     backgroundColor: colors.successBackground,
+    borderColor: colors.success,
+    borderWidth: 1,
   },
-  completedText: {
-    color: colors.success,
-    fontSize: 14,
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: spacing.xs,
+  },
+  title: {
+    ...typography.heading3,
+    color: colors.textPrimary,
+    flex: 1,
+  },
+  badge: {
+    backgroundColor: colors.success,
+    borderRadius: 8,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 2,
+  },
+  badgeText: {
+    color: colors.white,
+    fontSize: 12,
     fontWeight: "bold",
   },
   desc: {
@@ -76,10 +102,17 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginBottom: spacing.sm,
   },
-  title: {
-    ...typography.heading4,
-    color: colors.textPrimary,
-    marginBottom: 4,
+  button: {
+    alignSelf: "flex-start",
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+  },
+  buttonText: {
+    color: colors.textOnPrimary,
+    fontWeight: "600",
+    fontSize: 14,
   },
 });
 

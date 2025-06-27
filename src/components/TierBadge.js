@@ -1,58 +1,76 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, Image } from "react-native";
 
 import colors from "../theme/colors";
+import spacing from "../theme/spacing";
+import typography from "../theme/typography";
 
-const TierBadge = ({ tier }) => {
-  let backgroundColor = colors.free;
-  let textColor = colors.textSecondary;
+// Static imports to avoid dynamic require errors
+import badgeBronze from "../assets/badges/badge-bronze.png";
+import badgeSilver from "../assets/badges/badge-silver.png";
+import badgeGold from "../assets/badges/badge-gold.png";
+import badgePlatinum from "../assets/badges/badge-platinum.png";
+import badgeLegend from "../assets/badges/badge-legend.png";
+import badgeMaster from "../assets/badges/badge-master.png";
 
-  switch (tier) {
-    case "Pro":
-      backgroundColor = colors.success;
-      textColor = colors.background;
-      break;
-    case "Elite":
-      backgroundColor = colors.primary;
-      textColor = colors.textPrimary;
-      break;
-    case "Free":
-    default:
-      backgroundColor = colors.free;
-      textColor = colors.textSecondary;
-  }
+const badgeImages = {
+  Free: badgeBronze,
+  Pro: badgeSilver,
+  Elite: badgeGold,
+  Platinum: badgePlatinum,
+  Legend: badgeLegend,
+  Master: badgeMaster,
+};
+
+const TierBadge = ({ tier = "Free" }) => {
+  const badgeImage = badgeImages[tier] || badgeBronze;
 
   return (
     <View
-      style={[styles.badge, { backgroundColor }]}
+      style={styles.container}
       accessible
-      accessibilityRole="text"
-      accessibilityLabel={`Tier: ${tier || "Free"}`}
+      accessibilityRole="image"
+      accessibilityLabel={`Tier: ${tier}`}
     >
-      <Text style={[styles.text, { color: textColor }]}>
-        {(tier || "Free").toUpperCase()}
-      </Text>
+      <Image source={badgeImage} style={styles.icon} resizeMode="contain" />
+      <Text style={styles.text}>{tier.toUpperCase()}</Text>
     </View>
   );
 };
 
 TierBadge.propTypes = {
-  tier: PropTypes.oneOf(["Free", "Pro", "Elite"]),
+  tier: PropTypes.oneOf([
+    "Free",
+    "Pro",
+    "Elite",
+    "Platinum",
+    "Legend",
+    "Master",
+  ]),
 };
 
 const styles = StyleSheet.create({
-  badge: {
-    alignSelf: "flex-start",
-    borderRadius: 6,
-    marginLeft: 10,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+  container: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  icon: {
+    width: 20,
+    height: 20,
+    marginRight: spacing.xs,
   },
   text: {
-    fontSize: 12,
-    fontWeight: "bold",
-    letterSpacing: 1,
+    ...typography.smallBold,
+    color: colors.textPrimary,
   },
 });
 

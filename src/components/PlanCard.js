@@ -1,3 +1,4 @@
+// src/components/PlanCard.js
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 import {
@@ -15,6 +16,7 @@ import { useTier } from "../context/TierContext";
 import { purchasePlan } from "../api/marketplaceApi";
 import colors from "../theme/colors";
 import spacing from "../theme/spacing";
+import typography from "../theme/typography";
 
 const PlanCard = ({
   plan,
@@ -31,7 +33,7 @@ const PlanCard = ({
       if (tier === "Free" || (plan.tier === "Elite" && tier === "Pro")) {
         return Alert.alert(
           "Upgrade Required",
-          `You need a ${plan.tier} tier subscription to purchase this plan.`,
+          `You need a ${plan.tier} tier subscription to purchase this plan.`
         );
       }
     }
@@ -39,15 +41,13 @@ const PlanCard = ({
     if (!creatorStripeAccountId) {
       return Alert.alert(
         "Unavailable",
-        "The creator of this plan has not set up payouts. Please try another plan.",
+        "The creator of this plan has not set up payouts. Please try another plan."
       );
     }
 
     try {
       setBuyLoading(true);
-
       const result = await purchasePlan(plan.id);
-
       if (result?.url) {
         Linking.openURL(result.url);
       } else {
@@ -56,7 +56,7 @@ const PlanCard = ({
     } catch (err) {
       Alert.alert(
         "Purchase failed",
-        err.message || "Something went wrong while trying to buy the plan.",
+        err.message || "Something went wrong while trying to buy the plan."
       );
     } finally {
       setBuyLoading(false);
@@ -65,10 +65,7 @@ const PlanCard = ({
 
   if (isLoading) {
     return (
-      <View
-        style={[styles.card, styles.disabled]}
-        accessibilityRole="progressbar"
-      >
+      <View style={[styles.card, styles.disabled]} accessibilityRole="progressbar">
         <View style={styles.skeletonImage} />
         <View style={styles.content}>
           <View style={styles.skeletonText} />
@@ -84,21 +81,19 @@ const PlanCard = ({
       style={styles.card}
       onPress={onPress}
       disabled={buyLoading}
-      accessibilityLabel={`View plan ${plan.name}`}
       accessibilityRole="button"
-      testID={`plan-card-${plan.name.toLowerCase().replace(/\s+/g, "-")}`}
+      accessibilityLabel={`View plan ${plan.name}`}
     >
       <Image
-        source={{
-          uri:
-            plan.thumbnail ||
-            "https://via.placeholder.com/400x200.png?text=PLAN",
-        }}
+        source={
+          plan.thumbnail
+            ? { uri: plan.thumbnail }
+            : require("../assets/plan-bg-gradient.png")
+        }
         style={styles.image}
-        accessible
-        accessibilityRole="image"
         accessibilityLabel={`Thumbnail for ${plan.name}`}
       />
+
       <View style={styles.content}>
         <Text style={styles.title}>{plan.name}</Text>
         <Text style={styles.author}>by {plan.author}</Text>
@@ -128,12 +123,12 @@ const PlanCard = ({
             onPress={handleBuy}
             disabled={buyLoading}
             accessibilityRole="button"
-            accessibilityLabel="Buy this plan"
+            accessibilityLabel="Purchase this plan"
           >
             {buyLoading ? (
-              <ActivityIndicator color={colors.textPrimary} />
+              <ActivityIndicator color={colors.textOnPrimary} />
             ) : (
-              <Text style={styles.buyText}>Buy Now</Text>
+              <Text style={styles.buyText}>PURCHASE</Text>
             )}
           </TouchableOpacity>
         )}
@@ -159,59 +154,72 @@ PlanCard.propTypes = {
 };
 
 const styles = StyleSheet.create({
+  card: {
+    backgroundColor: colors.surface,
+    borderRadius: spacing.md,
+    marginBottom: spacing.md,
+    overflow: "hidden",
+    elevation: 2,
+  },
+  image: {
+    width: "100%",
+    height: 140,
+    resizeMode: "cover",
+  },
+  content: {
+    padding: spacing.md,
+  },
+  title: {
+    ...typography.heading3,
+    color: colors.textPrimary,
+    fontWeight: "bold",
+    fontSize: 18,
+  },
   author: {
     color: colors.textSecondary,
     fontSize: 13,
     marginTop: 2,
   },
-  buyBtn: {
-    alignItems: "center",
-    backgroundColor: colors.primary,
-    borderRadius: spacing.sm,
-    marginTop: spacing.sm,
-    paddingVertical: 8,
-  },
-  buyText: {
-    color: colors.textPrimary,
-    fontWeight: "bold",
-  },
-  card: {
-    backgroundColor: colors.card,
-    borderRadius: spacing.md,
-    marginBottom: spacing.md,
-    overflow: "hidden",
-  },
-  content: {
-    padding: spacing.sm,
-  },
-  disabled: {
-    opacity: 0.6,
-  },
-  elite: {
-    color: colors.pro,
-  },
-  footer: {
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: spacing.sm,
-  },
-  image: {
-    height: 140,
-    resizeMode: "cover",
-    width: "100%",
-  },
   meta: {
-    color: colors.border,
+    color: colors.textSecondary,
     fontSize: 12,
     marginTop: 4,
+  },
+  footer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: spacing.sm,
   },
   price: {
     color: colors.success,
     fontWeight: "bold",
+    fontSize: 16,
+  },
+  tier: {
+    fontSize: 13,
+    fontWeight: "bold",
   },
   pro: {
     color: colors.primary,
+  },
+  elite: {
+    color: colors.pro,
+  },
+  buyBtn: {
+    backgroundColor: colors.primary,
+    borderRadius: 6,
+    marginTop: spacing.md,
+    paddingVertical: 12,
+    alignItems: "center",
+  },
+  buyText: {
+    color: colors.textOnPrimary,
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+  disabled: {
+    opacity: 0.6,
   },
   skeletonImage: {
     backgroundColor: colors.surface,
@@ -238,15 +246,6 @@ const styles = StyleSheet.create({
     height: 14,
     marginTop: 8,
     width: "60%",
-  },
-  tier: {
-    fontSize: 13,
-    fontWeight: "bold",
-  },
-  title: {
-    color: colors.textPrimary,
-    fontSize: 16,
-    fontWeight: "bold",
   },
 });
 

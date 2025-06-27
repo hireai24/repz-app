@@ -1,3 +1,5 @@
+// src/screens/ProfileScreen.js
+
 import React, { useEffect, useState, useContext, useCallback } from "react";
 import {
   View,
@@ -10,17 +12,16 @@ import {
   Linking,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-
 import { getUserProfile } from "../api/userApi";
 import { UserContext } from "../context/UserContext";
 import useTierAccess from "../hooks/useTierAccess";
 import { AuthContext } from "../context/AuthContext";
-import { useTheme } from "../context/ThemeContext";
-
 import i18n from "../locales/i18n";
 import colors from "../theme/colors";
 import spacing from "../theme/spacing";
 import typography from "../theme/typography";
+import XPProgress from "../components/XPProgress";
+import TierBadge from "../components/TierBadge";
 
 const DEFAULT_AVATAR = "https://default-avatar.repz.app/img.png";
 
@@ -29,7 +30,6 @@ const ProfileScreen = () => {
   const { userId } = useContext(UserContext);
   const { userToken } = useContext(AuthContext);
   const { tier, allowed } = useTierAccess("Free");
-  const { toggleTheme } = useTheme();
 
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -46,7 +46,7 @@ const ProfileScreen = () => {
       } else {
         throw new Error(res.error || i18n.t("errors.profileLoadMessage"));
       }
-    } catch (err) {
+    } catch {
       setErrorMsg(i18n.t("errors.profileLoadMessage"));
     } finally {
       setLoading(false);
@@ -58,10 +58,11 @@ const ProfileScreen = () => {
   }, [loadProfile]);
 
   const handleViewProof = (url) => {
-    if (!url) return;
-    Linking.openURL(url).catch(() => {
-      setErrorMsg(i18n.t("errors.linkOpenFail"));
-    });
+    if (url) {
+      Linking.openURL(url).catch(() => {
+        setErrorMsg(i18n.t("errors.linkOpenFail"));
+      });
+    }
   };
 
   if (loading) {
@@ -84,58 +85,65 @@ const ProfileScreen = () => {
 
   return (
     <ScrollView style={styles.container}>
-      <View style={styles.topSection}>
-        <Image
-          source={{
-            uri: profile.profilePicture || profile.avatar || DEFAULT_AVATAR,
-          }}
-          style={styles.avatar}
-          accessibilityLabel="User avatar"
-        />
+      {/* Profile Header */}
+      <View style={styles.header}>
+        <View style={styles.avatarContainer}>
+          <Image
+            source={{
+              uri: profile.profilePicture || profile.avatar || DEFAULT_AVATAR,
+            }}
+            style={styles.avatar}
+          />
+          <TouchableOpacity
+            style={styles.editIconWrapper}
+            onPress={() => navigation.navigate("AvatarSelector")}
+          >
+            <Image
+              source={require("../assets/icons/icon-edit.png")}
+              style={styles.editIcon}
+            />
+          </TouchableOpacity>
+        </View>
         <Text style={styles.name}>{profile.username}</Text>
-        <Text style={styles.sub}>
-          {profile.gym || "—"} • {profile.goal || "—"}
-        </Text>
+        <TierBadge tier={tier} />
+        <XPProgress
+          xp={profile.xp || 0}
+          level={profile.level || 1}
+          xpToNext={profile.xpToNext || 100}
+        />
+      </View>
+
+      {/* Stats */}
+      <View style={styles.statsRow}>
         <Text style={styles.meta}>
-          XP: {profile.xp || 0} • Streak: {profile.streak || 0}{" "}
-          {i18n.t("profile.days")}
+          {i18n.t("profile.streak")}: {profile.streak || 0}
         </Text>
         <Text style={styles.meta}>
           {i18n.t("profile.tier")}: {tier}
         </Text>
+      </View>
 
-        <TouchableOpacity onPress={toggleTheme} style={styles.themeToggle}>
-          <Text style={styles.themeToggleText}>
-            {i18n.t("profile.toggleTheme")}
-          </Text>
-        </TouchableOpacity>
-
-        <View style={styles.actions}>
-          <TouchableOpacity style={styles.actionBtn}>
-            <Text style={styles.actionText}>{i18n.t("profile.follow")}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.actionBtn}>
-            <Text style={styles.actionText}>{i18n.t("profile.message")}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.actionBtn}>
-            <Text style={styles.actionText}>
-              {i18n.t("profile.requestSpot")}
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        {profile.isGymOwner && (
-          <TouchableOpacity
-            style={styles.earningsBtn}
-            onPress={() => navigation.navigate("GymOwnerLogin")}
-          >
-            <Text style={styles.earningsText}>
-              {i18n.t("profile.gymOwnerDashboard")}
-            </Text>
-          </TouchableOpacity>
+      {/* Transformations */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>
+          {i18n.t("profile.transformation")}
+        </Text>
+        {profile.transformations?.length > 0 ? (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            {profile.transformations.map((img, idx) => (
+              <Image
+                key={idx}
+                source={{ uri: img }}
+                style={styles.progressImg}
+              />
+            ))}
+          </ScrollView>
+        ) : (
+          <Text style={styles.meta}>{i18n.t("profile.noTransformation")}</Text>
         )}
       </View>
 
+      {/* Best Lifts */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>{i18n.t("profile.bestLifts")}</Text>
         {(profile.bestLifts || []).length === 0 ? (
@@ -156,26 +164,7 @@ const ProfileScreen = () => {
         )}
       </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>
-          {i18n.t("profile.transformation")}
-        </Text>
-        {profile.transformations?.length > 0 ? (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {profile.transformations.map((img, idx) => (
-              <Image
-                key={idx}
-                source={{ uri: img }}
-                style={styles.progressImg}
-                accessibilityLabel={`Transformation image ${idx + 1}`}
-              />
-            ))}
-          </ScrollView>
-        ) : (
-          <Text style={styles.meta}>{i18n.t("profile.noTransformation")}</Text>
-        )}
-      </View>
-
+      {/* Creator Stats */}
       {profile.isCreator && (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>
@@ -188,8 +177,7 @@ const ProfileScreen = () => {
             {i18n.t("profile.earnings")}: £{profile.creatorStats?.earnings || 0}
           </Text>
           <Text style={styles.meta}>
-            {i18n.t("profile.topPlan")}:{" "}
-            {profile.creatorStats?.topPlan || "N/A"}
+            {i18n.t("profile.topPlan")}: {profile.creatorStats?.topPlan || "N/A"}
           </Text>
           <TouchableOpacity
             style={styles.earningsBtn}
@@ -202,6 +190,7 @@ const ProfileScreen = () => {
         </View>
       )}
 
+      {/* Tools */}
       {allowed && (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{i18n.t("profile.myTools")}</Text>
@@ -230,87 +219,54 @@ const ProfileScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  actionBtn: {
-    backgroundColor: colors.surface,
-    borderRadius: 8,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-  },
-  actionText: {
-    color: colors.textPrimary,
-    fontSize: 13,
-  },
-  actions: {
-    flexDirection: "row",
-    gap: spacing.sm,
-    marginTop: spacing.md,
-  },
-  avatar: {
-    borderRadius: 999,
-    height: 80,
-    marginBottom: spacing.sm,
-    width: 80,
-  },
-  centered: {
-    alignItems: "center",
-    backgroundColor: colors.background,
-    flex: 1,
-    justifyContent: "center",
-  },
   container: {
     backgroundColor: colors.background,
     flex: 1,
     padding: spacing.lg,
   },
-  earningsBtn: {
+  centered: {
+    flex: 1,
+    justifyContent: "center",
     alignItems: "center",
-    backgroundColor: colors.primary,
-    borderRadius: 8,
-    marginTop: spacing.sm,
-    padding: spacing.md,
   },
-  earningsText: {
-    color: colors.textOnPrimary,
-    fontWeight: "bold",
-  },
-  errorText: {
-    color: colors.error,
-    fontSize: 15,
-    padding: spacing.md,
-    textAlign: "center",
-  },
-  liftRow: {
+  header: {
     alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingVertical: 6,
+    marginBottom: spacing.lg,
   },
-  liftText: {
-    color: colors.textPrimary,
-    fontSize: 14,
+  avatarContainer: {
+    position: "relative",
   },
-  link: {
-    color: colors.accentBlue,
-    fontSize: 13,
-    fontWeight: "bold",
+  avatar: {
+    width: 90,
+    height: 90,
+    borderRadius: 45,
   },
-  meta: {
-    color: colors.textSecondary,
-    fontSize: 13,
-    textAlign: "center",
+  editIconWrapper: {
+    position: "absolute",
+    bottom: -4,
+    right: -4,
+    backgroundColor: colors.surface,
+    borderRadius: 999,
+    padding: 4,
+  },
+  editIcon: {
+    width: 24,
+    height: 24,
   },
   name: {
-    ...typography.heading3,
+    ...typography.heading2,
     color: colors.textPrimary,
-    textAlign: "center",
+    marginTop: spacing.sm,
   },
-  progressImg: {
-    borderRadius: 8,
-    height: 140,
-    marginRight: spacing.sm,
-    width: 120,
+  statsRow: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginBottom: spacing.md,
   },
   section: {
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    padding: spacing.md,
     marginBottom: spacing.lg,
   },
   sectionTitle: {
@@ -318,37 +274,59 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     marginBottom: spacing.sm,
   },
-  sub: {
+  meta: {
     color: colors.textSecondary,
-    fontSize: 14,
-    marginVertical: 4,
+    fontSize: 13,
+    textAlign: "center",
   },
-  themeToggle: {
-    marginTop: spacing.sm,
+  progressImg: {
+    width: 120,
+    height: 140,
+    borderRadius: 8,
+    marginRight: spacing.sm,
   },
-  themeToggleText: {
+  liftRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: 4,
+  },
+  liftText: {
+    color: colors.textPrimary,
+  },
+  link: {
     color: colors.accentBlue,
     fontWeight: "bold",
   },
-  toolBtn: {
-    backgroundColor: colors.surface,
+  earningsBtn: {
+    backgroundColor: colors.primary,
     borderRadius: 8,
-    marginBottom: spacing.sm,
-    marginRight: spacing.sm,
-    padding: spacing.sm,
+    padding: spacing.md,
+    marginTop: spacing.sm,
+    alignItems: "center",
   },
-  toolText: {
-    color: colors.textPrimary,
-    fontSize: 13,
+  earningsText: {
+    color: colors.textOnPrimary,
+    fontWeight: "bold",
   },
   toolsRow: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: spacing.sm,
   },
-  topSection: {
-    alignItems: "center",
-    marginBottom: spacing.lg,
+  toolBtn: {
+    backgroundColor: colors.surface,
+    borderRadius: 8,
+    padding: spacing.sm,
+    marginRight: spacing.sm,
+    marginBottom: spacing.sm,
+  },
+  toolText: {
+    color: colors.textPrimary,
+    fontSize: 13,
+  },
+  errorText: {
+    color: colors.error,
+    textAlign: "center",
   },
 });
 

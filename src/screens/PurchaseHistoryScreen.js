@@ -1,3 +1,5 @@
+// src/screens/PurchaseHistoryScreen.js
+
 import React, { useEffect, useState, useCallback } from "react";
 import {
   View,
@@ -11,7 +13,7 @@ import {
 import { useUser } from "../context/UserContext";
 import { useTheme } from "../context/ThemeContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
+import colors from "../theme/colors";
 import spacing from "../theme/spacing";
 import typography from "../theme/typography";
 
@@ -28,18 +30,16 @@ const PurchaseHistoryScreen = () => {
     try {
       const token = await AsyncStorage.getItem("authToken");
       return token || "";
-    } catch (err) {
-      // console.error("Failed to get auth token from storage:", err); // Keep commented for production
+    } catch {
       return "";
     }
   };
 
   const fetchPurchases = useCallback(async () => {
-    if (!user || !user.uid) {
-      // Use user.uid for Firebase Auth ID
+    if (!user?.uid) {
       setLoading(false);
       setRefreshing(false);
-      setError("User not logged in or ID missing.");
+      setError("You must be logged in to view purchases.");
       return;
     }
 
@@ -48,32 +48,23 @@ const PurchaseHistoryScreen = () => {
       setError(null);
 
       const token = await getAuthToken();
-      if (!token) {
-        throw new Error("Authentication token missing.");
-      }
+      if (!token) throw new Error("Authentication token missing.");
 
-      // Ensure the API path matches your server.js route registration
       const res = await fetch(
-        `${process.env.EXPO_PUBLIC_API_BASE_URL}/api/purchases/${user.uid}`, // Use user.uid
+        `${process.env.EXPO_PUBLIC_API_BASE_URL}/api/purchases/${user.uid}`,
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
+          headers: { Authorization: `Bearer ${token}` },
+        }
       );
       const data = await res.json();
 
       if (!res.ok || !data.success) {
-        throw new Error(data.error || "Failed to fetch purchase history."); // Use data.error from backend
+        throw new Error(data.error || "Failed to fetch purchase history.");
       }
 
       setPurchases(data.purchases || []);
     } catch (err) {
-      // Only log in development for debugging
-      if (process.env.NODE_ENV !== "production") {
-        // eslint-disable-next-line no-console
-        console.error("Error fetching purchase history:", err);
-      }
+      if (__DEV__) console.error("Error fetching purchases:", err);
       setError(err.message || "Unable to load purchase history.");
       Alert.alert("Error", err.message || "Unable to load purchase history.");
     } finally {
@@ -91,28 +82,50 @@ const PurchaseHistoryScreen = () => {
     fetchPurchases();
   }, [fetchPurchases]);
 
+  const formatDate = (iso) => {
+    if (!iso) return "N/A";
+    const date = new Date(iso);
+    return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+  };
+
   const renderItem = ({ item }) => (
-    <View style={[styles.purchaseItem, { backgroundColor: themeColors.card }]}>
-      <Text style={[styles.planName, { color: themeColors.primary }]}>
-        {item.planName || "Unknown Plan"} {/* Uses planName from backend */}
-      </Text>
-      <Text style={[styles.details, { color: themeColors.text }]}>
-        Amount: £{item.amount || "N/A"} {/* Amount now formatted by backend */}
-      </Text>
-      <Text style={[styles.details, { color: themeColors.text }]}>
-        Date:{" "}
-        {item.purchasedAt // Use purchasedAt as mapped by backend
-          ? new Date(item.purchasedAt).toLocaleDateString()
-          : "N/A"}
-      </Text>
-      {item.sessionId && ( // Display sessionId for audit trail
-        <Text style={[styles.details, { color: themeColors.text }]}>
-          Session ID: {item.sessionId}
+    <View style={[styles.card, { backgroundColor: themeColors.card }]}>
+      <View style={styles.row}>
+        <View style={styles.info}>
+          <Text style={[styles.planName, { color: themeColors.primary }]}>
+            {item.planName || "Unknown Plan"}
+          </Text>
+          <Text style={[styles.detail, { color: themeColors.text }]}>
+            £{item.amount?.toFixed(2) || "N/A"}
+          </Text>
+          <Text style={[styles.detail, { color: themeColors.text }]}>
+            {formatDate(item.purchasedAt)}
+          </Text>
+        </View>
+        <View style={styles.badge}>
+          <Text
+            style={[
+              styles.badgeText,
+              {
+                color:
+                  item.status === "succeeded"
+                    ? colors.success
+                    : colors.warning,
+              },
+            ]}
+          >
+            {item.status === "succeeded" ? "Paid" : "Pending"}
+          </Text>
+        </View>
+      </View>
+      {item.sessionId && (
+        <Text style={[styles.meta, { color: themeColors.text }]}>
+          Session: {item.sessionId}
         </Text>
       )}
-      {item.paymentIntentId && ( // Display paymentIntentId for audit trail
-        <Text style={[styles.details, { color: themeColors.text }]}>
-          Payment Intent ID: {item.paymentIntentId}
+      {item.paymentIntentId && (
+        <Text style={[styles.meta, { color: themeColors.text }]}>
+          Payment ID: {item.paymentIntentId}
         </Text>
       )}
     </View>
@@ -120,9 +133,7 @@ const PurchaseHistoryScreen = () => {
 
   if (loading) {
     return (
-      <View
-        style={[styles.centered, { backgroundColor: themeColors.background }]}
-      >
+      <View style={[styles.centered, { backgroundColor: themeColors.background }]}>
         <ActivityIndicator size="large" color={themeColors.primary} />
       </View>
     );
@@ -130,9 +141,7 @@ const PurchaseHistoryScreen = () => {
 
   if (error) {
     return (
-      <View
-        style={[styles.centered, { backgroundColor: themeColors.background }]}
-      >
+      <View style={[styles.centered, { backgroundColor: themeColors.background }]}>
         <Text style={[styles.errorText, { color: themeColors.error }]}>
           {error}
         </Text>
@@ -141,57 +150,90 @@ const PurchaseHistoryScreen = () => {
   }
 
   return (
-    <View
-      style={[styles.container, { backgroundColor: themeColors.background }]}
-    >
+    <View style={[styles.container, { backgroundColor: themeColors.background }]}>
       <FlatList
         data={purchases}
-        keyExtractor={(item) => item.id} // Ensure 'id' is unique, or fallback to index. Firestore doc.id is unique.
+        keyExtractor={(item) => item.id}
         renderItem={renderItem}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
         ListEmptyComponent={
-          <Text style={[styles.emptyText, { color: themeColors.text }]}>
-            No purchases found.
-          </Text>
+          <View style={styles.emptyContainer}>
+            <Text style={[styles.emptyText, { color: themeColors.text }]}>
+              No purchases yet.
+            </Text>
+          </View>
         }
+        contentContainerStyle={purchases.length === 0 && styles.flexGrow}
       />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  centered: {
+  badge: {
     alignItems: "center",
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+  },
+  badgeText: {
+    fontWeight: "600",
+    fontSize: 12,
+  },
+  card: {
+    borderRadius: 10,
+    elevation: 2,
+    marginBottom: spacing.md,
+    padding: spacing.md,
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+  },
+  centered: {
     flex: 1,
     justifyContent: "center",
+    alignItems: "center",
   },
   container: {
     flex: 1,
     padding: spacing.md,
   },
-  details: {
+  detail: {
     ...typography.body,
+  },
+  emptyContainer: {
+    marginTop: spacing.xl,
+    alignItems: "center",
   },
   emptyText: {
     ...typography.body,
-    marginTop: spacing.lg,
-    textAlign: "center",
   },
   errorText: {
     ...typography.body,
     textAlign: "center",
   },
+  info: {
+    flex: 1,
+  },
+  meta: {
+    ...typography.caption,
+    marginTop: spacing.xs,
+  },
   planName: {
     ...typography.heading4,
-    marginBottom: spacing.xs,
   },
-  purchaseItem: {
-    borderRadius: 8,
-    elevation: 2,
-    marginBottom: spacing.sm,
-    padding: spacing.md,
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  flexGrow: {
+    flexGrow: 1,
+    justifyContent: "center",
   },
 });
 

@@ -13,34 +13,36 @@ const TYPES = [
   { key: "form", label: "Best Form (AI)" },
 ];
 
-const ChallengeTypeSelector = ({ selectedType, onSelect }) => {
-  return (
-    <View style={styles.container}>
-      <Text style={styles.label}>Challenge Type</Text>
-      <View style={styles.options}>
-        {TYPES.map((type) => (
-          <TouchableOpacity
-            key={type.key}
-            style={[
-              styles.option,
-              selectedType === type.key && styles.selected,
-            ]}
-            onPress={() => onSelect(type.key)}
+const ChallengeTypeSelector = ({ selectedType, onSelect }) => (
+  <View style={styles.container}>
+    <Text style={styles.label}>Challenge Type</Text>
+    <View style={styles.optionsRow}>
+      {TYPES.map((type) => (
+        <TouchableOpacity
+          key={type.key}
+          style={[
+            styles.chip,
+            selectedType === type.key && styles.chipSelected,
+          ]}
+          onPress={() => onSelect(type.key)}
+          accessibilityRole="button"
+          accessibilityState={{ selected: selectedType === type.key }}
+          accessibilityLabel={`Select ${type.label} challenge type`}
+        >
+          <Text
+            style={
+              selectedType === type.key
+                ? styles.chipTextSelected
+                : styles.chipText
+            }
           >
-            <Text
-              style={[
-                styles.optionText,
-                selectedType === type.key && styles.optionTextSelected,
-              ]}
-            >
-              {type.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+            {type.label}
+          </Text>
+        </TouchableOpacity>
+      ))}
     </View>
-  );
-};
+  </View>
+);
 
 ChallengeTypeSelector.propTypes = {
   selectedType: PropTypes.string.isRequired,
@@ -49,36 +51,38 @@ ChallengeTypeSelector.propTypes = {
 
 const styles = StyleSheet.create({
   container: {
-    marginVertical: spacing.md,
+    marginBottom: spacing.lg,
   },
   label: {
     ...typography.subheading,
     color: colors.textPrimary,
     marginBottom: spacing.sm,
   },
-  option: {
-    backgroundColor: colors.surface,
-    borderColor: colors.border,
-    borderRadius: 8,
-    borderWidth: 1,
-    margin: spacing.xs,
-    padding: spacing.sm,
-  },
-  optionText: {
-    color: colors.textPrimary,
-  },
-  optionTextSelected: {
-    color: colors.white,
-    fontWeight: "bold",
-  },
-  options: {
+  optionsRow: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: spacing.sm,
   },
-  selected: {
+  chip: {
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderWidth: 1,
+    borderRadius: 20,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+  },
+  chipSelected: {
     backgroundColor: colors.primary,
     borderColor: colors.primary,
+  },
+  chipText: {
+    color: colors.textPrimary,
+    fontSize: 14,
+  },
+  chipTextSelected: {
+    color: colors.textOnPrimary,
+    fontWeight: "bold",
+    fontSize: 14,
   },
 });
 

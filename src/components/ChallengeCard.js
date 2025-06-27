@@ -1,18 +1,19 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
-
 import colors from "../theme/colors";
+import spacing from "../theme/spacing";
+import typography from "../theme/typography";
 import TierBadge from "./TierBadge";
 
-const placeholderImage = "https://via.placeholder.com/150";
+const placeholderImage = "https://via.placeholder.com/300x150";
 
 const ChallengeCard = ({
   challenge,
   onEnter,
   onView,
   progress = {},
-  participantUsernames = [], // Add this prop
+  participantUsernames = [],
 }) => {
   const {
     title,
@@ -28,6 +29,9 @@ const ChallengeCard = ({
     xpPot = 0,
   } = challenge;
 
+  const isCompleted = progress?.completed;
+  const isInProgress = progress?.inProgress;
+
   const getStatusColor = () => {
     switch (status?.toLowerCase()) {
       case "active":
@@ -41,9 +45,6 @@ const ChallengeCard = ({
     }
   };
 
-  const isCompleted = progress?.completed;
-  const isInProgress = progress?.inProgress;
-
   const getCountdown = () => {
     if (!expiresAt) return null;
     const end = new Date(expiresAt.seconds * 1000);
@@ -56,22 +57,31 @@ const ChallengeCard = ({
 
   return (
     <View style={[styles.card, isWinner && styles.winnerGlow]}>
-      {image && (
+      {image ? (
         <Image
-          source={{ uri: image || placeholderImage }}
-          style={styles.challengeImage}
-          accessibilityLabel="Challenge image"
+          source={{ uri: image }}
+          style={styles.image}
+          accessibilityLabel={i18n.t("challenge.imageAlt") || "Challenge image"}
+        />
+      ) : (
+        <Image
+          source={{ uri: placeholderImage }}
+          style={styles.image}
+          accessibilityLabel="Placeholder image"
         />
       )}
 
       <View style={styles.header}>
-        <Text style={styles.title} numberOfLines={2} accessibilityRole="header">
+        <Text
+          style={styles.title}
+          numberOfLines={2}
+          accessibilityRole="header"
+        >
           {title}
         </Text>
         {requiredTier && <TierBadge tier={requiredTier} />}
       </View>
 
-      {/* Show participant usernames if available */}
       {participantUsernames.length > 0 && (
         <Text style={styles.participants} numberOfLines={1}>
           👥 {participantUsernames.join(", ")}
@@ -79,17 +89,14 @@ const ChallengeCard = ({
       )}
 
       {gymName && (
-        <Text
-          style={styles.gymLabel}
-          accessibilityLabel={`Hosted by ${gymName}`}
-        >
-          🏋️ {gymName}
-        </Text>
+        <Text style={styles.gymLabel}>🏋️ {gymName}</Text>
       )}
 
       <Text style={[styles.status, { color: getStatusColor() }]}>{status}</Text>
 
-      {expiresAt && <Text style={styles.countdown}>{getCountdown()}</Text>}
+      {expiresAt && (
+        <Text style={styles.countdown}>{getCountdown()}</Text>
+      )}
 
       <Text style={styles.reward}>
         +{xpReward} XP • 💰 {xpPot} XP Pot
@@ -106,21 +113,25 @@ const ChallengeCard = ({
           style={styles.viewBtn}
           onPress={onView}
           accessibilityRole="button"
-          accessibilityLabel="View completed challenge"
+          accessibilityLabel={i18n.t("challenge.viewCompleted") || "View completed challenge"}
         >
-          <Text style={styles.viewText}>Completed</Text>
+          <Text style={styles.viewText}>{i18n.t("challenge.completed") || "Completed"}</Text>
         </TouchableOpacity>
       ) : (
         <TouchableOpacity
-          style={styles.button}
+          style={styles.enterBtn}
           onPress={onEnter}
           accessibilityRole="button"
           accessibilityLabel={
-            isInProgress ? "Resume challenge" : "Enter challenge"
+            isInProgress
+              ? i18n.t("challenge.resume") || "Resume challenge"
+              : i18n.t("challenge.enter") || "Enter challenge"
           }
         >
-          <Text style={styles.buttonText}>
-            {isInProgress ? "Resume Challenge" : "Enter Challenge"}
+          <Text style={styles.enterText}>
+            {isInProgress
+              ? i18n.t("challenge.resume") || "Resume Challenge"
+              : i18n.t("challenge.enter") || "Enter Challenge"}
           </Text>
         </TouchableOpacity>
       )}
@@ -152,92 +163,97 @@ ChallengeCard.propTypes = {
 };
 
 const styles = StyleSheet.create({
-  button: {
-    backgroundColor: colors.primary,
-    borderRadius: 8,
-    marginTop: 14,
-    paddingVertical: 10,
-  },
-  buttonText: {
-    color: colors.white,
-    fontWeight: "600",
-    textAlign: "center",
-  },
   card: {
     backgroundColor: colors.surface,
-    borderRadius: 10,
-    marginBottom: 16,
-    padding: 16,
+    borderRadius: 12,
+    marginBottom: spacing.lg,
+    overflow: "hidden",
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
   },
-  challengeImage: {
-    borderRadius: 10,
-    height: 140,
-    marginBottom: 10,
+  image: {
     width: "100%",
+    height: 140,
   },
-  countdown: {
-    color: colors.warning,
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    padding: spacing.md,
+  },
+  title: {
+    ...typography.heading4,
+    color: colors.textPrimary,
+    flex: 1,
+    paddingRight: spacing.sm,
+  },
+  participants: {
+    color: colors.textSecondary,
     fontSize: 13,
-    marginTop: 2,
+    paddingHorizontal: spacing.md,
   },
   gymLabel: {
     color: colors.accentBlue,
     fontSize: 13,
     fontStyle: "italic",
-    marginTop: 4,
-  },
-  header: {
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  participants: {
-    color: colors.textPrimary,
-    fontSize: 13,
-    marginBottom: 2,
-    marginTop: 2,
-  },
-  reward: {
-    color: colors.textSecondary,
-    fontSize: 13,
-    marginTop: 6,
+    paddingHorizontal: spacing.md,
+    paddingTop: 2,
   },
   status: {
     fontSize: 14,
     fontWeight: "600",
-    marginTop: 6,
+    paddingHorizontal: spacing.md,
+    paddingTop: 4,
   },
-  title: {
-    color: colors.textPrimary,
-    flex: 1,
-    fontSize: 16,
-    fontWeight: "bold",
-    paddingRight: 10,
+  countdown: {
+    color: colors.warning,
+    fontSize: 13,
+    paddingHorizontal: spacing.md,
+    paddingTop: 2,
+  },
+  reward: {
+    color: colors.textSecondary,
+    fontSize: 13,
+    paddingHorizontal: spacing.md,
+    paddingTop: 4,
   },
   verificationBadge: {
     color: colors.success,
     fontSize: 12,
     fontStyle: "italic",
-    marginTop: 4,
+    paddingHorizontal: spacing.md,
+    paddingTop: 2,
+  },
+  enterBtn: {
+    backgroundColor: colors.primary,
+    marginTop: spacing.sm,
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.md,
+    borderRadius: 8,
+    paddingVertical: 10,
+  },
+  enterText: {
+    color: colors.textOnPrimary,
+    textAlign: "center",
+    fontWeight: "600",
   },
   viewBtn: {
     backgroundColor: colors.card,
+    marginTop: spacing.sm,
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.md,
     borderRadius: 8,
-    marginTop: 14,
     paddingVertical: 10,
   },
   viewText: {
     color: colors.textSecondary,
-    fontWeight: "600",
     textAlign: "center",
+    fontWeight: "600",
   },
   winnerGlow: {
     borderColor: colors.gold,
     borderWidth: 2,
-    shadowColor: colors.gold,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.7,
-    shadowRadius: 8,
   },
 });
 

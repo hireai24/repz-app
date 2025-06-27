@@ -1,14 +1,11 @@
-// src/api/userApi.js
-
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 const MAX_RETRIES = 2;
 const RETRY_DELAY_MS = 500;
 
-/**
- * Get auth token safely from storage
- */
+const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
+
 const getAuthToken = async () => {
   try {
     const token = await AsyncStorage.getItem("authToken");
@@ -17,11 +14,6 @@ const getAuthToken = async () => {
     return "";
   }
 };
-
-/**
- * Retry fetch helper
- */
-const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
 
 const fetchWithRetry = async (url, options = {}, retries = MAX_RETRIES) => {
   for (let attempt = 0; attempt <= retries; attempt++) {
@@ -41,94 +33,80 @@ const fetchWithRetry = async (url, options = {}, retries = MAX_RETRIES) => {
   }
 };
 
-/**
- * Fetch current user profile (via /users/me)
- */
+// ✅ /users/me
 export const getMyProfile = async () => {
   const token = await getAuthToken();
-  return await fetchWithRetry(`${BASE_URL}/users/me`, {
+  return fetchWithRetry(`${BASE_URL}/users/me`, {
     headers: { Authorization: `Bearer ${token}` },
-  });
+  }).catch((err) => ({ success: false, error: err.message }));
 };
 
-/**
- * Fetch user profile by ID (for admin or fallback)
- */
+// ✅ /users/:id
 export const getUserProfile = async (userId, overrideToken = null) => {
   const token = overrideToken || (await getAuthToken());
 
-  console.log("userId ", userId, token);
-  return await fetchWithRetry(`${BASE_URL}/users/${userId}`, {
+  return fetchWithRetry(`${BASE_URL}/users/${userId}`, {
     headers: { Authorization: `Bearer ${token}` },
-  });
+  }).catch((err) => ({ success: false, error: err.message }));
 };
 
-/**
- * Update user profile
- */
+// ✅ PUT /users/update/:id
 export const updateUserProfile = async (userId, updates) => {
   const token = await getAuthToken();
-  return await fetchWithRetry(`${BASE_URL}/users/update/${userId}`, {
+  return fetchWithRetry(`${BASE_URL}/users/update/${userId}`, {
     method: "PUT",
     headers: {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify(updates),
-  });
+  }).catch((err) => ({ success: false, error: err.message }));
 };
 
-/**
- * Delete user account
- */
+// ✅ DELETE /users/delete/:id
 export const deleteUserAccount = async (userId) => {
   const token = await getAuthToken();
-  return await fetchWithRetry(`${BASE_URL}/users/delete/${userId}`, {
+  return fetchWithRetry(`${BASE_URL}/users/delete/${userId}`, {
     method: "DELETE",
     headers: { Authorization: `Bearer ${token}` },
-  });
+  }).catch((err) => ({ success: false, error: err.message }));
 };
 
-/**
- * Send password reset email
- */
+// ✅ POST /users/password-reset
 export const sendPasswordReset = async (email) => {
-  return await fetchWithRetry(`${BASE_URL}/users/password-reset`, {
+  return fetchWithRetry(`${BASE_URL}/users/password-reset`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email }),
-  });
+  }).catch((err) => ({ success: false, error: err.message }));
 };
 
-/**
- * Request Stripe onboarding link
- */
+// ✅ POST /users/stripe-onboard/:id
 export const getStripeOnboardingLink = async (userId) => {
   const token = await getAuthToken();
-  const { url } = await fetchWithRetry(
-    `${BASE_URL}/users/stripe-onboard/${userId}`,
-    {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
-    },
-  );
-
-  return { success: true, url };
+  try {
+    const { url } = await fetchWithRetry(
+      `${BASE_URL}/users/stripe-onboard/${userId}`,
+      {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+    return { success: true, url };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
 };
 
-/**
- * Check user subscription entitlements
- */
+// ✅ /users/entitlements/:id
 export const getUserEntitlement = async (userId) => {
   const token = await getAuthToken();
-  return await fetchWithRetry(`${BASE_URL}/users/entitlements/${userId}`, {
+  return fetchWithRetry(`${BASE_URL}/users/entitlements/${userId}`, {
     headers: { Authorization: `Bearer ${token}` },
-  });
+  }).catch((err) => ({ success: false, error: err.message }));
 };
 
-/**
- * Utility: Determine user tier based on entitlement flags
- */
+// ✅ Derived: Free, Pro, Elite
 export const determineUserTier = async (userId) => {
   const { success, access } = await getUserEntitlement(userId);
   if (!success) return "Free";

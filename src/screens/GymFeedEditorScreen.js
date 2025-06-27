@@ -2,7 +2,7 @@ import React, { useState, useContext, useEffect } from "react";
 import {
   View,
   TextInput,
-  Button,
+  TouchableOpacity,
   StyleSheet,
   Text,
   ActivityIndicator,
@@ -25,9 +25,7 @@ const GymFeedEditorScreen = ({ route, navigation }) => {
 
   useEffect(() => {
     if (!isGymOwner && !loading) {
-      const timer = setTimeout(() => {
-        setShouldGoBack(true);
-      }, 3000);
+      const timer = setTimeout(() => setShouldGoBack(true), 3000);
       return () => clearTimeout(timer);
     }
   }, [isGymOwner, loading]);
@@ -37,6 +35,15 @@ const GymFeedEditorScreen = ({ route, navigation }) => {
       navigation.goBack();
     }
   }, [shouldGoBack, navigation]);
+
+  const handlePost = async () => {
+    try {
+      await createGymFeedPost({ gymId, text, imageUrl, offer });
+      navigation.goBack();
+    } catch {
+      alert("Failed to create feed post. Please try again.");
+    }
+  };
 
   if (loading) {
     return (
@@ -54,27 +61,21 @@ const GymFeedEditorScreen = ({ route, navigation }) => {
         <Text style={styles.unauthorizedMessage}>
           Only gym owners can create or edit feed posts.
         </Text>
-        <Button
-          title="Go Back"
+        <TouchableOpacity
+          style={styles.goBackButton}
           onPress={() => navigation.goBack()}
-          color={colors.accent}
-        />
+        >
+          <Text style={styles.goBackText}>Go Back</Text>
+        </TouchableOpacity>
       </View>
     );
   }
 
-  const handlePost = async () => {
-    try {
-      await createGymFeedPost({ gymId, text, imageUrl, offer });
-      navigation.goBack();
-    } catch (err) {
-      alert("Failed to create feed post. Please try again.");
-    }
-  };
-
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>Text</Text>
+      <Text style={styles.title}>Create a New Post</Text>
+
+      <Text style={styles.label}>Post Text</Text>
       <TextInput
         style={styles.input}
         multiline
@@ -91,6 +92,7 @@ const GymFeedEditorScreen = ({ route, navigation }) => {
         onChangeText={setImageUrl}
         placeholder="e.g., https://example.com/image.jpg"
         placeholderTextColor={colors.textSecondary}
+        autoCapitalize="none"
       />
 
       <Text style={styles.label}>Offer (optional)</Text>
@@ -102,7 +104,9 @@ const GymFeedEditorScreen = ({ route, navigation }) => {
         placeholderTextColor={colors.textSecondary}
       />
 
-      <Button title="Post" onPress={handlePost} color={colors.accent} />
+      <TouchableOpacity style={styles.submitButton} onPress={handlePost}>
+        <Text style={styles.submitButtonText}>Post</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -119,48 +123,75 @@ GymFeedEditorScreen.propTypes = {
 };
 
 const styles = StyleSheet.create({
-  centeredContainer: {
-    alignItems: "center",
+  container: {
+    flex: 1,
     backgroundColor: colors.background,
+    padding: spacing.lg,
+  },
+  centeredContainer: {
     flex: 1,
     justifyContent: "center",
-    padding: spacing.lg,
-  },
-  container: {
+    alignItems: "center",
     backgroundColor: colors.background,
-    flex: 1,
     padding: spacing.lg,
   },
-  input: {
-    backgroundColor: colors.cardBackground,
-    borderColor: colors.border,
-    borderRadius: 6,
-    borderWidth: 1,
+  title: {
+    ...typography.heading2,
     color: colors.textPrimary,
-    marginBottom: spacing.md,
-    padding: spacing.sm,
+    marginBottom: spacing.lg,
+    textAlign: "center",
   },
   label: {
     ...typography.subheading,
     color: colors.textSecondary,
     marginBottom: spacing.xs,
   },
+  input: {
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderWidth: 1,
+    borderRadius: 8,
+    color: colors.textPrimary,
+    padding: spacing.md,
+    marginBottom: spacing.md,
+  },
+  submitButton: {
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+    padding: spacing.md,
+    alignItems: "center",
+    marginTop: spacing.lg,
+  },
+  submitButtonText: {
+    color: colors.textOnPrimary,
+    fontWeight: "bold",
+    fontSize: 16,
+  },
   loadingText: {
     ...typography.body,
     color: colors.textPrimary,
     marginTop: spacing.md,
   },
+  unauthorizedText: {
+    ...typography.heading3,
+    color: colors.error,
+    marginBottom: spacing.sm,
+  },
   unauthorizedMessage: {
     ...typography.body,
     color: colors.textSecondary,
+    textAlign: "center",
     marginBottom: spacing.lg,
-    textAlign: "center",
   },
-  unauthorizedText: {
-    ...typography.heading,
-    color: colors.error,
-    marginBottom: spacing.md,
-    textAlign: "center",
+  goBackButton: {
+    backgroundColor: colors.accentBlue,
+    borderRadius: 6,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+  },
+  goBackText: {
+    color: colors.textOnPrimary,
+    fontWeight: "600",
   },
 });
 

@@ -3,6 +3,8 @@ import PropTypes from "prop-types";
 import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 
 import colors from "../theme/colors";
+import spacing from "../theme/spacing";
+import typography from "../theme/typography";
 
 const fallbackIcon = "https://via.placeholder.com/40x40.png?text=EX";
 
@@ -14,6 +16,7 @@ const ExerciseCard = ({ exercise, onAdd }) => {
       accessibilityRole="button"
       accessibilityLabel={`Add ${exercise.name}`}
       testID={`exercise-card-${exercise.name.toLowerCase().replace(/\s+/g, "-")}`}
+      activeOpacity={0.8}
     >
       <Image
         source={{ uri: exercise.icon || fallbackIcon }}
@@ -26,7 +29,9 @@ const ExerciseCard = ({ exercise, onAdd }) => {
           {exercise.category} • {exercise.muscle}
         </Text>
       </View>
-      <Text style={styles.add}>+</Text>
+      <View style={styles.addBtn}>
+        <Text style={styles.addText}>+</Text>
+      </View>
     </TouchableOpacity>
   );
 };
@@ -42,38 +47,50 @@ ExerciseCard.propTypes = {
 };
 
 const styles = StyleSheet.create({
-  add: {
-    color: colors.primary,
-    fontSize: 24,
-    fontWeight: "bold",
-  },
   card: {
+    flexDirection: "row",
     alignItems: "center",
     backgroundColor: colors.surface,
-    borderRadius: 10,
-    flexDirection: "row",
-    marginRight: 12,
-    minWidth: 200,
-    padding: 12,
+    borderRadius: 12,
+    padding: spacing.md,
+    marginRight: spacing.md,
+    minWidth: 220,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  icon: {
+    width: 48,
+    height: 48,
+    borderRadius: 8,
+    marginRight: spacing.md,
   },
   details: {
     flex: 1,
   },
-  icon: {
-    borderRadius: 8,
-    height: 40,
-    marginRight: 12,
-    width: 40,
+  name: {
+    ...typography.bodyBold,
+    color: colors.textPrimary,
   },
   meta: {
+    ...typography.small,
     color: colors.textSecondary,
-    fontSize: 12,
     marginTop: 2,
   },
-  name: {
-    color: colors.textPrimary,
-    fontSize: 16,
-    fontWeight: "600",
+  addBtn: {
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+    width: 28,
+    height: 28,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  addText: {
+    color: colors.white,
+    fontSize: 18,
+    fontWeight: "bold",
+    marginTop: -2,
   },
 });
 

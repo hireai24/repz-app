@@ -8,6 +8,7 @@ import {
   RefreshControl,
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
+import { formatDistanceToNowStrict } from "date-fns";
 
 import { getChallenges, submitChallenge } from "../api/challengeApi";
 import ChallengeCard from "../components/ChallengeCard";
@@ -17,7 +18,6 @@ import i18n from "../locales/i18n";
 import colors from "../theme/colors";
 import spacing from "../theme/spacing";
 import typography from "../theme/typography";
-import { formatDistanceToNowStrict } from "date-fns";
 import { UserContext } from "../context/UserContext";
 
 const PAGE_SIZE = 10;
@@ -31,7 +31,7 @@ const ChallengeScreen = () => {
   const [message, setMessage] = useState("");
   const [page, setPage] = useState(1);
 
-  const { userProfile,userId } = useContext(UserContext);
+  const { userProfile } = useContext(UserContext);
   const { locked, tier } = useTierAccess();
 
   const loadChallenges = useCallback(async () => {
@@ -39,13 +39,12 @@ const ChallengeScreen = () => {
       setLoading(true);
       setError("");
       setMessage("");
-      console.log("FFFF");
+
       const data = await getChallenges();
 
-      console.log("SSSSSS", data);
       if (!Array.isArray(data)) throw new Error("Invalid challenge data");
 
-      const sortedChallenges = data.sort((a, b) => {
+      const sorted = data.sort((a, b) => {
         const statusOrder = { active: 1, upcoming: 2, expired: 3 };
         const statusCompare =
           (statusOrder[a.status?.toLowerCase()] || 99) -
@@ -56,10 +55,10 @@ const ChallengeScreen = () => {
         return expiryA - expiryB;
       });
 
-      setChallenges(sortedChallenges);
-      setDisplayedChallenges(sortedChallenges.slice(0, PAGE_SIZE));
+      setChallenges(sorted);
+      setDisplayedChallenges(sorted.slice(0, PAGE_SIZE));
       setPage(1);
-    } catch (e) {
+    } catch {
       setError(i18n.t("challenge.errorLoad"));
     } finally {
       setLoading(false);
@@ -71,7 +70,7 @@ const ChallengeScreen = () => {
       await submitChallenge(challengeId);
       setMessage(i18n.t("challenge.successJoin"));
       onRefresh();
-    } catch (e) {
+    } catch {
       setError(i18n.t("challenge.submitFail"));
     }
   };
@@ -91,7 +90,6 @@ const ChallengeScreen = () => {
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    setPage(1);
     setMessage("");
     loadChallenges().finally(() => setRefreshing(false));
   }, [loadChallenges]);
@@ -99,77 +97,66 @@ const ChallengeScreen = () => {
   useFocusEffect(
     useCallback(() => {
       loadChallenges();
-    }, [loadChallenges]),
+    }, [loadChallenges])
   );
-
-  console.log("userProfile", userProfile, userId)
 
   if (!userProfile?.id) {
     return (
-      <View style={styles.lockedContainer}>
-        <Text style={styles.lockedText}>
-          {i18n.t("common.loginRequired") ||
-            "Please log in to view challenges."}
-        </Text>
+      <View style={styles.centeredContainer}>
+        <Text style={styles.lockedText}>{i18n.t("common.loginRequired")}</Text>
       </View>
     );
   }
+
   if (locked) {
     return (
-      <View style={styles.lockedContainer}>
+      <View style={styles.centeredContainer}>
         <Text style={styles.lockedText}>
-          {i18n.t("challenge.tierLocked") ||
-            `Access to challenges requires a minimum tier. Current tier: ${tier || "N/A"}`}
+          {i18n.t("challenge.tierLocked", { tier: tier || "N/A" })}
         </Text>
       </View>
     );
   }
 
   const renderItem = ({ item }) => {
-    const now = new Date();
     const expiryDate = item.expiresAt?.seconds
       ? new Date(item.expiresAt.seconds * 1000)
       : null;
     const remaining =
-      expiryDate && expiryDate.getTime() - now.getTime() > 0
+      expiryDate && expiryDate.getTime() - Date.now() > 0
         ? formatDistanceToNowStrict(expiryDate, { addSuffix: true })
         : null;
 
-    const isParticipant = item.participants?.includes(userProfile?.id);
-    const userProgress = item.progress?.[userProfile?.id];
-    const isChallengeCompleted = userProgress?.completed;
-    const isChallengeInProgress = userProgress?.inProgress;
+    const isParticipant = item.participants?.includes(userProfile.id);
+    const progress = item.progress?.[userProfile.id] || {};
 
     return (
-      <View style={{ marginBottom: spacing.xl }}>
+      <View style={styles.cardWrapper}>
         <ChallengeCard
           challenge={item}
           progress={{
-            completed: isChallengeCompleted,
-            inProgress: isChallengeInProgress,
+            completed: progress.completed,
+            inProgress: progress.inProgress,
           }}
           onEnter={() => handleEnter(item.id)}
-          onView={() => {
-            // Navigation logic would go here
-            // navigation.navigate('ChallengeDetail', { challengeId: item.id });
-          }}
         />
-
-        {item.verified && (
-          <Text style={styles.verifiedText}>
-            ✅ {i18n.t("challengeWager.verified")}
-          </Text>
-        )}
-        {item.flagged && (
-          <Text style={styles.flaggedText}>
-            ⚠️ {i18n.t("challengeWager.flagged")}
-          </Text>
-        )}
-        {remaining && (
-          <Text style={styles.timerText}>
-            ⏳ {i18n.t("challenge.timeLeft") || "Time Left"}: {remaining}
-          </Text>
-        )}
+        <View style={styles.metadata}>
+          {item.verified && (
+            <Text style={styles.verifiedText}>
+              ✅ {i18n.t("challengeWager.verified")}
+            </Text>
+          )}
+          {item.flagged && (
+            <Text style={styles.flaggedText}>
+              ⚠️ {i18n.t("challengeWager.flagged")}
+            </Text>
+          )}
+          {remaining && (
+            <Text style={styles.timerText}>
+              ⏳ {i18n.t("challenge.timeLeft")}: {remaining}
+            </Text>
+          )}
+        </View>
         {isParticipant && <LiveChatThread threadId={item.id} />}
       </View>
     );
@@ -177,9 +164,7 @@ const ChallengeScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>
-        {i18n.t("challenge.header") || "Challenges"}
-      </Text>
+      <Text style={styles.header}>{i18n.t("challenge.header")}</Text>
       {message ? (
         <Text style={styles.successText}>{message}</Text>
       ) : error ? (
@@ -204,7 +189,7 @@ const ChallengeScreen = () => {
               colors={[colors.primary]}
             />
           }
-          ListFooterComponent={() =>
+          ListFooterComponent={
             loading && !refreshing ? (
               <ActivityIndicator size="small" color={colors.primary} />
             ) : null
@@ -217,65 +202,71 @@ const ChallengeScreen = () => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.background,
     flex: 1,
+    backgroundColor: colors.background,
     padding: spacing.lg,
   },
-  emptyText: {
-    color: colors.textSecondary,
-    marginTop: spacing.lg,
-    textAlign: "center",
-  },
-  errorText: {
-    color: colors.error,
-    fontSize: 14,
-    marginBottom: spacing.sm,
-    textAlign: "center",
-  },
-  flaggedText: {
-    color: colors.warning,
-    fontSize: 13,
-    marginTop: 2,
-    textAlign: "right",
+  centeredContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.background,
+    padding: spacing.lg,
   },
   header: {
     ...typography.heading2,
     color: colors.textPrimary,
     marginBottom: spacing.md,
   },
+  successText: {
+    color: colors.success,
+    textAlign: "center",
+    marginBottom: spacing.sm,
+  },
+  errorText: {
+    color: colors.danger,
+    textAlign: "center",
+    marginBottom: spacing.sm,
+  },
+  emptyText: {
+    ...typography.body,
+    color: colors.textSecondary,
+    textAlign: "center",
+    marginTop: spacing.lg,
+  },
   listContent: {
     paddingBottom: spacing.xl,
   },
-  lockedContainer: {
-    alignItems: "center",
-    backgroundColor: colors.background,
-    flex: 1,
-    justifyContent: "center",
-    padding: spacing.xl,
+  cardWrapper: {
+    marginBottom: spacing.xl,
+    borderRadius: 12,
+    overflow: "hidden",
+    backgroundColor: colors.surface,
+    ...colors.shadow, // apply shadow if desired
+  },
+  metadata: {
+    marginTop: spacing.xs,
+  },
+  verifiedText: {
+    color: colors.accentBlue,
+    fontSize: 12,
+    textAlign: "right",
+  },
+  flaggedText: {
+    color: colors.warning,
+    fontSize: 12,
+    textAlign: "right",
+  },
+  timerText: {
+    color: colors.textTertiary,
+    fontSize: 12,
+    fontStyle: "italic",
+    textAlign: "right",
   },
   lockedText: {
     color: colors.textSecondary,
     fontSize: 16,
     textAlign: "center",
-  },
-  successText: {
-    color: colors.success,
-    fontSize: 14,
-    marginBottom: spacing.sm,
-    textAlign: "center",
-  },
-  timerText: {
-    color: colors.accent,
-    fontSize: 12,
-    fontStyle: "italic",
-    marginTop: 2,
-    textAlign: "right",
-  },
-  verifiedText: {
-    color: colors.accentBlue,
-    fontSize: 13,
-    marginTop: 4,
-    textAlign: "right",
   },
 });
 

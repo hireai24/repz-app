@@ -40,13 +40,12 @@ export const UserProvider = ({ children }) => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      setLoadingProfile(true);
       try {
-        if (user) {
-          setUserId(user.uid);
-          await Promise.all([
-            loadUserProfile(user.uid),
-            loadDailyChallenge(user.uid),
-          ]);
+        if (user?.uid) {
+          const uid = user.uid;
+          setUserId(uid);
+          await Promise.all([loadUserProfile(uid), loadDailyChallenge(uid)]);
         } else {
           setUserId(null);
           setUserProfile(null);
@@ -56,7 +55,8 @@ export const UserProvider = ({ children }) => {
             DAILY_CHALLENGE_STORAGE_KEY,
           ]);
         }
-      } catch {
+      } catch (err) {
+        console.error("Auth context error:", err);
         setUserId(null);
         setUserProfile(null);
         setDailyChallenge(null);
@@ -105,15 +105,13 @@ export const UserProvider = ({ children }) => {
         USER_PROFILE_STORAGE_KEY,
         JSON.stringify(formattedProfile)
       );
-    } catch {
+    } catch (err) {
+      console.warn("Failed to fetch profile from Firestore:", err);
       try {
         const cached = await AsyncStorage.getItem(USER_PROFILE_STORAGE_KEY);
-        if (cached) {
-          setUserProfile(JSON.parse(cached));
-        } else {
-          setUserProfile(null);
-        }
-      } catch {
+        setUserProfile(cached ? JSON.parse(cached) : null);
+      } catch (err) {
+        console.error("Error loading cached profile:", err);
         setUserProfile(null);
       }
     }
@@ -133,26 +131,23 @@ export const UserProvider = ({ children }) => {
       } else {
         setDailyChallenge(null);
       }
-    } catch {
+    } catch (err) {
+      console.warn("Error fetching daily challenge:", err);
       try {
         const cached = await AsyncStorage.getItem(DAILY_CHALLENGE_STORAGE_KEY);
-        if (cached) {
-          setDailyChallenge(JSON.parse(cached));
-        } else {
-          setDailyChallenge(null);
-        }
-      } catch {
+        setDailyChallenge(cached ? JSON.parse(cached) : null);
+      } catch (err) {
+        console.error("Error loading cached challenge:", err);
         setDailyChallenge(null);
       }
     }
   };
 
   const refreshUserProfile = useCallback(async () => {
-    if (userId) {
-      setLoadingProfile(true);
-      await Promise.all([loadUserProfile(userId), loadDailyChallenge(userId)]);
-      setLoadingProfile(false);
-    }
+    if (!userId) return;
+    setLoadingProfile(true);
+    await Promise.all([loadUserProfile(userId), loadDailyChallenge(userId)]);
+    setLoadingProfile(false);
   }, [userId]);
 
   const isAdmin = userProfile?.role === "admin";

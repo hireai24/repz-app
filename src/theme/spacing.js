@@ -1,40 +1,13 @@
-import { Dimensions } from "react-native";
-
-const { width, height } = Dimensions.get("window");
-
-// Base guideline sizes for scaling
-const guidelineBaseWidth = 375; // iPhone 11/12 width
-const guidelineBaseHeight = 812; // iPhone 11/12 height
-
-const scale = (size) => (width / guidelineBaseWidth) * size;
-const verticalScale = (size) => (height / guidelineBaseHeight) * size;
-const moderateScale = (size, factor = 0.5) =>
-  size + (scale(size) - size) * factor;
-
+// src/theme/spacing.js
 const spacing = {
-  // Core scale
-  xs: moderateScale(4),
-  sm: moderateScale(8),
-  md: moderateScale(16),
-  lg: moderateScale(24),
-  xl: moderateScale(32),
-  xxl: moderateScale(48), // Slight tweak: 40 → 48 (more natural jump from xl)
-
-  // Layout-specific
-  screenPadding: moderateScale(20),
-  cardPadding: moderateScale(16),
-  elementGap: moderateScale(12),
-  listItemSpacing: moderateScale(12),
-
-  // Border Radius
-  borderRadius: moderateScale(8),
-  borderRadiusLarge: moderateScale(16),
-  borderRadiusXL: moderateScale(24),
-
-  // Component Heights
-  buttonHeight: verticalScale(48),
-  inputHeight: verticalScale(44),
-  headerHeight: verticalScale(56),
+  xs: 4,
+  sm: 8,
+  md: 16,
+  lg: 24,
+  xl: 32,
+  xxl: 40,
+  xxxl: 48,
+  borderRadius: 10,
 };
 
 export default spacing;

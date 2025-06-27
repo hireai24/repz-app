@@ -1,3 +1,5 @@
+// src/screens/PartnerFinderScreen.js
+
 import React, { useEffect, useState, useContext, useCallback } from "react";
 import {
   View,
@@ -17,6 +19,7 @@ import typography from "../theme/typography";
 
 const PartnerFinderScreen = () => {
   const { currentGym, userProfile } = useContext(UserContext);
+
   const [slots, setSlots] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -31,27 +34,25 @@ const PartnerFinderScreen = () => {
         setSlots([]);
         return;
       }
-      if (!userProfile || !userProfile.uid) {
+      if (!userProfile?.uid) {
         setError(i18n.t("common.userNotAuthenticated"));
         setSlots([]);
         return;
       }
-      const {
-        success,
-        data,
-        error: apiError,
-      } = await getPartnerSlots(currentGym);
+
+      const { success, data, error: apiError } = await getPartnerSlots(currentGym);
+
       if (success) {
-        const filteredSlots = data.filter(
+        const filtered = data.filter(
           (slot) =>
             slot.userId !== userProfile.uid &&
-            !slot.participants.includes(userProfile.uid),
+            !slot.participants.includes(userProfile.uid)
         );
-        setSlots(filteredSlots);
+        setSlots(filtered);
       } else {
         setError(apiError || i18n.t("common.error"));
       }
-    } catch (err) {
+    } catch {
       setError(i18n.t("common.errorFetchingSlots"));
     } finally {
       setLoading(false);
@@ -59,13 +60,13 @@ const PartnerFinderScreen = () => {
   }, [currentGym, userProfile]);
 
   useEffect(() => {
-    if (userProfile && userProfile.uid && currentGym) {
+    if (currentGym && userProfile?.uid) {
       fetchSlots();
     } else {
       setLoading(false);
       setError(i18n.t("partnerFinder.noUserOrGymSelected"));
     }
-  }, [fetchSlots, userProfile, currentGym]);
+  }, [fetchSlots, currentGym, userProfile]);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -74,7 +75,7 @@ const PartnerFinderScreen = () => {
   };
 
   const handleAccept = async (slotId) => {
-    if (!userProfile || !userProfile.uid) {
+    if (!userProfile?.uid) {
       setError(i18n.t("common.userNotAuthenticated"));
       return;
     }
@@ -82,14 +83,14 @@ const PartnerFinderScreen = () => {
     try {
       const { success, error: apiError } = await acceptPartnerInvite(
         slotId,
-        userProfile.uid,
+        userProfile.uid
       );
       if (success) {
         await fetchSlots();
       } else {
         setError(apiError || i18n.t("common.errorAcceptingInvite"));
       }
-    } catch (err) {
+    } catch {
       setError(i18n.t("common.error"));
     } finally {
       setLoading(false);
@@ -103,14 +104,15 @@ const PartnerFinderScreen = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{i18n.t("dashboard.toolPartnerFinder")}</Text>
+
       {loading ? (
-        <ActivityIndicator size="large" color={colors.primary} />
+        <View style={styles.centered}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
       ) : error ? (
         <Text style={styles.error}>{error}</Text>
       ) : slots.length === 0 ? (
-        <Text style={styles.emptyListText}>
-          {i18n.t("partnerFinder.noSlotsAvailable")}
-        </Text>
+        <Text style={styles.empty}>{i18n.t("partnerFinder.noSlotsAvailable")}</Text>
       ) : (
         <FlatList
           data={slots}
@@ -128,28 +130,33 @@ const PartnerFinderScreen = () => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.background,
     flex: 1,
+    backgroundColor: colors.background,
     padding: spacing.lg,
-  },
-  emptyListText: {
-    ...typography.body,
-    color: colors.textSecondary,
-    marginTop: spacing.lg,
-    textAlign: "center",
-  },
-  error: {
-    color: colors.error,
-    marginTop: spacing.lg,
-    textAlign: "center",
-  },
-  listContent: {
-    paddingBottom: spacing.xl,
   },
   title: {
     ...typography.heading2,
     color: colors.textPrimary,
     marginBottom: spacing.md,
+  },
+  centered: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  error: {
+    color: colors.error,
+    textAlign: "center",
+    marginTop: spacing.lg,
+  },
+  empty: {
+    ...typography.body,
+    color: colors.textSecondary,
+    textAlign: "center",
+    marginTop: spacing.lg,
+  },
+  listContent: {
+    paddingBottom: spacing.xl,
   },
 });
 

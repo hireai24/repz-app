@@ -2,8 +2,8 @@
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL; // Use base URL
-const WORKOUT_API_URL = `${BASE_URL}/api/workout`; // Specific API URL for workouts
+const BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
+const WORKOUT_API_URL = `${BASE_URL}/api/workout`;
 const MAX_RETRIES = 2;
 const RETRY_DELAY_MS = 500;
 
@@ -14,8 +14,7 @@ const getAuthToken = async () => {
   try {
     const token = await AsyncStorage.getItem("authToken");
     return token || "";
-  } catch (err) {
-    // console.error("Failed to get auth token from storage:", err);
+  } catch {
     return "";
   }
 };
@@ -33,13 +32,12 @@ const fetchWithRetry = async (url, options = {}, retries = MAX_RETRIES) => {
     try {
       const res = await fetch(url, options);
       if (!res.ok) {
-        const errorData = await res.json().catch(() => ({})); // Try to parse JSON error, fallback to empty object
+        const errorData = await res.json().catch(() => ({}));
         throw new Error(errorData.error || `HTTP ${res.status}`);
       }
       return await res.json();
     } catch (err) {
       if (attempt === retries) {
-        // console.error("fetchWithRetry failed after retries:", err);
         return { success: false, error: err.message };
       }
       await sleep(RETRY_DELAY_MS);
@@ -81,14 +79,10 @@ export const saveWorkout = async (userId, workoutData) => {
 };
 
 /**
- * Fetch all AI-generated workout plans (if used for a marketplace)
- * NOTE: This endpoint might be different from the AI generation one.
- * Your current PlanBuilderScreen uses `/api/workout/generate`.
+ * Fetch all AI-generated workout plans (for marketplace or browsing)
  */
 export const getWorkoutPlans = async () => {
   const token = await getAuthToken();
-  // This endpoint might be for pre-defined plans, not AI generation requests.
-  // Verify what backend route this maps to if it's still needed.
   return await fetchWithRetry(`${WORKOUT_API_URL}/plans`, {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -97,14 +91,12 @@ export const getWorkoutPlans = async () => {
 };
 
 /**
- * Generate a personalized workout plan via backend AI service.
- * @param {object} payload - { userId, fitnessGoal, equipment, injuries, availableDays, preferredSplit, experienceLevel }
+ * Generate a personalized workout plan via backend AI
+ * @param {object} payload - userId, fitnessGoal, equipment, injuries, etc.
  */
 export const generateWorkoutPlan = async (payload) => {
-  // NEW: Exported function for AI generation
   const token = await getAuthToken();
   return await fetchWithRetry(`${WORKOUT_API_URL}/generate`, {
-    // Targets POST /api/workout/generate
     method: "POST",
     headers: {
       "Content-Type": "application/json",

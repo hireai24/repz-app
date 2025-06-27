@@ -7,12 +7,16 @@ import React, {
   useCallback,
 } from "react";
 import PropTypes from "prop-types";
-import { doc, onSnapshot, updateDoc, increment } from "firebase/firestore";
+import {
+  doc,
+  onSnapshot,
+  updateDoc,
+  increment,
+} from "firebase/firestore";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import {auth, firestore} from "../firebase/firebaseClient";
+import { auth, firestore } from "../firebase/firebaseClient";
 import { AuthContext } from "./AuthContext";
 
-// Provide default values for safer consumption outside provider (prevents undefined errors)
 export const XPContext = createContext({
   totalXP: 0,
   currentXP: 0,
@@ -28,22 +32,21 @@ export const XPContext = createContext({
 
 const XP_STORAGE_KEY = "repz_total_xp";
 
-// Updated: xpToNext never negative; included xpRequiredForLevel if needed for UI
 const calculateLevel = (xp) => {
   let level = 1;
   let required = 100;
-  let remainingXP = xp;
+  let remaining = xp;
 
-  while (remainingXP >= required) {
-    remainingXP -= required;
+  while (remaining >= required) {
+    remaining -= required;
     level++;
     required = Math.floor(required * 1.2);
   }
 
   return {
     level,
-    currentXP: remainingXP,
-    xpToNext: Math.max(0, required - remainingXP),
+    currentXP: remaining,
+    xpToNext: Math.max(0, required - remaining),
     xpRequiredForLevel: required,
   };
 };
@@ -54,14 +57,14 @@ export const XPProvider = ({ children }) => {
   const [xpError, setXpError] = useState(null);
 
   useEffect(() => {
-
-    if (!authUser) return;
+    if (!authUser?.uid) return;
 
     const xpRef = doc(firestore, "xp", authUser.uid);
+
     const unsubscribe = onSnapshot(
       xpRef,
-      (docSnap) => {
-        const data = docSnap.data();
+      (snap) => {
+        const data = snap.data();
         const newXP = data?.total || 0;
         setTotalXP(newXP);
         AsyncStorage.setItem(XP_STORAGE_KEY, newXP.toString());
@@ -69,15 +72,15 @@ export const XPProvider = ({ children }) => {
       async () => {
         setXpError("Failed to load XP data.");
         try {
-          const savedXP = parseInt(
+          const saved = parseInt(
             (await AsyncStorage.getItem(XP_STORAGE_KEY)) || "0",
-            10,
+            10
           );
-          setTotalXP(savedXP);
+          setTotalXP(saved);
         } catch {
           setXpError("Failed to restore saved XP.");
         }
-      },
+      }
     );
 
     return () => unsubscribe();
@@ -85,9 +88,9 @@ export const XPProvider = ({ children }) => {
 
   const addXP = useCallback(
     async (amount) => {
-      if (!authUser) return;
+      if (!authUser?.uid) return;
       try {
-        const xpRef = doc(db, "xp", authUser.uid);
+        const xpRef = doc(firestore, "xp", authUser.uid);
         await updateDoc(xpRef, { total: increment(amount) });
         const updated = totalXP + amount;
         setTotalXP(updated);
@@ -96,13 +99,13 @@ export const XPProvider = ({ children }) => {
         setXpError("Failed to add XP.");
       }
     },
-    [authUser, totalXP],
+    [authUser, totalXP]
   );
 
   const resetXP = useCallback(async () => {
-    if (!authUser) return;
+    if (!authUser?.uid) return;
     try {
-      const xpRef = doc(db, "xp", authUser.uid);
+      const xpRef = doc(firestore, "xp", authUser.uid);
       await updateDoc(xpRef, { total: 0 });
       setTotalXP(0);
       await AsyncStorage.setItem(XP_STORAGE_KEY, "0");
@@ -117,15 +120,15 @@ export const XPProvider = ({ children }) => {
       const xpAmount = xpMap[type] || 75;
       await addXP(xpAmount);
     },
-    [addXP],
+    [addXP]
   );
 
   const applyWagerXP = useCallback(
     async (win, amount) => {
-      if (!authUser || typeof amount !== "number") return;
+      if (!authUser?.uid || typeof amount !== "number") return;
       try {
         const delta = win ? amount : -amount;
-        const xpRef = doc(db, "xp", authUser.uid);
+        const xpRef = doc(firestore, "xp", authUser.uid);
         await updateDoc(xpRef, { total: increment(delta) });
         const newXP = totalXP + delta;
         setTotalXP(newXP);
@@ -134,17 +137,17 @@ export const XPProvider = ({ children }) => {
         setXpError("Failed to update wager XP.");
       }
     },
-    [authUser, totalXP],
+    [authUser, totalXP]
   );
 
   const applyStreakBonus = useCallback(
     async (milestone) => {
-      if (!authUser || ![3, 7, 14].includes(milestone)) return;
+      if (!authUser?.uid || ![3, 7, 14].includes(milestone)) return;
       const bonusMap = { 3: 50, 7: 100, 14: 200 };
       const bonusXP = bonusMap[milestone] || 0;
 
       try {
-        const xpRef = doc(db, "xp", authUser.uid);
+        const xpRef = doc(firestore, "xp", authUser.uid);
         await updateDoc(xpRef, { total: increment(bonusXP) });
         const updated = totalXP + bonusXP;
         setTotalXP(updated);
@@ -153,12 +156,12 @@ export const XPProvider = ({ children }) => {
         setXpError("Failed to apply streak bonus.");
       }
     },
-    [authUser, totalXP],
+    [authUser, totalXP]
   );
 
   const { level, currentXP, xpToNext, xpRequiredForLevel } = useMemo(
     () => calculateLevel(totalXP),
-    [totalXP],
+    [totalXP]
   );
 
   const value = useMemo(
@@ -166,7 +169,7 @@ export const XPProvider = ({ children }) => {
       totalXP,
       currentXP,
       xpToNext,
-      xpRequiredForLevel, // You can use this in your UI if you want
+      xpRequiredForLevel,
       level,
       addXP,
       resetXP,
@@ -187,7 +190,7 @@ export const XPProvider = ({ children }) => {
       applyWagerXP,
       applyStreakBonus,
       xpError,
-    ],
+    ]
   );
 
   return <XPContext.Provider value={value}>{children}</XPContext.Provider>;

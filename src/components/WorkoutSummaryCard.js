@@ -26,11 +26,11 @@ const WorkoutSummaryCard = ({
 
   useEffect(() => {
     if (xpEarned > 0) triggerBounce();
-  }, [xpEarned, triggerBounce]); // ✅ FIXED: added missing dependency
+  }, [xpEarned, triggerBounce]);
 
   return (
     <View style={styles.card} accessibilityRole="summary">
-      <Text style={styles.title}>Workout Complete</Text>
+      <Text style={styles.title}>🎯 Workout Summary</Text>
 
       {planName && (
         <View style={styles.row}>
@@ -61,21 +61,13 @@ const WorkoutSummaryCard = ({
       </View>
 
       <View style={styles.row}>
-        <Ionicons
-          name="calendar-outline"
-          size={20}
-          color={colors.textSecondary}
-        />
+        <Ionicons name="calendar-outline" size={20} color={colors.textSecondary} />
         <Text style={styles.label}>Streak:</Text>
         <Text style={styles.value}>{streakDays} days</Text>
       </View>
 
       <View style={styles.row}>
-        <Ionicons
-          name="shield-checkmark-outline"
-          size={20}
-          color={colors.textSecondary}
-        />
+        <Ionicons name="shield-checkmark-outline" size={20} color={colors.textSecondary} />
         <Text style={styles.label}>Tier:</Text>
         <Text style={styles.value}>{tier}</Text>
       </View>
@@ -87,6 +79,7 @@ const WorkoutSummaryCard = ({
           accessibilityRole="button"
           accessibilityLabel="Share your lift"
         >
+          <Ionicons name="share-social-outline" size={18} color={colors.textOnPrimary} />
           <Text style={styles.shareText}>Share Your Lift</Text>
         </TouchableOpacity>
 
@@ -100,7 +93,8 @@ const WorkoutSummaryCard = ({
           accessibilityRole="button"
           accessibilityLabel="Use AI to adapt your next workout"
         >
-          <Text style={styles.adaptText}>Use AI to Adapt Next Session</Text>
+          <Ionicons name="sparkles-outline" size={18} color={colors.white} />
+          <Text style={styles.adaptText}>AI Adapt Next Session</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -119,25 +113,25 @@ WorkoutSummaryCard.propTypes = {
 };
 
 const styles = StyleSheet.create({
-  actions: {
-    gap: 10,
-    marginTop: spacing.md,
-  },
-  adaptBtn: {
-    alignItems: "center",
-    backgroundColor: colors.primary,
-    borderRadius: spacing.borderRadius,
-    padding: spacing.md,
-  },
-  adaptText: {
-    color: colors.textPrimary,
-    fontWeight: "bold",
-  },
   card: {
     backgroundColor: colors.surface,
-    borderRadius: spacing.borderRadius,
-    marginTop: spacing.md,
+    borderRadius: spacing.lg,
+    marginTop: spacing.lg,
     padding: spacing.lg,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  title: {
+    ...typography.heading3,
+    color: colors.textPrimary,
+    marginBottom: spacing.md,
+  },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: spacing.sm,
   },
   label: {
     color: colors.textSecondary,
@@ -145,30 +139,43 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginLeft: spacing.xs,
   },
-  row: {
-    alignItems: "center",
-    flexDirection: "row",
-    marginBottom: spacing.xs,
-  },
-  shareBtn: {
-    alignItems: "center",
-    backgroundColor: colors.card,
-    borderRadius: spacing.borderRadius,
-    padding: spacing.md,
-  },
-  shareText: {
-    color: colors.textPrimary,
-    fontWeight: "bold",
-  },
-  title: {
-    ...typography.heading3,
-    color: colors.textPrimary,
-    marginBottom: spacing.sm,
-  },
   value: {
     color: colors.textPrimary,
     fontSize: 14,
     fontWeight: "600",
+  },
+  actions: {
+    flexDirection: "row",
+    gap: spacing.sm,
+    marginTop: spacing.lg,
+  },
+  shareBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.secondary,
+    borderRadius: spacing.sm,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    flex: 1,
+  },
+  shareText: {
+    color: colors.textOnPrimary,
+    fontWeight: "bold",
+    marginLeft: spacing.xs,
+  },
+  adaptBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.primary,
+    borderRadius: spacing.sm,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    flex: 1,
+  },
+  adaptText: {
+    color: colors.white,
+    fontWeight: "bold",
+    marginLeft: spacing.xs,
   },
 });
 

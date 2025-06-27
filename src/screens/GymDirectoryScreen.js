@@ -41,12 +41,17 @@ const GymDirectoryScreen = () => {
       <Text style={styles.header}>Nearby Gyms</Text>
       {loading ? (
         <ActivityIndicator size="large" color={colors.primary} />
+      ) : gyms.length === 0 ? (
+        <Text style={styles.emptyText}>
+          No gyms found nearby. Check back later.
+        </Text>
       ) : (
         <FlatList
           data={gyms}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => <GymCard gym={item} />}
           contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
         />
       )}
     </View>
@@ -55,17 +60,25 @@ const GymDirectoryScreen = () => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.background,
     flex: 1,
-    padding: spacing.lg,
+    backgroundColor: colors.background,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.lg,
   },
   header: {
     ...typography.heading2,
     color: colors.textPrimary,
     marginBottom: spacing.md,
+    textAlign: "center",
+  },
+  emptyText: {
+    ...typography.body,
+    color: colors.textSecondary,
+    textAlign: "center",
+    marginTop: spacing.xl,
   },
   listContent: {
-    paddingBottom: spacing.xxxl,
+    paddingBottom: spacing.xxl,
   },
 });
 

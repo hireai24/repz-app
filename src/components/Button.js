@@ -1,3 +1,4 @@
+// src/components/Button.js
 import React from "react";
 import PropTypes from "prop-types";
 import {
@@ -5,9 +6,11 @@ import {
   Text,
   StyleSheet,
   ActivityIndicator,
+  View,
 } from "react-native";
-
 import colors from "../theme/colors";
+import spacing from "../theme/spacing";
+import typography from "../theme/typography";
 
 const Button = ({
   label,
@@ -17,9 +20,15 @@ const Button = ({
   loading = false,
   style,
 }) => {
+  const variantColors = {
+    primary: colors.primary,
+    secondary: colors.accent,
+    danger: colors.error,
+  };
+
   const backgroundColor = disabled
     ? colors.disabled
-    : colors[variant] || colors.primary;
+    : variantColors[variant] || colors.primary;
 
   return (
     <TouchableOpacity
@@ -29,32 +38,22 @@ const Button = ({
       activeOpacity={0.85}
       accessibilityRole="button"
       accessibilityLabel={label}
-      accessibilityState={{ disabled: disabled || loading, busy: loading }}
+      accessibilityState={{
+        disabled: disabled || loading,
+        busy: loading,
+      }}
       testID={`button-${label.toLowerCase().replace(/\s+/g, "-")}`}
     >
       {loading ? (
-        <ActivityIndicator color={colors.white} />
+        <View style={styles.loadingWrapper}>
+          <ActivityIndicator color={colors.textOnPrimary} />
+        </View>
       ) : (
-        <Text style={[styles.text, { color: colors.white }]}>{label}</Text>
+        <Text style={styles.label}>{label}</Text>
       )}
     </TouchableOpacity>
   );
 };
-
-const styles = StyleSheet.create({
-  button: {
-    alignItems: "center",
-    borderRadius: 10,
-    justifyContent: "center",
-    marginVertical: 6,
-    paddingHorizontal: 24,
-    paddingVertical: 14,
-  },
-  text: {
-    fontSize: 15,
-    fontWeight: "600",
-  },
-});
 
 Button.propTypes = {
   label: PropTypes.string.isRequired,
@@ -64,5 +63,26 @@ Button.propTypes = {
   loading: PropTypes.bool,
   style: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
 };
+
+const styles = StyleSheet.create({
+  button: {
+    alignItems: "center",
+    borderRadius: spacing.sm,
+    flexDirection: "row",
+    justifyContent: "center",
+    marginVertical: spacing.xs,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+  },
+  label: {
+    ...typography.buttonText,
+    color: colors.textOnPrimary,
+    fontWeight: "600",
+  },
+  loadingWrapper: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
+});
 
 export default Button;
