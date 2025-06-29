@@ -1,3 +1,5 @@
+// src/screens/GymDirectoryScreen.js
+
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -5,13 +7,15 @@ import {
   ActivityIndicator,
   Text,
   StyleSheet,
+  Image,
 } from "react-native";
-
 import { getGyms } from "../api/gymApi";
 import GymCard from "../components/GymCard";
 import colors from "../theme/colors";
 import spacing from "../theme/spacing";
 import typography from "../theme/typography";
+// ✅ Fixed import to use the actual file you have
+import gymIcon from "../assets/gymFeed/gym-icon.png";
 
 const GymDirectoryScreen = () => {
   const [gyms, setGyms] = useState([]);
@@ -38,9 +42,12 @@ const GymDirectoryScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Nearby Gyms</Text>
+      <View style={styles.headerRow}>
+        <Image source={gymIcon} style={styles.gymIcon} />
+        <Text style={styles.header}>{`Nearby Gyms`}</Text>
+      </View>
       {loading ? (
-        <ActivityIndicator size="large" color={colors.primary} />
+        <ActivityIndicator size="large" color={colors.primary} style={styles.loading} />
       ) : gyms.length === 0 ? (
         <Text style={styles.emptyText}>
           No gyms found nearby. Check back later.
@@ -65,11 +72,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.lg,
   },
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: spacing.md,
+  },
+  gymIcon: {
+    width: 24,
+    height: 24,
+    marginRight: spacing.sm,
+  },
   header: {
     ...typography.heading2,
     color: colors.textPrimary,
-    marginBottom: spacing.md,
-    textAlign: "center",
+  },
+  loading: {
+    marginTop: spacing.lg,
   },
   emptyText: {
     ...typography.body,

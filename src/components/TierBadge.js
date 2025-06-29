@@ -1,3 +1,4 @@
+// src/components/TierBadge.js
 import React from "react";
 import PropTypes from "prop-types";
 import { View, Text, StyleSheet, Image } from "react-native";
@@ -5,6 +6,7 @@ import { View, Text, StyleSheet, Image } from "react-native";
 import colors from "../theme/colors";
 import spacing from "../theme/spacing";
 import typography from "../theme/typography";
+import shadows from "../theme/shadow";
 
 // Static imports to avoid dynamic require errors
 import badgeBronze from "../assets/badges/badge-bronze.png";
@@ -54,18 +56,15 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.surface,
-    borderRadius: 12,
-    paddingHorizontal: spacing.sm,
+    backgroundColor: colors.glassBackground,
+    borderRadius: spacing.radiusLg,
+    paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    ...shadows.elevationGlass,
   },
   icon: {
-    width: 20,
-    height: 20,
+    width: 24,
+    height: 24,
     marginRight: spacing.xs,
   },
   text: {

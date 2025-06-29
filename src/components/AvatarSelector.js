@@ -1,3 +1,4 @@
+// src/components/AvatarSelector.js
 import React, { useMemo } from "react";
 import PropTypes from "prop-types";
 import {
@@ -16,6 +17,7 @@ import { uploadImageAsync } from "../utils/fileUploader";
 import colors from "../theme/colors";
 import spacing from "../theme/spacing";
 import typography from "../theme/typography";
+import shadows from "../theme/shadow";
 
 const AvatarSelector = ({ selectedAvatar, onSelect }) => {
   const isCustomSelected = selectedAvatar?.profilePicture;
@@ -88,7 +90,7 @@ const AvatarSelector = ({ selectedAvatar, onSelect }) => {
           ]}
           onPress={handleImageUpload}
         >
-          <Ionicons name="camera" size={20} color={colors.textOnPrimary} />
+          <Ionicons name="camera" size={22} color={colors.textOnPrimary} />
           <Text style={styles.uploadText}>Upload</Text>
         </TouchableOpacity>
         {avatarItems}
@@ -121,34 +123,31 @@ const styles = StyleSheet.create({
   avatarWrap: {
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: colors.surface,
-    borderColor: colors.transparent,
-    borderRadius: 999,
+    backgroundColor: colors.cardBackground,
+    borderColor: "transparent",
+    borderRadius: spacing.radiusPill,
     borderWidth: 2,
-    width: 64,
-    height: 64,
+    width: 70,
+    height: 70,
     marginRight: spacing.sm,
     marginBottom: spacing.sm,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    ...shadows.elevationCard,
   },
   avatarSelected: {
-    borderColor: colors.primary,
+    borderColor: colors.accentBlue,
     borderWidth: 2,
   },
   avatar: {
     width: "100%",
     height: "100%",
-    borderRadius: 999,
+    borderRadius: spacing.radiusPill,
   },
   uploadSlot: {
     backgroundColor: colors.primary,
   },
   uploadText: {
+    ...typography.smallBold,
     color: colors.textOnPrimary,
-    fontSize: 10,
     marginTop: 2,
   },
 });

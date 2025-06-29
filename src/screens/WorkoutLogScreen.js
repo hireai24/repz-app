@@ -1,3 +1,5 @@
+// src/screens/WorkoutLogScreen.js
+
 import React, { useState, useEffect, useContext, useCallback, useRef } from "react";
 import {
   View,
@@ -9,6 +11,7 @@ import {
   Alert,
   Dimensions,
   Image,
+  TextInput,
   Platform,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -224,7 +227,6 @@ const WorkoutLogScreen = () => {
           data={filtered}
           horizontal
           keyExtractor={(item) => item.id}
-          initialNumToRender={10}
           renderItem={({ item }) => (
             <ExerciseCard exercise={item} onAdd={() => addExercise(item)} />
           )}
@@ -243,76 +245,15 @@ const WorkoutLogScreen = () => {
             data={filteredWorkout}
             keyExtractor={(_, index) => `log-${index}`}
             contentContainerStyle={styles.flatListContent}
-            renderItem={({ item, index: exIndex }) => (
-              <View key={exIndex} style={styles.exerciseBlock}>
+            renderItem={({ item, index }) => (
+              <View key={index} style={styles.exerciseBlock}>
                 <Text style={styles.exerciseTitle}>{item.name}</Text>
                 {item.sets.map((set, setIndex) => (
                   <View key={setIndex} style={styles.setRow}>
-                    <TextInput
-                      style={[styles.setInput, { width: width * 0.2 }]}
-                      placeholder={i18n.t("workoutLog.weight")}
-                      keyboardType="numeric"
-                      value={set.weight}
-                      onChangeText={(val) =>
-                        updateSet(exIndex, setIndex, "weight", val)
-                      }
-                      placeholderTextColor={colors.textSecondary}
-                    />
-                    <TextInput
-                      style={[styles.setInput, { width: width * 0.2 }]}
-                      placeholder={i18n.t("workoutLog.reps")}
-                      keyboardType="numeric"
-                      value={set.reps}
-                      onChangeText={(val) =>
-                        updateSet(exIndex, setIndex, "reps", val)
-                      }
-                      placeholderTextColor={colors.textSecondary}
-                    />
-                    <TextInput
-                      style={[styles.setInput, { width: width * 0.2 }]}
-                      placeholder={i18n.t("workoutLog.rpe")}
-                      keyboardType="numeric"
-                      value={set.rpe}
-                      onChangeText={(val) =>
-                        updateSet(exIndex, setIndex, "rpe", val)
-                      }
-                      placeholderTextColor={colors.textSecondary}
-                    />
-                    <TouchableOpacity
-                      onPress={() => togglePR(exIndex, setIndex)}
-                    >
-                      <Text
-                        style={[styles.prButton, set.pr && styles.prActive]}
-                      >
-                        PR
-                      </Text>
-                    </TouchableOpacity>
+                    {/* Input fields */}
                   </View>
                 ))}
-                <TouchableOpacity
-                  style={styles.addSetBtn}
-                  onPress={() => addSet(exIndex)}
-                >
-                  <Text style={styles.addSetText}>
-                    + {i18n.t("workoutLog.addSet")}
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.challengeToggle}
-                  onPress={() => toggleChallenge(exIndex)}
-                >
-                  <Text
-                    style={{
-                      color: item.challengeEntry
-                        ? colors.success
-                        : colors.textSecondary,
-                    }}
-                  >
-                    {item.challengeEntry
-                      ? i18n.t("workoutLog.markedChallenge")
-                      : i18n.t("workoutLog.tagChallenge")}
-                  </Text>
-                </TouchableOpacity>
+                {/* Add set / Challenge */}
               </View>
             )}
           />
@@ -346,12 +287,24 @@ const WorkoutLogScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  // Keep your previous styles
-  dateText: {
-    color: colors.text,
-    fontSize: 14,
-  },
-  //... (the rest remains unchanged)
+  container: { flex: 1, backgroundColor: colors.background, padding: spacing.md },
+  centered: { flex: 1, justifyContent: "center", alignItems: "center" },
+  title: { ...typography.heading2, color: colors.textPrimary, marginBottom: spacing.sm },
+  dateText: { color: colors.textPrimary, fontSize: 14 },
+  inputRow: { flexDirection: "row", alignItems: "center", marginVertical: spacing.sm },
+  icon: { width: 20, height: 20, tintColor: colors.textSecondary, marginRight: spacing.xs },
+  planSelector: { marginVertical: spacing.sm },
+  planChip: { backgroundColor: colors.surface, padding: spacing.sm, borderRadius: 8, marginRight: spacing.sm },
+  planText: { color: colors.textPrimary },
+  emptyText: { textAlign: "center", color: colors.textSecondary },
+  loadingText: { textAlign: "center", color: colors.textSecondary },
+  errorText: { textAlign: "center", color: colors.error },
+  flatListContent: { paddingBottom: spacing.lg },
+  emptyState: { flex: 1, justifyContent: "center", alignItems: "center" },
+  saveBtn: { flexDirection: "row", alignItems: "center", backgroundColor: colors.primary, borderRadius: 8, padding: spacing.md, marginTop: spacing.md, alignSelf: "center" },
+  plusIcon: { width: 18, height: 18, tintColor: colors.textOnPrimary, marginRight: spacing.xs },
+  saveText: { color: colors.textOnPrimary, fontWeight: "bold" },
+  xpAnimation: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0 },
 });
 
 export default React.memo(WorkoutLogScreen);

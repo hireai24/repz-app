@@ -1,5 +1,5 @@
 // src/theme/typography.js
-import { Dimensions, PixelRatio } from "react-native";
+import { Dimensions, PixelRatio, Platform } from "react-native";
 
 const { width } = Dimensions.get("window");
 const guidelineBaseWidth = 375;
@@ -11,6 +11,13 @@ const scale = (size) => {
 
 const typography = {
   fontFamily: "System",
+
+  // Display hero heading
+  display: {
+    fontSize: scale(34),
+    fontWeight: "700",
+    lineHeight: scale(42),
+  },
 
   heading1: {
     fontSize: scale(28),
@@ -32,6 +39,7 @@ const typography = {
     fontWeight: "600",
     lineHeight: scale(26),
   },
+
   body: {
     fontSize: scale(16),
     fontWeight: "400",
@@ -42,6 +50,7 @@ const typography = {
     fontWeight: "600",
     lineHeight: scale(24),
   },
+
   small: {
     fontSize: scale(14),
     fontWeight: "400",
@@ -52,10 +61,28 @@ const typography = {
     fontWeight: "600",
     lineHeight: scale(20),
   },
+
   caption: {
     fontSize: scale(12),
     fontWeight: "400",
     lineHeight: scale(16),
+  },
+
+  button: {
+    fontSize: scale(16),
+    fontWeight: "700",
+    lineHeight: scale(22),
+    textTransform: "uppercase",
+  },
+
+  mono: {
+    fontSize: scale(14),
+    fontWeight: "400",
+    fontFamily: Platform.select({
+      ios: "Menlo",
+      android: "monospace",
+      default: "monospace",
+    }),
   },
 };
 

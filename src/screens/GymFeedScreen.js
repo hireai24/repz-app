@@ -1,3 +1,5 @@
+// src/screens/GymFeedScreen.js
+
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -112,7 +114,7 @@ const styles = StyleSheet.create({
   },
   bannerWrapper: {
     position: "relative",
-    height: 200,
+    height: 240,
     marginBottom: spacing.lg,
   },
   banner: {
@@ -121,7 +123,7 @@ const styles = StyleSheet.create({
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.4)",
+    backgroundColor: "rgba(0,0,0,0.35)",
   },
   bannerContent: {
     position: "absolute",
@@ -131,9 +133,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   avatar: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: 70,
+    height: 70,
+    borderRadius: 35,
     borderWidth: 2,
     borderColor: colors.white,
   },
@@ -147,8 +149,8 @@ const styles = StyleSheet.create({
   },
   joinBtn: {
     backgroundColor: colors.primary,
-    borderRadius: 6,
-    paddingHorizontal: spacing.md,
+    borderRadius: 8,
+    paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm,
   },
   joinText: {
@@ -159,7 +161,7 @@ const styles = StyleSheet.create({
     ...typography.body,
     color: colors.textSecondary,
     textAlign: "center",
-    marginVertical: spacing.lg,
+    marginVertical: spacing.xl,
   },
   postWrapper: {
     marginBottom: spacing.md,

@@ -46,6 +46,43 @@ const shadows = {
       elevation: 4,
     },
   }),
+
+  // New premium shadows
+  elevationGlass: Platform.select({
+    ios: {
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 10 },
+      shadowOpacity: 0.25,
+      shadowRadius: 20,
+    },
+    android: {
+      elevation: 8,
+    },
+  }),
+
+  elevationCard: Platform.select({
+    ios: {
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 6 },
+      shadowOpacity: 0.15,
+      shadowRadius: 12,
+    },
+    android: {
+      elevation: 6,
+    },
+  }),
+
+  elevationNeon: Platform.select({
+    ios: {
+      shadowColor: "#E63946", // Vibrant red glow
+      shadowOffset: { width: 0, height: 0 },
+      shadowOpacity: 0.6,
+      shadowRadius: 10,
+    },
+    android: {
+      elevation: 0, // Android requires custom workarounds for colored glows
+    },
+  }),
 };
 
 export default shadows;

@@ -1,9 +1,11 @@
+// src/components/ChallengeWagerCard.js
 import React from "react";
 import PropTypes from "prop-types";
 import { Text, StyleSheet, TouchableOpacity, View } from "react-native";
 import colors from "../theme/colors";
 import typography from "../theme/typography";
 import spacing from "../theme/spacing";
+import shadows from "../theme/shadow";
 import i18n from "../locales/i18n";
 
 const ChallengeWagerCard = ({ challenge, onPress }) => {
@@ -124,11 +126,11 @@ ChallengeWagerCard.propTypes = {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.surface,
-    borderRadius: 12,
+    backgroundColor: colors.glassBackground,
+    borderRadius: spacing.radiusLg,
     padding: spacing.md,
     marginBottom: spacing.md,
-    elevation: 2,
+    ...shadows.elevationCard,
   },
   title: {
     ...typography.heading4,
@@ -136,24 +138,24 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   detail: {
+    ...typography.caption,
     color: colors.textSecondary,
-    fontSize: 14,
     marginBottom: 4,
   },
   countdown: {
+    ...typography.caption,
     color: colors.warning,
-    fontSize: 13,
     marginBottom: 4,
   },
   verified: {
+    ...typography.caption,
     color: colors.accentBlue,
-    fontSize: 13,
     fontWeight: "600",
     marginBottom: 4,
   },
   flagged: {
+    ...typography.caption,
     color: colors.warning,
-    fontSize: 13,
     fontWeight: "600",
     marginBottom: 4,
   },
@@ -162,23 +164,19 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
   },
   status: {
-    color: colors.textSecondary,
+    ...typography.caption,
     fontWeight: "bold",
-    fontSize: 14,
+    color: colors.textSecondary,
   },
   winner: {
     color: colors.success,
   },
   loser: {
-    color: colors.error,
+    color: colors.danger,
   },
   winnerGlow: {
     borderColor: colors.gold,
     borderWidth: 2,
-    shadowColor: colors.gold,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.4,
-    shadowRadius: 6,
   },
 });
 

@@ -1,3 +1,4 @@
+// src/components/ExerciseCard.js
 import React from "react";
 import PropTypes from "prop-types";
 import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
@@ -5,6 +6,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 import colors from "../theme/colors";
 import spacing from "../theme/spacing";
 import typography from "../theme/typography";
+import shadows from "../theme/shadow";
 
 const fallbackIcon = "https://via.placeholder.com/40x40.png?text=EX";
 
@@ -16,7 +18,7 @@ const ExerciseCard = ({ exercise, onAdd }) => {
       accessibilityRole="button"
       accessibilityLabel={`Add ${exercise.name}`}
       testID={`exercise-card-${exercise.name.toLowerCase().replace(/\s+/g, "-")}`}
-      activeOpacity={0.8}
+      activeOpacity={0.85}
     >
       <Image
         source={{ uri: exercise.icon || fallbackIcon }}
@@ -50,20 +52,17 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.surface,
-    borderRadius: 12,
+    backgroundColor: colors.glassBackground,
+    borderRadius: spacing.radiusLg,
     padding: spacing.md,
     marginRight: spacing.md,
     minWidth: 220,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 3,
+    ...shadows.elevationCard,
   },
   icon: {
     width: 48,
     height: 48,
-    borderRadius: 8,
+    borderRadius: spacing.radiusMd,
     marginRight: spacing.md,
   },
   details: {
@@ -74,22 +73,21 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
   },
   meta: {
-    ...typography.small,
+    ...typography.caption,
     color: colors.textSecondary,
     marginTop: 2,
   },
   addBtn: {
     backgroundColor: colors.primary,
-    borderRadius: 8,
+    borderRadius: spacing.radiusPill,
     width: 28,
     height: 28,
     alignItems: "center",
     justifyContent: "center",
   },
   addText: {
-    color: colors.white,
-    fontSize: 18,
-    fontWeight: "bold",
+    ...typography.smallBold,
+    color: colors.textOnPrimary,
     marginTop: -2,
   },
 });

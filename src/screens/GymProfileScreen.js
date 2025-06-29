@@ -1,3 +1,5 @@
+// src/screens/GymProfileScreen.js
+
 import React, { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import {
@@ -110,7 +112,6 @@ const GymProfileScreen = ({ route }) => {
             style={styles.editButton}
             onPress={() => navigation.navigate("GymSubmissionScreen", { gym })}
             accessibilityRole="button"
-            accessibilityLabel="Edit Gym Profile"
           >
             <Text style={styles.editButtonText}>Edit Profile</Text>
           </TouchableOpacity>
@@ -121,7 +122,6 @@ const GymProfileScreen = ({ route }) => {
               navigation.navigate("GymFeedEditorScreen", { gymId: gym.id })
             }
             accessibilityRole="button"
-            accessibilityLabel="Add Gym Feed Post"
           >
             <Text style={styles.feedButtonText}>Add Feed Post</Text>
           </TouchableOpacity>
@@ -173,13 +173,13 @@ const styles = StyleSheet.create({
   },
   image: {
     width: "100%",
-    height: 180,
+    height: 200,
     borderRadius: 12,
     marginBottom: spacing.md,
   },
   imagePlaceholder: {
     width: "100%",
-    height: 180,
+    height: 200,
     backgroundColor: colors.surface,
     borderRadius: 12,
     justifyContent: "center",

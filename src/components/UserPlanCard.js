@@ -1,3 +1,4 @@
+// src/components/UserPlanCard.js
 import React from "react";
 import PropTypes from "prop-types";
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
@@ -7,6 +8,7 @@ import { format } from "date-fns";
 import colors from "../theme/colors";
 import spacing from "../theme/spacing";
 import typography from "../theme/typography";
+import shadows from "../theme/shadow";
 
 const UserPlanCard = ({ plan, onPress, onDelete }) => {
   const formattedDate = format(new Date(plan.createdAt), "dd MMM yyyy");
@@ -80,14 +82,11 @@ UserPlanCard.propTypes = {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.surface,
-    borderRadius: 16,
+    backgroundColor: colors.glassBackground,
+    borderRadius: spacing.radiusLg,
     marginBottom: spacing.lg,
     padding: spacing.lg,
-    shadowColor: "#000",
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 4,
+    ...shadows.elevationCard,
   },
   header: {
     flexDirection: "row",

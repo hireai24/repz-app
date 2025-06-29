@@ -1,3 +1,4 @@
+// src/components/PartnerSlotCard.js
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 import PropTypes from "prop-types";
@@ -5,6 +6,7 @@ import PropTypes from "prop-types";
 import colors from "../theme/colors";
 import spacing from "../theme/spacing";
 import typography from "../theme/typography";
+import shadows from "../theme/shadow";
 
 import defaultAvatar from "../assets/avatars/avatar1.png";
 
@@ -23,7 +25,9 @@ const PartnerSlotCard = ({ slot, onAccept }) => {
 
       <View style={styles.details}>
         <Text style={styles.name}>{username || "REPZ User"}</Text>
-        <Text style={styles.meta}>{timeSlot} • {gymName}</Text>
+        <Text style={styles.meta}>
+          {timeSlot} • {gymName}
+        </Text>
         {note ? <Text style={styles.note}>{note}</Text> : null}
 
         <View style={styles.tierBadge}>
@@ -62,19 +66,16 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.surface,
-    borderRadius: 12,
+    backgroundColor: colors.glassBackground,
+    borderRadius: spacing.radiusLg,
     padding: spacing.md,
     marginBottom: spacing.md,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 2,
+    ...shadows.elevationCard,
   },
   avatar: {
     width: 56,
     height: 56,
-    borderRadius: 28,
+    borderRadius: spacing.radiusPill,
     marginRight: spacing.md,
   },
   details: {
@@ -85,13 +86,13 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
   },
   meta: {
+    ...typography.caption,
     color: colors.textSecondary,
-    fontSize: 13,
     marginTop: 2,
   },
   note: {
+    ...typography.caption,
     color: colors.textSecondary,
-    fontSize: 12,
     fontStyle: "italic",
     marginTop: 4,
   },
@@ -99,24 +100,24 @@ const styles = StyleSheet.create({
     marginTop: spacing.xs,
     alignSelf: "flex-start",
     backgroundColor: colors.accentBlue,
-    borderRadius: 4,
-    paddingHorizontal: 6,
+    borderRadius: spacing.radiusSm,
+    paddingHorizontal: spacing.sm,
     paddingVertical: 2,
   },
   tierText: {
-    color: colors.white,
-    fontSize: 11,
+    ...typography.caption,
+    color: colors.textOnPrimary,
     fontWeight: "600",
   },
   joinBtn: {
     backgroundColor: colors.primary,
-    borderRadius: 6,
+    borderRadius: spacing.radiusMd,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
   },
   joinText: {
+    ...typography.smallBold,
     color: colors.textOnPrimary,
-    fontWeight: "600",
   },
 });
 

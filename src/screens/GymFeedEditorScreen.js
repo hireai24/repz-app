@@ -1,3 +1,5 @@
+// src/screens/GymFeedEditorScreen.js
+
 import React, { useState, useContext, useEffect } from "react";
 import {
   View,
@@ -75,34 +77,40 @@ const GymFeedEditorScreen = ({ route, navigation }) => {
     <View style={styles.container}>
       <Text style={styles.title}>Create a New Post</Text>
 
-      <Text style={styles.label}>Post Text</Text>
-      <TextInput
-        style={styles.input}
-        multiline
-        value={text}
-        onChangeText={setText}
-        placeholder="Enter post text..."
-        placeholderTextColor={colors.textSecondary}
-      />
+      <View style={styles.inputGroup}>
+        <Text style={styles.label}>Post Text</Text>
+        <TextInput
+          style={[styles.input, styles.textarea]}
+          multiline
+          value={text}
+          onChangeText={setText}
+          placeholder="Enter post text..."
+          placeholderTextColor={colors.textSecondary}
+        />
+      </View>
 
-      <Text style={styles.label}>Image URL (optional)</Text>
-      <TextInput
-        style={styles.input}
-        value={imageUrl}
-        onChangeText={setImageUrl}
-        placeholder="e.g., https://example.com/image.jpg"
-        placeholderTextColor={colors.textSecondary}
-        autoCapitalize="none"
-      />
+      <View style={styles.inputGroup}>
+        <Text style={styles.label}>Image URL (optional)</Text>
+        <TextInput
+          style={styles.input}
+          value={imageUrl}
+          onChangeText={setImageUrl}
+          placeholder="e.g., https://example.com/image.jpg"
+          placeholderTextColor={colors.textSecondary}
+          autoCapitalize="none"
+        />
+      </View>
 
-      <Text style={styles.label}>Offer (optional)</Text>
-      <TextInput
-        style={styles.input}
-        value={offer}
-        onChangeText={setOffer}
-        placeholder="e.g., 20% off personal training"
-        placeholderTextColor={colors.textSecondary}
-      />
+      <View style={styles.inputGroup}>
+        <Text style={styles.label}>Offer (optional)</Text>
+        <TextInput
+          style={styles.input}
+          value={offer}
+          onChangeText={setOffer}
+          placeholder="e.g., 20% off personal training"
+          placeholderTextColor={colors.textSecondary}
+        />
+      </View>
 
       <TouchableOpacity style={styles.submitButton} onPress={handlePost}>
         <Text style={styles.submitButtonText}>Post</Text>
@@ -141,6 +149,9 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
     textAlign: "center",
   },
+  inputGroup: {
+    marginBottom: spacing.md,
+  },
   label: {
     ...typography.subheading,
     color: colors.textSecondary,
@@ -148,12 +159,15 @@ const styles = StyleSheet.create({
   },
   input: {
     backgroundColor: colors.surface,
-    borderColor: colors.border,
+    borderRadius: 10,
     borderWidth: 1,
-    borderRadius: 8,
+    borderColor: colors.border,
     color: colors.textPrimary,
     padding: spacing.md,
-    marginBottom: spacing.md,
+  },
+  textarea: {
+    minHeight: 100,
+    textAlignVertical: "top",
   },
   submitButton: {
     backgroundColor: colors.primary,

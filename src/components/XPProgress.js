@@ -1,3 +1,4 @@
+// src/components/XPProgress.js
 import React, { useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import { View, Text, StyleSheet } from "react-native";
@@ -8,6 +9,7 @@ import i18n from "../locales/i18n";
 import colors from "../theme/colors";
 import spacing from "../theme/spacing";
 import typography from "../theme/typography";
+import shadows from "../theme/shadow";
 
 const XPProgress = ({ xp, level, xpToNext }) => {
   const progress = Math.min(xp / xpToNext, 1);
@@ -56,25 +58,22 @@ XPProgress.propTypes = {
 const styles = StyleSheet.create({
   container: {
     alignItems: "center",
-    backgroundColor: colors.surface,
-    borderRadius: spacing.lg,
+    backgroundColor: colors.glassBackground,
+    borderRadius: spacing.radiusLg,
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.lg,
     marginBottom: spacing.lg,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 3,
+    ...shadows.elevationGlass,
   },
   lottieWrapper: {
     justifyContent: "center",
     alignItems: "center",
-    width: 100,
-    height: 100,
+    width: 110,
+    height: 110,
   },
   lottie: {
-    width: 100,
-    height: 100,
+    width: 110,
+    height: 110,
   },
   overlayText: {
     position: "absolute",
@@ -92,9 +91,9 @@ const styles = StyleSheet.create({
   tierBadge: {
     marginTop: spacing.sm,
     backgroundColor: colors.primary,
-    borderRadius: 12,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 2,
+    borderRadius: spacing.radiusMd,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 4,
   },
   tierText: {
     ...typography.smallBold,

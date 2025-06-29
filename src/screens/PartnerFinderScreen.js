@@ -8,7 +8,9 @@ import {
   FlatList,
   RefreshControl,
   ActivityIndicator,
+  TouchableOpacity,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { UserContext } from "../context/UserContext";
 import { getPartnerSlots, acceptPartnerInvite } from "../api/partnerApi";
 import PartnerSlotCard from "../components/PartnerSlotCard";
@@ -103,16 +105,35 @@ const PartnerFinderScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{i18n.t("dashboard.toolPartnerFinder")}</Text>
+      <View style={styles.headerRow}>
+        <Text style={styles.title}>{i18n.t("dashboard.toolPartnerFinder")}</Text>
+        <TouchableOpacity
+          style={styles.searchBtn}
+          accessibilityRole="button"
+          onPress={() => {
+            // Future: open filter/search modal
+          }}
+        >
+          <Ionicons
+            name="search-outline"
+            size={20}
+            color={colors.textPrimary}
+          />
+        </TouchableOpacity>
+      </View>
 
       {loading ? (
         <View style={styles.centered}>
           <ActivityIndicator size="large" color={colors.primary} />
         </View>
       ) : error ? (
-        <Text style={styles.error}>{error}</Text>
+        <View style={styles.emptyState}>
+          <Text style={styles.errorText}>{error}</Text>
+        </View>
       ) : slots.length === 0 ? (
-        <Text style={styles.empty}>{i18n.t("partnerFinder.noSlotsAvailable")}</Text>
+        <View style={styles.emptyState}>
+          <Text style={styles.emptyText}>{i18n.t("partnerFinder.noSlotsAvailable")}</Text>
+        </View>
       ) : (
         <FlatList
           data={slots}
@@ -132,28 +153,47 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
-    padding: spacing.lg,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.lg,
+  },
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: spacing.md,
   },
   title: {
     ...typography.heading2,
     color: colors.textPrimary,
-    marginBottom: spacing.md,
+  },
+  searchBtn: {
+    backgroundColor: colors.surface,
+    borderRadius: 8,
+    padding: spacing.sm,
+    shadowColor: colors.shadow,
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
   },
   centered: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
   },
-  error: {
-    color: colors.error,
-    textAlign: "center",
-    marginTop: spacing.lg,
+  emptyState: {
+    alignItems: "center",
+    marginTop: spacing.xl,
+    paddingHorizontal: spacing.md,
   },
-  empty: {
+  emptyText: {
     ...typography.body,
     color: colors.textSecondary,
     textAlign: "center",
-    marginTop: spacing.lg,
+  },
+  errorText: {
+    ...typography.body,
+    color: colors.error,
+    textAlign: "center",
   },
   listContent: {
     paddingBottom: spacing.xl,

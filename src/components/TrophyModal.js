@@ -14,6 +14,7 @@ import PropTypes from "prop-types";
 import colors from "../theme/colors";
 import spacing from "../theme/spacing";
 import typography from "../theme/typography";
+import shadows from "../theme/shadow";
 import i18n from "../locales/i18n";
 
 import streak3 from "../assets/trophies/streak3.png";
@@ -103,7 +104,12 @@ const TrophyModal = ({ visible, onClose, milestone, type = "workout" }) => {
           <Text style={styles.body}>
             {i18n.t("trophy.bonusXP", { xp: xpReward })}
           </Text>
-          <TouchableOpacity style={styles.button} onPress={onClose}>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={onClose}
+            accessibilityRole="button"
+            accessibilityLabel="Close trophy modal"
+          >
             <Text style={styles.buttonText}>{i18n.t("trophy.ok")}</Text>
           </TouchableOpacity>
         </View>
@@ -127,15 +133,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   modal: {
-    backgroundColor: colors.surface,
-    borderRadius: 16,
+    backgroundColor: colors.glassBackground,
+    borderRadius: spacing.radiusLg,
     padding: spacing.lg,
     alignItems: "center",
     width: "85%",
-    shadowColor: "#000",
-    shadowOpacity: 0.25,
-    shadowRadius: 12,
-    elevation: 6,
+    ...shadows.elevationCard,
   },
   trophyWrapper: {
     position: "relative",
@@ -171,15 +174,14 @@ const styles = StyleSheet.create({
   },
   button: {
     backgroundColor: colors.primary,
-    borderRadius: 8,
+    borderRadius: spacing.radiusMd,
     paddingHorizontal: spacing.xl,
     paddingVertical: spacing.sm,
     marginTop: spacing.md,
   },
   buttonText: {
+    ...typography.buttonText,
     color: colors.textOnPrimary,
-    fontWeight: "bold",
-    fontSize: 16,
   },
 });
 

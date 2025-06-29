@@ -1,9 +1,11 @@
+// src/components/ChallengeCard.js
 import React from "react";
 import PropTypes from "prop-types";
 import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 import colors from "../theme/colors";
 import spacing from "../theme/spacing";
 import typography from "../theme/typography";
+import shadows from "../theme/shadow";
 import TierBadge from "./TierBadge";
 
 const placeholderImage = "https://via.placeholder.com/300x150";
@@ -57,19 +59,11 @@ const ChallengeCard = ({
 
   return (
     <View style={[styles.card, isWinner && styles.winnerGlow]}>
-      {image ? (
-        <Image
-          source={{ uri: image }}
-          style={styles.image}
-          accessibilityLabel={i18n.t("challenge.imageAlt") || "Challenge image"}
-        />
-      ) : (
-        <Image
-          source={{ uri: placeholderImage }}
-          style={styles.image}
-          accessibilityLabel="Placeholder image"
-        />
-      )}
+      <Image
+        source={image ? { uri: image } : { uri: placeholderImage }}
+        style={styles.image}
+        accessibilityLabel="Challenge image"
+      />
 
       <View style={styles.header}>
         <Text
@@ -113,9 +107,9 @@ const ChallengeCard = ({
           style={styles.viewBtn}
           onPress={onView}
           accessibilityRole="button"
-          accessibilityLabel={i18n.t("challenge.viewCompleted") || "View completed challenge"}
+          accessibilityLabel="View completed challenge"
         >
-          <Text style={styles.viewText}>{i18n.t("challenge.completed") || "Completed"}</Text>
+          <Text style={styles.viewText}>Completed</Text>
         </TouchableOpacity>
       ) : (
         <TouchableOpacity
@@ -123,15 +117,11 @@ const ChallengeCard = ({
           onPress={onEnter}
           accessibilityRole="button"
           accessibilityLabel={
-            isInProgress
-              ? i18n.t("challenge.resume") || "Resume challenge"
-              : i18n.t("challenge.enter") || "Enter challenge"
+            isInProgress ? "Resume challenge" : "Enter challenge"
           }
         >
           <Text style={styles.enterText}>
-            {isInProgress
-              ? i18n.t("challenge.resume") || "Resume Challenge"
-              : i18n.t("challenge.enter") || "Enter Challenge"}
+            {isInProgress ? "Resume Challenge" : "Enter Challenge"}
           </Text>
         </TouchableOpacity>
       )}
@@ -164,14 +154,11 @@ ChallengeCard.propTypes = {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.surface,
-    borderRadius: 12,
+    backgroundColor: colors.glassBackground,
+    borderRadius: spacing.radiusLg,
     marginBottom: spacing.lg,
     overflow: "hidden",
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 3 },
+    ...shadows.elevationCard,
   },
   image: {
     width: "100%",
@@ -189,38 +176,38 @@ const styles = StyleSheet.create({
     paddingRight: spacing.sm,
   },
   participants: {
+    ...typography.caption,
     color: colors.textSecondary,
-    fontSize: 13,
     paddingHorizontal: spacing.md,
   },
   gymLabel: {
+    ...typography.caption,
     color: colors.accentBlue,
-    fontSize: 13,
     fontStyle: "italic",
     paddingHorizontal: spacing.md,
     paddingTop: 2,
   },
   status: {
-    fontSize: 14,
+    ...typography.caption,
     fontWeight: "600",
     paddingHorizontal: spacing.md,
     paddingTop: 4,
   },
   countdown: {
+    ...typography.caption,
     color: colors.warning,
-    fontSize: 13,
     paddingHorizontal: spacing.md,
     paddingTop: 2,
   },
   reward: {
+    ...typography.caption,
     color: colors.textSecondary,
-    fontSize: 13,
     paddingHorizontal: spacing.md,
     paddingTop: 4,
   },
   verificationBadge: {
+    ...typography.caption,
     color: colors.success,
-    fontSize: 12,
     fontStyle: "italic",
     paddingHorizontal: spacing.md,
     paddingTop: 2,
@@ -230,26 +217,26 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
     marginHorizontal: spacing.md,
     marginBottom: spacing.md,
-    borderRadius: 8,
-    paddingVertical: 10,
+    borderRadius: spacing.radiusMd,
+    paddingVertical: spacing.sm,
   },
   enterText: {
+    ...typography.smallBold,
     color: colors.textOnPrimary,
     textAlign: "center",
-    fontWeight: "600",
   },
   viewBtn: {
-    backgroundColor: colors.card,
+    backgroundColor: colors.cardBackground,
     marginTop: spacing.sm,
     marginHorizontal: spacing.md,
     marginBottom: spacing.md,
-    borderRadius: 8,
-    paddingVertical: 10,
+    borderRadius: spacing.radiusMd,
+    paddingVertical: spacing.sm,
   },
   viewText: {
+    ...typography.smallBold,
     color: colors.textSecondary,
     textAlign: "center",
-    fontWeight: "600",
   },
   winnerGlow: {
     borderColor: colors.gold,

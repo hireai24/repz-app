@@ -5,6 +5,7 @@ import PropTypes from "prop-types";
 import colors from "../theme/colors";
 import spacing from "../theme/spacing";
 import typography from "../theme/typography";
+import shadows from "../theme/shadow";
 
 const fallbackIcon = require("../assets/gymFeed/gym-icon.png");
 
@@ -21,7 +22,7 @@ const GymFeedCard = ({ post }) => {
 
       <View style={styles.row}>
         <Image
-          source={{ uri: post.gymLogo } || fallbackIcon}
+          source={post.gymLogo ? { uri: post.gymLogo } : fallbackIcon}
           defaultSource={fallbackIcon}
           style={styles.avatar}
           accessibilityLabel="Gym avatar"
@@ -41,7 +42,11 @@ const GymFeedCard = ({ post }) => {
         <Text style={styles.offer}>🎉 {post.offer}</Text>
       )}
 
-      <TouchableOpacity style={styles.ctaButton}>
+      <TouchableOpacity
+        style={styles.ctaButton}
+        accessibilityRole="button"
+        accessibilityLabel="Join this gym"
+      >
         <Text style={styles.ctaText}>Join This Gym</Text>
       </TouchableOpacity>
     </View>
@@ -61,17 +66,14 @@ GymFeedCard.propTypes = {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.surface,
-    borderRadius: 12,
+    backgroundColor: colors.glassBackground,
+    borderRadius: spacing.radiusLg,
     marginBottom: spacing.lg,
     padding: spacing.md,
-    shadowColor: "#000",
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    elevation: 3,
+    ...shadows.elevationCard,
   },
   image: {
-    borderRadius: 8,
+    borderRadius: spacing.radiusMd,
     height: 180,
     marginBottom: spacing.sm,
     width: "100%",
@@ -84,14 +86,14 @@ const styles = StyleSheet.create({
   avatar: {
     width: 36,
     height: 36,
-    borderRadius: 18,
+    borderRadius: spacing.radiusPill,
     marginRight: spacing.sm,
   },
   meta: {
     flex: 1,
   },
   gymName: {
-    ...typography.subheading,
+    ...typography.heading4,
     color: colors.textPrimary,
   },
   date: {
@@ -104,22 +106,21 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xs,
   },
   offer: {
-    ...typography.subheading,
-    color: colors.accent,
+    ...typography.bodyBold,
+    color: colors.accentBlue,
     marginBottom: spacing.xs,
   },
   ctaButton: {
     backgroundColor: colors.primary,
-    borderRadius: 6,
+    borderRadius: spacing.radiusMd,
     alignSelf: "flex-start",
     paddingVertical: spacing.xs,
     paddingHorizontal: spacing.md,
     marginTop: spacing.sm,
   },
   ctaText: {
+    ...typography.smallBold,
     color: colors.textOnPrimary,
-    fontWeight: "bold",
-    fontSize: 13,
   },
 });
 

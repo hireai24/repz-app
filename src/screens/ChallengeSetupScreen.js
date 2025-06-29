@@ -1,3 +1,5 @@
+// src/screens/ChallengeSetupScreen.js
+
 import React, { useContext, useState } from "react";
 import {
   View,
@@ -200,6 +202,7 @@ const styles = StyleSheet.create({
     ...typography.heading2,
     color: colors.textPrimary,
     marginBottom: spacing.lg,
+    textAlign: "center",
   },
   input: {
     backgroundColor: colors.surface,

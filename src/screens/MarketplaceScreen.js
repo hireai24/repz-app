@@ -1,4 +1,5 @@
 // src/screens/MarketplaceScreen.js
+
 import React, {
   useState,
   useEffect,
@@ -129,7 +130,7 @@ const MarketplaceScreen = () => {
           accessibilityRole="button"
           accessibilityLabel={i18n.t("marketplace.sortAccessibility")}
           onPress={() => {
-            // You can hook up a modal here later
+            // Optional: hook up sort modal
           }}
         >
           <Image
@@ -169,7 +170,11 @@ const MarketplaceScreen = () => {
 
       {/* Main Content */}
       {loading ? (
-        <ActivityIndicator size="large" color={colors.primary} style={styles.loadingIndicator} />
+        <ActivityIndicator
+          size="large"
+          color={colors.primary}
+          style={styles.loadingIndicator}
+        />
       ) : errorText ? (
         <View style={styles.emptyState}>
           <Text style={styles.errorText}>{errorText}</Text>
@@ -266,15 +271,15 @@ const styles = StyleSheet.create({
     marginBottom: 6,
     textAlign: "center",
   },
+  hintText: {
+    color: colors.textSecondary,
+    fontSize: 13,
+    textAlign: "center",
+  },
   errorText: {
     color: colors.error,
     fontSize: 14,
     marginBottom: spacing.sm,
-    textAlign: "center",
-  },
-  hintText: {
-    color: colors.textSecondary,
-    fontSize: 13,
     textAlign: "center",
   },
   retryButton: {

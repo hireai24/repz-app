@@ -1,3 +1,5 @@
+// src/screens/ChallengeScreen.js
+
 import React, { useState, useCallback, useContext } from "react";
 import {
   View,
@@ -217,6 +219,7 @@ const styles = StyleSheet.create({
     ...typography.heading2,
     color: colors.textPrimary,
     marginBottom: spacing.md,
+    textAlign: "center",
   },
   successText: {
     color: colors.success,
@@ -224,7 +227,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   errorText: {
-    color: colors.danger,
+    color: colors.error,
     textAlign: "center",
     marginBottom: spacing.sm,
   },
@@ -238,14 +241,19 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xl,
   },
   cardWrapper: {
-    marginBottom: spacing.xl,
+    marginBottom: spacing.lg,
     borderRadius: 12,
     overflow: "hidden",
     backgroundColor: colors.surface,
-    ...colors.shadow, // apply shadow if desired
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
   },
   metadata: {
     marginTop: spacing.xs,
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.sm,
   },
   verifiedText: {
     color: colors.accentBlue,

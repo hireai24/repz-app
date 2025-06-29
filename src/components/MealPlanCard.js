@@ -1,9 +1,11 @@
+// src/components/MealPlanCard.js
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import PropTypes from "prop-types";
 import colors from "../theme/colors";
 import spacing from "../theme/spacing";
 import typography from "../theme/typography";
+import shadows from "../theme/shadow";
 
 const MealPlanCard = ({ meal, index }) => {
   if (!meal) return null;
@@ -61,15 +63,11 @@ MealPlanCard.propTypes = {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.surface,
-    borderRadius: 12,
+    backgroundColor: colors.glassBackground,
+    borderRadius: spacing.radiusLg,
     marginBottom: spacing.lg,
     padding: spacing.md,
-    shadowColor: colors.shadow,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    elevation: 2,
+    ...shadows.elevationCard,
   },
   index: {
     ...typography.caption,
@@ -87,21 +85,21 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   calories: {
-    ...typography.subtext,
+    ...typography.smallBold,
     color: colors.textPrimary,
     fontStyle: "italic",
     marginBottom: spacing.xs,
   },
   macrosContainer: {
-    backgroundColor: colors.inputBackground,
-    borderRadius: 6,
+    backgroundColor: colors.cardBackground,
+    borderRadius: spacing.radiusMd,
     flexDirection: "row",
     justifyContent: "space-between",
     padding: spacing.sm,
   },
   macro: {
-    ...typography.subtext,
-    color: colors.textDark,
+    ...typography.caption,
+    color: colors.textPrimary,
   },
 });
 

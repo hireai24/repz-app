@@ -1,3 +1,5 @@
+// src/components/LiveChatThread.js
+
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -22,9 +24,9 @@ import { db } from "../firebase/firebaseClient";
 import colors from "../theme/colors";
 import spacing from "../theme/spacing";
 import typography from "../theme/typography";
+import shadows from "../theme/shadow";
 import { useUser } from "../context/UserContext";
 
-// Hermes-safe static fallback avatar
 import avatarFallback from "../assets/avatars/avatar1.png";
 
 const LiveChatThread = ({ challengeId }) => {
@@ -35,7 +37,7 @@ const LiveChatThread = ({ challengeId }) => {
   useEffect(() => {
     const q = query(
       collection(db, "challengeChats", challengeId, "messages"),
-      orderBy("createdAt", "asc"),
+      orderBy("createdAt", "asc")
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -60,10 +62,9 @@ const LiveChatThread = ({ challengeId }) => {
       sender: user?.username || "Anonymous",
     });
 
-    // Notify backend to push notification for this challenge message
     try {
       await fetch(
-        `${process.env.EXPO_PUBLIC_API_BASE_URL}/api/notify`, // <-- Correct route
+        `${process.env.EXPO_PUBLIC_API_BASE_URL}/api/notify`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -72,14 +73,13 @@ const LiveChatThread = ({ challengeId }) => {
             sender: user?.username || "Anonymous",
             message,
           }),
-        },
+        }
       );
     } catch (err) {
       if (__DEV__) {
         // eslint-disable-next-line no-console
         console.error("Notification push failed:", err);
       }
-      // Silently fail in production
     }
 
     setText("");
@@ -107,6 +107,7 @@ const LiveChatThread = ({ challengeId }) => {
         )}
         accessibilityRole="list"
         accessibilityLabel="Live chat messages"
+        contentContainerStyle={styles.listContent}
       />
       <View style={styles.inputRow}>
         <TextInput
@@ -134,54 +135,61 @@ LiveChatThread.propTypes = {
 };
 
 const styles = StyleSheet.create({
-  avatar: {
-    borderRadius: 14,
-    height: 28,
-    marginRight: spacing.sm,
-    width: 28,
-  },
   container: {
-    borderTopColor: colors.border,
-    borderTopWidth: 1,
-    marginTop: spacing.lg,
-    maxHeight: 200,
-    paddingTop: spacing.sm,
-  },
-  input: {
-    backgroundColor: colors.inputBackground,
-    borderRadius: 6,
-    flex: 1,
-    marginRight: spacing.sm,
+    backgroundColor: colors.glassBackground,
+    borderRadius: spacing.radiusLg,
     padding: spacing.sm,
+    marginTop: spacing.lg,
+    ...shadows.elevationCard,
+    maxHeight: 240,
   },
-  inputRow: {
-    alignItems: "center",
+  listContent: {
+    paddingBottom: spacing.sm,
+  },
+  messageRow: {
     flexDirection: "row",
-    marginTop: spacing.sm,
+    alignItems: "center",
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.sm,
+  },
+  avatar: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    marginRight: spacing.sm,
   },
   message: {
     ...typography.body,
     flexShrink: 1,
+    color: colors.textPrimary,
   },
-  messageRow: {
-    alignItems: "center",
+  sender: {
+    color: colors.primary,
+    fontWeight: "600",
+  },
+  inputRow: {
     flexDirection: "row",
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
+    alignItems: "center",
+    marginTop: spacing.sm,
+  },
+  input: {
+    backgroundColor: colors.inputBackground,
+    borderRadius: spacing.radiusMd,
+    flex: 1,
+    padding: spacing.sm,
+    marginRight: spacing.sm,
+    ...typography.body,
+    color: colors.textPrimary,
   },
   sendButton: {
     backgroundColor: colors.primary,
-    borderRadius: 6,
+    borderRadius: spacing.radiusMd,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
   },
   sendText: {
-    color: colors.white,
-    fontWeight: "bold",
-  },
-  sender: {
-    color: colors.primary,
-    fontWeight: "bold",
+    ...typography.smallBold,
+    color: colors.textOnPrimary,
   },
 });
 

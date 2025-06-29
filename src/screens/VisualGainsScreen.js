@@ -1,4 +1,7 @@
+// src/screens/VisualGainsScreen.js
+
 import React, { useState, useContext } from "react";
+import PropTypes from "prop-types"; // ✅ Add this line
 import {
   View,
   Text,
@@ -12,6 +15,7 @@ import {
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+
 import { UserContext } from "../context/UserContext";
 import useTierAccess from "../hooks/useTierAccess";
 import { uploadFile } from "../utils/fileUploader";
@@ -47,7 +51,7 @@ const VisualGainsScreen = () => {
         setSuccessMessage("");
         setter(result.assets[0].uri);
       }
-    } catch (err) {
+    } catch {
       setErrorText(i18n.t("visual.errorUpload"));
       Alert.alert(i18n.t("common.error"), i18n.t("visual.errorUpload"));
     }
@@ -138,6 +142,7 @@ const VisualGainsScreen = () => {
 
   return (
     <ScrollView style={styles.container}>
+      {/* Header */}
       <View style={styles.header}>
         <Image
           source={require("../assets/icons/ghost.png")}
@@ -146,6 +151,7 @@ const VisualGainsScreen = () => {
         <Text style={styles.title}>{i18n.t("visual.title")}</Text>
       </View>
 
+      {/* View Selector */}
       <View style={styles.viewRow}>
         {views.map((v) => (
           <TouchableOpacity
@@ -160,6 +166,7 @@ const VisualGainsScreen = () => {
         ))}
       </View>
 
+      {/* Image Upload */}
       <View style={styles.imageRow}>
         <UploadImageBox
           label={i18n.t("visual.before")}
@@ -173,11 +180,11 @@ const VisualGainsScreen = () => {
         />
       </View>
 
+      {/* Error and Success */}
       {errorText ? <Text style={styles.errorText}>{errorText}</Text> : null}
-      {successMessage ? (
-        <Text style={styles.successText}>{successMessage}</Text>
-      ) : null}
+      {successMessage ? <Text style={styles.successText}>{successMessage}</Text> : null}
 
+      {/* Analyze Button */}
       {beforeImg && afterImg && (
         <TouchableOpacity
           style={[
@@ -186,6 +193,8 @@ const VisualGainsScreen = () => {
           ]}
           onPress={handleAnalyze}
           disabled={loading}
+          accessibilityRole="button"
+          accessibilityLabel={i18n.t("visual.analyze")}
         >
           {loading ? (
             <ActivityIndicator color={colors.textOnPrimary} />
@@ -195,6 +204,7 @@ const VisualGainsScreen = () => {
         </TouchableOpacity>
       )}
 
+      {/* Feedback */}
       {feedback && (
         <View style={styles.resultBlock}>
           <Image
@@ -206,6 +216,7 @@ const VisualGainsScreen = () => {
         </View>
       )}
 
+      {/* Public Toggle */}
       <View style={styles.toggleRow}>
         <Text style={styles.toggleLabel}>{i18n.t("visual.makePublic")}</Text>
         <Switch
@@ -220,31 +231,142 @@ const VisualGainsScreen = () => {
 };
 
 const UploadImageBox = ({ label, imageUri, onPick }) => (
-  <TouchableOpacity style={styles.imageBox} onPress={onPick}>
+  <TouchableOpacity
+    style={styles.imageBox}
+    onPress={onPick}
+    accessibilityRole="button"
+    accessibilityLabel={label}
+  >
     {imageUri ? (
       <Image source={{ uri: imageUri }} style={styles.image} />
     ) : (
-      <Image
-        source={require("../assets/icons/upload-btn.png")}
-        style={styles.uploadIcon}
-      />
+      <>
+        <Image
+          source={require("../assets/icons/upload-btn.png")}
+          style={styles.uploadIcon}
+        />
+        <Text style={styles.imageText}>{label}</Text>
+      </>
     )}
-    {!imageUri && <Text style={styles.imageText}>{label}</Text>}
   </TouchableOpacity>
 );
 
+UploadImageBox.propTypes = {
+  label: PropTypes.string.isRequired,
+  imageUri: PropTypes.string,
+  onPick: PropTypes.func.isRequired,
+};
+
 const styles = StyleSheet.create({
-  // ... all styles unchanged except new watermark, header, uploadIcon
-  ghostIcon: {
-    width: 32,
-    height: 32,
-    marginRight: spacing.sm,
+  container: {
+    flexGrow: 1,
+    backgroundColor: colors.background,
+    padding: spacing.lg,
   },
   header: {
-    alignItems: "center",
     flexDirection: "row",
+    alignItems: "center",
     justifyContent: "center",
     marginBottom: spacing.md,
+  },
+  ghostIcon: {
+    width: 28,
+    height: 28,
+    marginRight: spacing.sm,
+  },
+  title: {
+    ...typography.heading2,
+    color: colors.textPrimary,
+  },
+  viewRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginVertical: spacing.md,
+  },
+  viewBtn: {
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.md,
+    borderRadius: 20,
+    backgroundColor: colors.surface,
+    marginHorizontal: spacing.xs,
+  },
+  viewBtnActive: {
+    backgroundColor: colors.primary,
+  },
+  viewText: {
+    color: colors.textSecondary,
+  },
+  viewTextActive: {
+    color: colors.textOnPrimary,
+    fontWeight: "bold",
+  },
+  imageRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: spacing.md,
+  },
+  imageBox: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 8,
+    backgroundColor: colors.surface,
+    padding: spacing.md,
+    marginHorizontal: spacing.xs,
+  },
+  image: {
+    width: "100%",
+    height: 160,
+    borderRadius: 8,
+  },
+  uploadIcon: {
+    width: 32,
+    height: 32,
+    marginBottom: spacing.xs,
+  },
+  imageText: {
+    color: colors.textSecondary,
+    fontSize: 13,
+  },
+  errorText: {
+    color: colors.error,
+    textAlign: "center",
+    marginTop: spacing.sm,
+  },
+  successText: {
+    color: colors.success,
+    textAlign: "center",
+    marginTop: spacing.sm,
+  },
+  analyzeBtn: {
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+    padding: spacing.md,
+    alignItems: "center",
+    marginVertical: spacing.md,
+  },
+  analyzeBtnDisabled: {
+    opacity: 0.6,
+  },
+  analyzeText: {
+    color: colors.textOnPrimary,
+    fontWeight: "bold",
+  },
+  resultBlock: {
+    backgroundColor: colors.surface,
+    borderRadius: 8,
+    padding: spacing.md,
+    marginTop: spacing.lg,
+    position: "relative",
+  },
+  resultTitle: {
+    ...typography.heading3,
+    color: colors.textPrimary,
+    marginBottom: spacing.sm,
+  },
+  resultText: {
+    ...typography.body,
+    color: colors.textSecondary,
   },
   watermark: {
     position: "absolute",
@@ -254,12 +376,26 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
   },
-  uploadIcon: {
-    width: 32,
-    height: 32,
-    marginBottom: spacing.xs,
+  toggleRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: spacing.lg,
   },
-  // ... other styles remain as you had them
+  toggleLabel: {
+    color: colors.textPrimary,
+    fontSize: 14,
+  },
+  lockedContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: spacing.lg,
+  },
+  lockedText: {
+    color: colors.textSecondary,
+    textAlign: "center",
+  },
 });
 
 export default React.memo(VisualGainsScreen);

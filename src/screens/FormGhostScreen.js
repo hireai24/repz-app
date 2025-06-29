@@ -1,3 +1,5 @@
+// src/screens/FormGhostScreen.js
+
 import React, { useState, useContext, useCallback } from "react";
 import {
   View,
@@ -129,11 +131,13 @@ const FormGhostScreen = () => {
         <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
       }
     >
+      {/* Header */}
       <View style={styles.headerRow}>
         <Image source={ghostIcon} style={styles.ghostIcon} />
         <Text style={styles.title}>{i18n.t("form.title")}</Text>
       </View>
 
+      {/* Upload */}
       <TouchableOpacity
         style={styles.uploadBox}
         onPress={pickVideo}
@@ -152,6 +156,7 @@ const FormGhostScreen = () => {
         )}
       </TouchableOpacity>
 
+      {/* Status */}
       {!!errorText && <Text style={styles.errorText}>{errorText}</Text>}
       {!!confirmationText && (
         <Text style={styles.confirmationText}>{confirmationText}</Text>
@@ -165,6 +170,7 @@ const FormGhostScreen = () => {
         />
       )}
 
+      {/* Analysis */}
       {analysis.length > 0 && (
         <View style={styles.analysisBlock}>
           <Text style={styles.subTitle}>{i18n.t("form.analysis")}</Text>
@@ -174,10 +180,12 @@ const FormGhostScreen = () => {
         </View>
       )}
 
+      {/* No Analysis */}
       {!loading && analysis.length === 0 && videoUri && (
         <Text style={styles.emptyState}>{i18n.t("form.noFeedback")}</Text>
       )}
 
+      {/* Challenge CTA */}
       {analysis.length > 0 && (
         <TouchableOpacity
           style={styles.cta}
@@ -204,10 +212,10 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   ghostIcon: {
-    width: 32,
-    height: 32,
+    width: 28,
+    height: 28,
     marginRight: spacing.sm,
-    opacity: 0.8,
+    opacity: 0.85,
   },
   title: {
     ...typography.heading2,
@@ -222,8 +230,8 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   uploadIcon: {
-    width: 48,
-    height: 48,
+    width: 36,
+    height: 36,
     marginBottom: spacing.xs,
   },
   uploadText: {
@@ -233,14 +241,14 @@ const styles = StyleSheet.create({
   errorText: {
     color: colors.error,
     fontSize: 13,
-    marginTop: spacing.sm,
     textAlign: "center",
+    marginTop: spacing.sm,
   },
   confirmationText: {
     color: colors.success,
     fontSize: 13,
-    marginTop: spacing.sm,
     textAlign: "center",
+    marginTop: spacing.sm,
   },
   loading: {
     marginTop: spacing.md,
@@ -259,31 +267,30 @@ const styles = StyleSheet.create({
   emptyState: {
     color: colors.textSecondary,
     fontSize: 14,
-    marginTop: spacing.md,
     textAlign: "center",
+    marginTop: spacing.lg,
   },
   cta: {
     backgroundColor: colors.primary,
-    borderRadius: 10,
+    borderRadius: 8,
     alignItems: "center",
     padding: spacing.md,
     marginTop: spacing.lg,
   },
   ctaText: {
-    color: colors.white,
+    color: colors.textOnPrimary,
     fontWeight: "bold",
   },
   lockedContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: colors.background,
     padding: spacing.lg,
   },
   lockedText: {
     color: colors.textSecondary,
-    fontSize: 16,
     textAlign: "center",
+    fontSize: 16,
   },
 });
 

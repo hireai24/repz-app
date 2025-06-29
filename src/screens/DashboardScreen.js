@@ -1,3 +1,5 @@
+// src/screens/DashboardScreen.js
+
 import React, {
   useContext,
   useEffect,
@@ -14,7 +16,6 @@ import {
   FlatList,
   RefreshControl,
   ActivityIndicator,
-  Dimensions,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
@@ -33,6 +34,7 @@ import { db } from "../firebase/firebaseClient";
 import spacing from "../theme/spacing";
 import typography from "../theme/typography";
 import colors from "../theme/colors";
+import shadows from "../theme/shadow";
 import defaultAvatar from "../assets/avatars/avatar1.png";
 
 const STREAK_MILESTONES = [3, 7, 14];
@@ -269,7 +271,7 @@ const styles = StyleSheet.create({
   },
   heroOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.5)",
+    backgroundColor: "rgba(0,0,0,0.4)",
   },
   heroContent: {
     flex: 1,
@@ -321,13 +323,13 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   card: {
-    backgroundColor: colors.surface,
-    borderRadius: 16,
+    backgroundColor: colors.glassBackground,
+    borderRadius: spacing.radiusLg,
     padding: spacing.lg,
     flex: 1,
     marginHorizontal: spacing.xs,
     alignItems: "center",
-    elevation: 4,
+    ...shadows.elevationCard,
   },
   cardText: {
     color: colors.textPrimary,
@@ -338,11 +340,12 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
   },
   toolButton: {
-    backgroundColor: colors.surface,
-    borderRadius: 12,
+    backgroundColor: colors.glassBackground,
+    borderRadius: spacing.radiusMd,
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
     margin: spacing.xs,
+    ...shadows.elevation1,
   },
   toolText: {
     color: colors.textPrimary,

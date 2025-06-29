@@ -6,6 +6,7 @@ import PropTypes from "prop-types";
 import colors from "../theme/colors";
 import typography from "../theme/typography";
 import spacing from "../theme/spacing";
+import shadows from "../theme/shadow";
 import i18n from "../locales/i18n";
 
 const DailyChallengeCard = ({ challenge, onComplete }) => {
@@ -21,7 +22,6 @@ const DailyChallengeCard = ({ challenge, onComplete }) => {
       accessibilityLabel={`Daily challenge: ${title || "Untitled"}`}
     >
       <View style={styles.header}>
-        {/* Optionally, you could add an icon here */}
         <Text style={styles.title}>
           {title || i18n.t("dailyChallenge.defaultTitle")}
         </Text>
@@ -61,14 +61,11 @@ DailyChallengeCard.propTypes = {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.surface,
-    borderRadius: 16,
+    backgroundColor: colors.glassBackground,
+    borderRadius: spacing.radiusLg,
     padding: spacing.lg,
     marginBottom: spacing.lg,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
+    ...shadows.elevationCard,
   },
   completedCard: {
     backgroundColor: colors.successBackground,
@@ -88,31 +85,30 @@ const styles = StyleSheet.create({
   },
   badge: {
     backgroundColor: colors.success,
-    borderRadius: 8,
+    borderRadius: spacing.radiusSm,
     paddingHorizontal: spacing.sm,
     paddingVertical: 2,
   },
   badgeText: {
-    color: colors.white,
-    fontSize: 12,
+    ...typography.caption,
+    color: colors.textOnPrimary,
     fontWeight: "bold",
   },
   desc: {
+    ...typography.body,
     color: colors.textSecondary,
-    fontSize: 14,
     marginBottom: spacing.sm,
   },
   button: {
     alignSelf: "flex-start",
     backgroundColor: colors.primary,
-    borderRadius: 8,
+    borderRadius: spacing.radiusMd,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm,
   },
   buttonText: {
+    ...typography.smallBold,
     color: colors.textOnPrimary,
-    fontWeight: "600",
-    fontSize: 14,
   },
 });
 

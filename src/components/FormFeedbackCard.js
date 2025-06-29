@@ -6,6 +6,7 @@ import { View, Text, StyleSheet } from "react-native";
 import colors from "../theme/colors";
 import spacing from "../theme/spacing";
 import typography from "../theme/typography";
+import shadows from "../theme/shadow";
 
 const getColor = (color) => {
   switch (color) {
@@ -70,16 +71,12 @@ FormFeedbackCard.propTypes = {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.surface,
+    backgroundColor: colors.glassBackground,
     borderLeftWidth: 4,
-    borderRadius: 12,
+    borderRadius: spacing.radiusLg,
     marginBottom: spacing.md,
     padding: spacing.md,
-    shadowColor: colors.overlayDark,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 2,
+    ...shadows.elevationCard,
   },
   headerRow: {
     flexDirection: "row",
@@ -92,7 +89,8 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
   },
   scoreText: {
-    ...typography.smallBold,
+    ...typography.caption,
+    fontWeight: "600",
     color: colors.success,
   },
   feedbackText: {

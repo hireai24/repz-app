@@ -1,3 +1,4 @@
+// src/components/WorkoutSummaryCard.js
 import React, { useEffect } from "react";
 import PropTypes from "prop-types";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
@@ -9,6 +10,7 @@ import useBounceXP from "../animations/bounceXP";
 import colors from "../theme/colors";
 import spacing from "../theme/spacing";
 import typography from "../theme/typography";
+import shadows from "../theme/shadow";
 
 const WorkoutSummaryCard = ({
   volume,
@@ -93,7 +95,7 @@ const WorkoutSummaryCard = ({
           accessibilityRole="button"
           accessibilityLabel="Use AI to adapt your next workout"
         >
-          <Ionicons name="sparkles-outline" size={18} color={colors.white} />
+          <Ionicons name="sparkles-outline" size={18} color={colors.textOnPrimary} />
           <Text style={styles.adaptText}>AI Adapt Next Session</Text>
         </TouchableOpacity>
       </View>
@@ -114,14 +116,11 @@ WorkoutSummaryCard.propTypes = {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.surface,
-    borderRadius: spacing.lg,
+    backgroundColor: colors.glassBackground,
+    borderRadius: spacing.radiusLg,
     marginTop: spacing.lg,
     padding: spacing.lg,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
+    ...shadows.elevationCard,
   },
   title: {
     ...typography.heading3,
@@ -134,14 +133,14 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   label: {
+    ...typography.caption,
     color: colors.textSecondary,
     flex: 1,
-    fontSize: 14,
     marginLeft: spacing.xs,
   },
   value: {
+    ...typography.caption,
     color: colors.textPrimary,
-    fontSize: 14,
     fontWeight: "600",
   },
   actions: {
@@ -153,28 +152,28 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: colors.secondary,
-    borderRadius: spacing.sm,
+    borderRadius: spacing.radiusMd,
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
     flex: 1,
   },
   shareText: {
+    ...typography.smallBold,
     color: colors.textOnPrimary,
-    fontWeight: "bold",
     marginLeft: spacing.xs,
   },
   adaptBtn: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: colors.primary,
-    borderRadius: spacing.sm,
+    borderRadius: spacing.radiusMd,
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
     flex: 1,
   },
   adaptText: {
-    color: colors.white,
-    fontWeight: "bold",
+    ...typography.smallBold,
+    color: colors.textOnPrimary,
     marginLeft: spacing.xs,
   },
 });

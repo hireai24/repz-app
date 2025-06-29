@@ -23,6 +23,7 @@ import spacing from "../theme/spacing";
 import typography from "../theme/typography";
 import avatarFallback from "../assets/avatars/avatar1.png";
 import useFadeIn from "../animations/fadeIn";
+import trophyIcon from "../assets/icons/trophy.png";
 
 const categories = ["Bench", "Squat", "Deadlift", "Volume", "XP", "Streak"];
 const filters = ["Your Gym", "5km", "10km", "25km", "National", "Global"];
@@ -97,8 +98,12 @@ const LeaderboardScreen = () => {
 
   return (
     <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
-      <Text style={styles.title}>{i18n.t("leaderboard.title")}</Text>
+      <View style={styles.headerRow}>
+        <Image source={trophyIcon} style={styles.trophyIcon} />
+        <Text style={styles.title}>{i18n.t("leaderboard.title")}</Text>
+      </View>
 
+      {/* Categories */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.scrollRow}>
         {categories.map((cat) => (
           <TouchableOpacity
@@ -113,6 +118,7 @@ const LeaderboardScreen = () => {
         ))}
       </ScrollView>
 
+      {/* Filters */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.scrollRow}>
         {filters.map((f) => (
           <TouchableOpacity
@@ -130,7 +136,7 @@ const LeaderboardScreen = () => {
       {error ? (
         <Text style={styles.errorText}>{error}</Text>
       ) : loading ? (
-        <ActivityIndicator size="large" color={colors.primary} />
+        <ActivityIndicator size="large" color={colors.primary} style={styles.loadingIndicator} />
       ) : (
         <FlatList
           data={leaders}
@@ -199,12 +205,22 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: colors.background,
     flex: 1,
-    padding: spacing.lg,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.lg,
+  },
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: spacing.md,
+  },
+  trophyIcon: {
+    width: 28,
+    height: 28,
+    marginRight: spacing.sm,
   },
   title: {
     ...typography.heading2,
     color: colors.textPrimary,
-    marginBottom: spacing.md,
   },
   scrollRow: {
     marginBottom: spacing.sm,
@@ -313,6 +329,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: colors.background,
+  },
+  loadingIndicator: {
+    marginTop: spacing.lg,
   },
 });
 

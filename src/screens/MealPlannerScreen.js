@@ -1,4 +1,5 @@
 // src/screens/MealPlannerScreen.js
+
 import React, { useState, useContext } from "react";
 import {
   View,
@@ -123,6 +124,7 @@ const MealPlannerScreen = () => {
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.header}>{i18n.t("mealPlanner.title")}</Text>
 
+      {/* Goal Selection */}
       <Text style={styles.label}>{i18n.t("mealPlanner.goal")}</Text>
       <View style={styles.pickerWrapper}>
         <Picker
@@ -137,6 +139,7 @@ const MealPlannerScreen = () => {
         </Picker>
       </View>
 
+      {/* Diet Type */}
       <Text style={styles.label}>{i18n.t("mealPlanner.dietType")}</Text>
       <View style={styles.pickerWrapper}>
         <Picker
@@ -153,6 +156,7 @@ const MealPlannerScreen = () => {
         </Picker>
       </View>
 
+      {/* Macros */}
       {["protein", "carbs", "fats"].map((macro) => (
         <View key={macro}>
           <Text style={styles.label}>{i18n.t(`mealPlanner.${macro}`)}</Text>
@@ -173,6 +177,7 @@ const MealPlannerScreen = () => {
         </View>
       ))}
 
+      {/* Generate Button */}
       <TouchableOpacity
         style={[styles.generateButton, loading && styles.buttonDisabled]}
         onPress={handleGenerate}

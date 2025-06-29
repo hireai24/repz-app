@@ -1,3 +1,4 @@
+// src/components/GymCard.js
 import React from "react";
 import PropTypes from "prop-types";
 import {
@@ -12,6 +13,7 @@ import { useNavigation } from "@react-navigation/native";
 import colors from "../theme/colors";
 import spacing from "../theme/spacing";
 import typography from "../theme/typography";
+import shadows from "../theme/shadow";
 
 const fallbackBanner = require("../assets/gymFeed/cover1.png");
 const fallbackIcon = require("../assets/gymFeed/gym-icon.png");
@@ -27,7 +29,7 @@ const GymCard = ({ gym }) => {
     <TouchableOpacity
       onPress={handlePress}
       style={styles.card}
-      activeOpacity={0.8}
+      activeOpacity={0.85}
       accessibilityRole="button"
       accessibilityLabel={`View gym profile for ${gym.name}`}
     >
@@ -44,11 +46,7 @@ const GymCard = ({ gym }) => {
         <View style={styles.overlay} />
         <View style={styles.avatarWrapper}>
           <Image
-            source={
-              gym.logo
-                ? { uri: gym.logo }
-                : fallbackIcon
-            }
+            source={gym.logo ? { uri: gym.logo } : fallbackIcon}
             defaultSource={fallbackIcon}
             style={styles.avatar}
             accessibilityRole="image"
@@ -95,14 +93,10 @@ GymCard.propTypes = {
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 12,
+    borderRadius: spacing.radiusLg,
     overflow: "hidden",
     marginBottom: spacing.lg,
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
+    ...shadows.elevationCard,
   },
   banner: {
     width: "100%",
@@ -114,16 +108,17 @@ const styles = StyleSheet.create({
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.4)",
+    backgroundColor: "rgba(0,0,0,0.45)",
   },
   avatarWrapper: {
     position: "absolute",
     top: spacing.md,
     left: spacing.md,
-    borderRadius: 32,
+    borderRadius: spacing.radiusPill,
     overflow: "hidden",
     borderWidth: 2,
-    borderColor: colors.surface,
+    borderColor: colors.cardBackground,
+    backgroundColor: colors.cardBackground,
   },
   avatar: {
     width: 48,
@@ -150,14 +145,13 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     alignSelf: "flex-start",
     marginTop: spacing.sm,
-    borderRadius: 6,
+    borderRadius: spacing.radiusMd,
     paddingVertical: spacing.xs,
     paddingHorizontal: spacing.md,
   },
   ctaText: {
+    ...typography.smallBold,
     color: colors.textOnPrimary,
-    fontWeight: "bold",
-    fontSize: 13,
   },
 });
 

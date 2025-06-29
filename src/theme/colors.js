@@ -1,4 +1,5 @@
 // src/theme/colors.js
+
 const darkColors = {
   background: "#0E0E0E",
   surface: "#1A1A1A",
@@ -14,8 +15,8 @@ const darkColors = {
   gray: "#CCCCCC",
   gold: "#FFD700",
 
-  primary: "#E63946",
-  secondary: "#FFD166",
+  primary: "#E63946",          // Vibrant Red Accent
+  secondary: "#FFD166",        // Warm Yellow Accent
   success: "#43AA8B",
   warning: "#FF9F1C",
   danger: "#EF476F",
@@ -35,6 +36,16 @@ const darkColors = {
 
   overlayDark: "rgba(0, 0, 0, 0.6)",
   overlayLight: "rgba(255, 255, 255, 0.05)",
+
+  glassBackground: "rgba(255, 255, 255, 0.05)", // For glassmorphism
+  cardBackground: "rgba(255, 255, 255, 0.02)",  // Slightly darker glass card
+
+  neonBlue: "#00FFFF",
+  neonPink: "#FF00FF",
+  neonPurple: "#9A00FF",
+
+  gradientStart: "#E63946",
+  gradientEnd: "#FF9F1C",
 
   statusColors: {
     success: "#43AA8B",
@@ -79,6 +90,16 @@ const lightColors = {
 
   overlayDark: "rgba(0, 0, 0, 0.1)",
   overlayLight: "rgba(255, 255, 255, 0.4)",
+
+  glassBackground: "rgba(255, 255, 255, 0.6)", // Light glass
+  cardBackground: "rgba(255, 255, 255, 0.8)",  // Brighter glass
+
+  neonBlue: "#00BFFF",
+  neonPink: "#FF69B4",
+  neonPurple: "#A020F0",
+
+  gradientStart: "#E63946",
+  gradientEnd: "#F4A261",
 
   statusColors: {
     success: "#2A9D8F",

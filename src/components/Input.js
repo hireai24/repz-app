@@ -1,5 +1,5 @@
 // src/components/Input.js
-import React from "react";
+import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { TextInput, View, Text, StyleSheet } from "react-native";
 import colors from "../theme/colors";
@@ -18,15 +18,24 @@ const Input = ({
   textContentType,
   autoCompleteType,
 }) => {
+  const [focused, setFocused] = useState(false);
+
   return (
     <View style={[styles.container, style]}>
       {label ? (
-        <Text style={styles.label} accessibilityRole="label">
+        <Text
+          style={styles.label}
+          accessibilityRole="label"
+        >
           {label}
         </Text>
       ) : null}
       <TextInput
-        style={[styles.input, !editable && styles.inputDisabled]}
+        style={[
+          styles.input,
+          focused && styles.inputFocused,
+          !editable && styles.inputDisabled,
+        ]}
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
@@ -41,6 +50,8 @@ const Input = ({
         testID={`input-${label?.toLowerCase().replace(/\s+/g, "-")}`}
         textContentType={textContentType}
         autoComplete={autoCompleteType || "off"}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
       />
     </View>
   );
@@ -64,18 +75,26 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   label: {
-    ...typography.label,
+    ...typography.bodyBold,
     color: colors.textSecondary,
     marginBottom: spacing.xs,
   },
   input: {
-    backgroundColor: colors.surface,
+    backgroundColor: colors.glassBackground,
     borderColor: colors.border,
     borderWidth: 1,
-    borderRadius: spacing.sm,
+    borderRadius: spacing.radiusMd,
     color: colors.textPrimary,
-    fontSize: 15,
-    padding: spacing.sm,
+    fontSize: typography.body.fontSize,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+  },
+  inputFocused: {
+    borderColor: colors.accentBlue,
+    shadowColor: colors.accentBlue,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
   },
   inputDisabled: {
     opacity: 0.6,

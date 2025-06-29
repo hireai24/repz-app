@@ -17,6 +17,7 @@ import { purchasePlan } from "../api/marketplaceApi";
 import colors from "../theme/colors";
 import spacing from "../theme/spacing";
 import typography from "../theme/typography";
+import shadows from "../theme/shadow";
 
 const PlanCard = ({
   plan,
@@ -155,11 +156,11 @@ PlanCard.propTypes = {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.surface,
-    borderRadius: spacing.md,
-    marginBottom: spacing.md,
+    backgroundColor: colors.glassBackground,
+    borderRadius: spacing.radiusLg,
+    marginBottom: spacing.lg,
     overflow: "hidden",
-    elevation: 2,
+    ...shadows.elevationCard,
   },
   image: {
     width: "100%",
@@ -172,7 +173,7 @@ const styles = StyleSheet.create({
   title: {
     ...typography.heading3,
     color: colors.textPrimary,
-    fontWeight: "bold",
+    fontWeight: "700",
     fontSize: 18,
   },
   author: {
@@ -208,15 +209,14 @@ const styles = StyleSheet.create({
   },
   buyBtn: {
     backgroundColor: colors.primary,
-    borderRadius: 6,
+    borderRadius: spacing.radiusMd,
     marginTop: spacing.md,
-    paddingVertical: 12,
+    paddingVertical: spacing.sm,
     alignItems: "center",
   },
   buyText: {
+    ...typography.button,
     color: colors.textOnPrimary,
-    fontWeight: "bold",
-    fontSize: 16,
   },
   disabled: {
     opacity: 0.6,

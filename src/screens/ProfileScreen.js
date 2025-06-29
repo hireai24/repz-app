@@ -20,6 +20,7 @@ import i18n from "../locales/i18n";
 import colors from "../theme/colors";
 import spacing from "../theme/spacing";
 import typography from "../theme/typography";
+import shadows from "../theme/shadow";
 import XPProgress from "../components/XPProgress";
 import TierBadge from "../components/TierBadge";
 
@@ -248,6 +249,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderRadius: 999,
     padding: 4,
+    ...shadows.elevation1,
   },
   editIcon: {
     width: 24,
@@ -268,6 +270,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: spacing.md,
     marginBottom: spacing.lg,
+    ...shadows.elevation2,
   },
   sectionTitle: {
     ...typography.heading3,
@@ -311,7 +314,6 @@ const styles = StyleSheet.create({
   toolsRow: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: spacing.sm,
   },
   toolBtn: {
     backgroundColor: colors.surface,
@@ -319,6 +321,7 @@ const styles = StyleSheet.create({
     padding: spacing.sm,
     marginRight: spacing.sm,
     marginBottom: spacing.sm,
+    ...shadows.elevation1,
   },
   toolText: {
     color: colors.textPrimary,

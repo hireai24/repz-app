@@ -1,4 +1,5 @@
 // src/screens/MyGymsScreen.js
+
 import React, { useContext, useEffect, useState, useCallback } from "react";
 import {
   View,
@@ -55,7 +56,9 @@ const MyGymsScreen = () => {
         <FlatList
           data={gyms}
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) => <GymCard gym={item} />}
+          renderItem={({ item }) => (
+            <GymCard gym={item} />
+          )}
           contentContainerStyle={
             gyms.length === 0 ? styles.emptyWrapper : styles.listContent
           }
@@ -94,6 +97,7 @@ const styles = StyleSheet.create({
   loadingWrapper: {
     flex: 1,
     justifyContent: "center",
+    alignItems: "center",
   },
   emptyWrapper: {
     flexGrow: 1,
@@ -112,7 +116,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingVertical: spacing.md,
     alignItems: "center",
-    marginTop: spacing.md,
+    marginTop: spacing.lg,
   },
   addButtonText: {
     color: colors.textOnPrimary,

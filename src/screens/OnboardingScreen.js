@@ -1,4 +1,5 @@
 // src/screens/OnboardingScreen.js
+
 import React, { useState, useContext } from "react";
 import {
   View,
@@ -20,7 +21,7 @@ import { auth, db } from "../firebase/firebaseClient";
 import { AuthContext } from "../context/AuthContext";
 import { UserContext } from "../context/UserContext";
 import AvatarSelector from "../components/AvatarSelector";
-import useFadeIn from "../animations/useFadeIn";
+import useFadeIn from "../animations/fadeIn";
 import colors from "../theme/colors";
 import spacing from "../theme/spacing";
 import typography from "../theme/typography";
@@ -94,10 +95,12 @@ const OnboardingScreen = () => {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <ScrollView contentContainerStyle={styles.container}>
+        {/* Logo */}
         <Animated.View style={{ opacity: logoFade }}>
           <Image source={logoImage} style={styles.logo} resizeMode="contain" />
         </Animated.View>
 
+        {/* Form */}
         <Animated.View style={[styles.formWrapper, { opacity: formFade }]}>
           <Text style={styles.title}>{i18n.t("onboarding.welcome")}</Text>
 
@@ -105,6 +108,7 @@ const OnboardingScreen = () => {
             <Text style={styles.errorText}>{errors.general}</Text>
           )}
 
+          {/* Email */}
           <Text style={styles.label}>Email</Text>
           <TextInput
             style={styles.input}
@@ -117,6 +121,7 @@ const OnboardingScreen = () => {
           />
           {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
 
+          {/* Password */}
           <Text style={styles.label}>{i18n.t("onboarding.password")}</Text>
           <TextInput
             style={styles.input}
@@ -130,6 +135,7 @@ const OnboardingScreen = () => {
             <Text style={styles.errorText}>{errors.password}</Text>
           )}
 
+          {/* Username */}
           <Text style={styles.label}>{i18n.t("onboarding.username")}</Text>
           <TextInput
             style={styles.input}
@@ -142,6 +148,7 @@ const OnboardingScreen = () => {
             <Text style={styles.errorText}>{errors.username}</Text>
           )}
 
+          {/* Gym */}
           <Text style={styles.label}>{i18n.t("onboarding.gym")}</Text>
           <TextInput
             style={styles.input}
@@ -151,6 +158,7 @@ const OnboardingScreen = () => {
             placeholderTextColor={colors.textSecondary}
           />
 
+          {/* Goal */}
           <Text style={styles.label}>{i18n.t("onboarding.goalPrompt")}</Text>
           <View style={styles.optionRow}>
             {goals.map((g) => (
@@ -174,9 +182,11 @@ const OnboardingScreen = () => {
           </View>
           {errors.goal && <Text style={styles.errorText}>{errors.goal}</Text>}
 
+          {/* Avatar */}
           <Text style={styles.label}>{i18n.t("onboarding.selectAvatar")}</Text>
           <AvatarSelector selectedAvatar={avatar} onSelect={setAvatar} />
 
+          {/* Continue */}
           <TouchableOpacity
             style={[styles.cta, loading && styles.ctaLoading]}
             onPress={handleContinue}
@@ -239,8 +249,6 @@ const styles = StyleSheet.create({
   option: {
     backgroundColor: colors.surface,
     borderRadius: 8,
-    marginBottom: 10,
-    marginRight: 10,
     padding: spacing.sm,
   },
   optionActive: {

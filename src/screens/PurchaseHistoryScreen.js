@@ -102,7 +102,21 @@ const PurchaseHistoryScreen = () => {
             {formatDate(item.purchasedAt)}
           </Text>
         </View>
-        <View style={styles.badge}>
+        <View
+          style={[
+            styles.badge,
+            {
+              backgroundColor:
+                item.status === "succeeded"
+                  ? colors.successBackground
+                  : colors.warningBackground,
+              borderColor:
+                item.status === "succeeded"
+                  ? colors.success
+                  : colors.warning,
+            },
+          ]}
+        >
           <Text
             style={[
               styles.badgeText,
@@ -172,20 +186,12 @@ const PurchaseHistoryScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  badge: {
-    alignItems: "center",
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: colors.border,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-  },
-  badgeText: {
-    fontWeight: "600",
-    fontSize: 12,
+  container: {
+    flex: 1,
+    padding: spacing.lg,
   },
   card: {
-    borderRadius: 10,
+    borderRadius: 12,
     elevation: 2,
     marginBottom: spacing.md,
     padding: spacing.md,
@@ -194,17 +200,42 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 4,
   },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  info: {
+    flex: 1,
+  },
+  planName: {
+    ...typography.heading4,
+  },
+  detail: {
+    ...typography.body,
+  },
+  meta: {
+    ...typography.caption,
+    marginTop: spacing.xs,
+  },
+  badge: {
+    borderRadius: 6,
+    borderWidth: 1,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+  },
+  badgeText: {
+    fontWeight: "600",
+    fontSize: 12,
+  },
   centered: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
   },
-  container: {
-    flex: 1,
-    padding: spacing.md,
-  },
-  detail: {
+  errorText: {
     ...typography.body,
+    textAlign: "center",
   },
   emptyContainer: {
     marginTop: spacing.xl,
@@ -212,24 +243,6 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     ...typography.body,
-  },
-  errorText: {
-    ...typography.body,
-    textAlign: "center",
-  },
-  info: {
-    flex: 1,
-  },
-  meta: {
-    ...typography.caption,
-    marginTop: spacing.xs,
-  },
-  planName: {
-    ...typography.heading4,
-  },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
   },
   flexGrow: {
     flexGrow: 1,

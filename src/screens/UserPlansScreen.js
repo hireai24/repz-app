@@ -1,3 +1,5 @@
+// src/screens/UserPlansScreen.js
+
 import React, { useContext, useEffect, useState, useCallback } from "react";
 import {
   View,
@@ -214,9 +216,7 @@ const UserPlansScreen = () => {
     }
 
     if (activeTab === "accepted") {
-      return renderList(acceptedChallenges, ({ item }) =>
-        renderChallenge(item)
-      );
+      return renderList(acceptedChallenges, ({ item }) => renderChallenge(item));
     }
 
     return null;
@@ -255,8 +255,94 @@ const UserPlansScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  // (Same styles as before)
-  // You can optionally enhance card styles here for gradient headers and polished visuals
+  container: {
+    flex: 1,
+    backgroundColor: colors.background,
+    padding: spacing.lg,
+  },
+  title: {
+    ...typography.heading2,
+    color: colors.textPrimary,
+    marginBottom: spacing.md,
+  },
+  tabRow: {
+    flexDirection: "row",
+    marginBottom: spacing.lg,
+  },
+  tabBtn: {
+    backgroundColor: colors.surface,
+    borderRadius: 8,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    marginRight: spacing.sm,
+  },
+  tabActive: {
+    backgroundColor: colors.primary,
+  },
+  tabText: {
+    color: colors.textSecondary,
+  },
+  tabTextActive: {
+    color: colors.textOnPrimary,
+    fontWeight: "bold",
+  },
+  loading: {
+    marginTop: spacing.lg,
+  },
+  centered: {
+    alignItems: "center",
+    marginTop: spacing.xl,
+  },
+  errorText: {
+    color: colors.error,
+    textAlign: "center",
+  },
+  retryBtn: {
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+    marginTop: spacing.md,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
+  },
+  retryText: {
+    color: colors.textOnPrimary,
+    fontWeight: "bold",
+  },
+  emptyText: {
+    color: colors.textSecondary,
+    textAlign: "center",
+    marginTop: spacing.lg,
+  },
+  flatListContent: {
+    paddingBottom: spacing.xl,
+  },
+  challengeCard: {
+    backgroundColor: colors.surface,
+    borderRadius: 10,
+    padding: spacing.md,
+    marginBottom: spacing.md,
+  },
+  challengeTitle: {
+    ...typography.heading4,
+    color: colors.textPrimary,
+    marginBottom: spacing.xs,
+  },
+  challengeDetails: {
+    ...typography.body,
+    color: colors.textSecondary,
+  },
+  verified: {
+    color: colors.success,
+    marginTop: spacing.xs,
+  },
+  flagged: {
+    color: colors.warning,
+    marginTop: spacing.xs,
+  },
+  streak: {
+    color: colors.accent,
+    marginTop: spacing.xs,
+  },
 });
 
 export default React.memo(UserPlansScreen);
