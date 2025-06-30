@@ -1,4 +1,5 @@
 // src/components/AvatarSelector.js
+
 import React, { useMemo } from "react";
 import PropTypes from "prop-types";
 import {
@@ -17,7 +18,7 @@ import { uploadImageAsync } from "../utils/fileUploader";
 import colors from "../theme/colors";
 import spacing from "../theme/spacing";
 import typography from "../theme/typography";
-import shadows from "../theme/shadow";
+import shadows from "../theme/shadows";
 
 const AvatarSelector = ({ selectedAvatar, onSelect }) => {
   const isCustomSelected = selectedAvatar?.profilePicture;
@@ -90,7 +91,11 @@ const AvatarSelector = ({ selectedAvatar, onSelect }) => {
           ]}
           onPress={handleImageUpload}
         >
-          <Ionicons name="camera" size={22} color={colors.textOnPrimary} />
+          <Ionicons
+            name="camera"
+            size={24}
+            color={colors.textOnPrimary}
+          />
           <Text style={styles.uploadText}>Upload</Text>
         </TouchableOpacity>
         {avatarItems}
@@ -109,12 +114,12 @@ AvatarSelector.propTypes = {
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: spacing.lg,
+    marginTop: spacing.spacing6,
   },
   title: {
-    ...typography.heading4,
+    ...typography.heading3,
     color: colors.textPrimary,
-    marginBottom: spacing.sm,
+    marginBottom: spacing.spacing3,
   },
   avatarRow: {
     flexDirection: "row",
@@ -123,24 +128,27 @@ const styles = StyleSheet.create({
   avatarWrap: {
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: colors.cardBackground,
-    borderColor: "transparent",
-    borderRadius: spacing.radiusPill,
+    backgroundColor: colors.glassBackground,
+    borderRadius: spacing.radiusXxl,
     borderWidth: 2,
-    width: 70,
-    height: 70,
-    marginRight: spacing.sm,
-    marginBottom: spacing.sm,
-    ...shadows.elevationCard,
+    borderColor: "transparent",
+    width: 80,
+    height: 80,
+    marginRight: spacing.spacing3,
+    marginBottom: spacing.spacing3,
+    ...shadows.shadow3,
   },
   avatarSelected: {
-    borderColor: colors.accentBlue,
-    borderWidth: 2,
+    borderColor: colors.primary,
+    shadowColor: colors.primary,
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 0 },
   },
   avatar: {
     width: "100%",
     height: "100%",
-    borderRadius: spacing.radiusPill,
+    borderRadius: spacing.radiusXxl,
   },
   uploadSlot: {
     backgroundColor: colors.primary,
@@ -148,7 +156,7 @@ const styles = StyleSheet.create({
   uploadText: {
     ...typography.smallBold,
     color: colors.textOnPrimary,
-    marginTop: 2,
+    marginTop: 4,
   },
 });
 

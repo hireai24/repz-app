@@ -97,6 +97,7 @@ const PlanBuilderScreen = () => {
 
   return (
     <ScrollView style={styles.container}>
+      {/* Hero Banner */}
       <Image
         source={require("../assets/plan-bg-gradient.png")}
         style={styles.headerImage}
@@ -115,8 +116,6 @@ const PlanBuilderScreen = () => {
                 key={g}
                 style={[styles.option, goal === g && styles.optionActive]}
                 onPress={() => setGoal(g)}
-                accessibilityRole="button"
-                accessibilityLabel={`Select goal: ${g}`}
               >
                 <Text style={goal === g ? styles.optionTextActive : styles.optionText}>
                   {g}
@@ -135,8 +134,6 @@ const PlanBuilderScreen = () => {
                 key={s}
                 style={[styles.option, split === s && styles.optionActive]}
                 onPress={() => setSplit(s)}
-                accessibilityRole="button"
-                accessibilityLabel={`Select split: ${s}`}
               >
                 <Text style={split === s ? styles.optionTextActive : styles.optionText}>
                   {s}
@@ -155,8 +152,6 @@ const PlanBuilderScreen = () => {
                 key={n}
                 style={[styles.option, days === n && styles.optionActive]}
                 onPress={() => setDays(n)}
-                accessibilityRole="button"
-                accessibilityLabel={`Select ${n} days`}
               >
                 <Text style={days === n ? styles.optionTextActive : styles.optionText}>
                   {n} {i18n.t("plan.daysShort")}
@@ -169,12 +164,7 @@ const PlanBuilderScreen = () => {
         {/* Video Upload */}
         <View style={styles.section}>
           <Text style={styles.label}>{i18n.t("plan.videoNote")}</Text>
-          <TouchableOpacity
-            style={styles.videoBtn}
-            onPress={pickVideo}
-            accessibilityRole="button"
-            accessibilityLabel="Upload technique video"
-          >
+          <TouchableOpacity style={styles.videoBtn} onPress={pickVideo}>
             <Image
               source={require("../assets/icons/video-icon.png")}
               style={styles.videoIcon}
@@ -185,15 +175,14 @@ const PlanBuilderScreen = () => {
           </TouchableOpacity>
         </View>
 
+        {/* Error */}
         {error !== "" && <Text style={styles.errorText}>{error}</Text>}
 
+        {/* Generate Button */}
         <TouchableOpacity
           style={[styles.generateBtn, loading && styles.disabledGenerateBtn]}
           onPress={generatePlan}
           disabled={loading}
-          accessibilityRole="button"
-          accessibilityLabel="Generate AI Workout Plan"
-          testID="generate-plan-button"
         >
           {loading ? (
             <ActivityIndicator color={colors.textOnPrimary} />
@@ -202,6 +191,7 @@ const PlanBuilderScreen = () => {
           )}
         </TouchableOpacity>
 
+        {/* AI-Generated Plan */}
         {plan && plan.length > 0 && (
           <View style={styles.planBox}>
             <Text style={styles.planTitle}>{i18n.t("plan.aiGenerated")}</Text>
@@ -215,11 +205,7 @@ const PlanBuilderScreen = () => {
                 ))}
               </View>
             ))}
-            <TouchableOpacity
-              style={styles.startBtn}
-              accessibilityRole="button"
-              accessibilityLabel="Start this workout plan today"
-            >
+            <TouchableOpacity style={styles.startBtn}>
               <Text style={styles.startText}>{i18n.t("plan.startToday")}</Text>
             </TouchableOpacity>
           </View>
@@ -359,3 +345,4 @@ const styles = StyleSheet.create({
 });
 
 export default PlanBuilderScreen;
+

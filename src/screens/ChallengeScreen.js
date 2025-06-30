@@ -1,5 +1,4 @@
 // src/screens/ChallengeScreen.js
-
 import React, { useState, useCallback, useContext } from "react";
 import {
   View,
@@ -8,6 +7,7 @@ import {
   FlatList,
   ActivityIndicator,
   RefreshControl,
+  Animated,
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { formatDistanceToNowStrict } from "date-fns";
@@ -21,6 +21,7 @@ import colors from "../theme/colors";
 import spacing from "../theme/spacing";
 import typography from "../theme/typography";
 import { UserContext } from "../context/UserContext";
+import shadows from "../theme/shadow";
 
 const PAGE_SIZE = 10;
 
@@ -36,6 +37,8 @@ const ChallengeScreen = () => {
   const { userProfile } = useContext(UserContext);
   const { locked, tier } = useTierAccess();
 
+  const fadeAnim = new Animated.Value(0);
+
   const loadChallenges = useCallback(async () => {
     try {
       setLoading(true);
@@ -43,7 +46,6 @@ const ChallengeScreen = () => {
       setMessage("");
 
       const data = await getChallenges();
-
       if (!Array.isArray(data)) throw new Error("Invalid challenge data");
 
       const sorted = data.sort((a, b) => {
@@ -60,12 +62,18 @@ const ChallengeScreen = () => {
       setChallenges(sorted);
       setDisplayedChallenges(sorted.slice(0, PAGE_SIZE));
       setPage(1);
+
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 400,
+        useNativeDriver: true,
+      }).start();
     } catch {
       setError(i18n.t("challenge.errorLoad"));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [fadeAnim]);
 
   const handleEnter = async (challengeId) => {
     try {
@@ -133,7 +141,7 @@ const ChallengeScreen = () => {
     const progress = item.progress?.[userProfile.id] || {};
 
     return (
-      <View style={styles.cardWrapper}>
+      <Animated.View style={[styles.cardWrapper, { opacity: fadeAnim }]}>
         <ChallengeCard
           challenge={item}
           progress={{
@@ -160,7 +168,7 @@ const ChallengeScreen = () => {
           )}
         </View>
         {isParticipant && <LiveChatThread threadId={item.id} />}
-      </View>
+      </Animated.View>
     );
   };
 
@@ -242,13 +250,10 @@ const styles = StyleSheet.create({
   },
   cardWrapper: {
     marginBottom: spacing.lg,
-    borderRadius: 12,
+    borderRadius: spacing.radiusLg,
     overflow: "hidden",
-    backgroundColor: colors.surface,
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
+    backgroundColor: colors.glassBackground,
+    ...shadows.elevation2,
   },
   metadata: {
     marginTop: spacing.xs,

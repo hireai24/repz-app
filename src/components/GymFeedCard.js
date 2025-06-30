@@ -1,11 +1,13 @@
 // src/components/GymFeedCard.js
+
 import React from "react";
-import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, Image, TouchableOpacity, ImageBackground } from "react-native";
 import PropTypes from "prop-types";
+import LinearGradient from "react-native-linear-gradient";
 import colors from "../theme/colors";
 import spacing from "../theme/spacing";
 import typography from "../theme/typography";
-import shadows from "../theme/shadow";
+import shadows from "../theme/shadows";
 
 const fallbackIcon = require("../assets/gymFeed/gym-icon.png");
 
@@ -13,11 +15,20 @@ const GymFeedCard = ({ post }) => {
   return (
     <View style={styles.card}>
       {post.imageUrl && (
-        <Image
-          source={{ uri: post.imageUrl }}
-          style={styles.image}
-          accessibilityLabel="Post image"
-        />
+        <View style={styles.imageWrapper}>
+          <ImageBackground
+            source={{ uri: post.imageUrl }}
+            style={styles.image}
+            imageStyle={styles.imageStyle}
+          >
+            <LinearGradient
+              colors={["rgba(0,0,0,0.4)", "transparent"]}
+              start={{ x: 0, y: 1 }}
+              end={{ x: 0, y: 0 }}
+              style={styles.gradientOverlay}
+            />
+          </ImageBackground>
+        </View>
       )}
 
       <View style={styles.row}>
@@ -42,13 +53,19 @@ const GymFeedCard = ({ post }) => {
         <Text style={styles.offer}>🎉 {post.offer}</Text>
       )}
 
-      <TouchableOpacity
+      <LinearGradient
+        colors={[colors.gradientStart, colors.gradientEnd]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
         style={styles.ctaButton}
-        accessibilityRole="button"
-        accessibilityLabel="Join this gym"
       >
-        <Text style={styles.ctaText}>Join This Gym</Text>
-      </TouchableOpacity>
+        <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel="Join this gym"
+        >
+          <Text style={styles.ctaText}>Join This Gym</Text>
+        </TouchableOpacity>
+      </LinearGradient>
     </View>
   );
 };
@@ -67,33 +84,46 @@ GymFeedCard.propTypes = {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.glassBackground,
+    borderRadius: spacing.radiusXl,
+    marginBottom: spacing.spacing5,
+    padding: spacing.spacing4,
+    ...shadows.shadow3,
+  },
+  imageWrapper: {
     borderRadius: spacing.radiusLg,
-    marginBottom: spacing.lg,
-    padding: spacing.md,
-    ...shadows.elevationCard,
+    overflow: "hidden",
+    marginBottom: spacing.spacing4,
   },
   image: {
-    borderRadius: spacing.radiusMd,
     height: 180,
-    marginBottom: spacing.sm,
     width: "100%",
+    justifyContent: "flex-end",
+  },
+  imageStyle: {
+    resizeMode: "cover",
+  },
+  gradientOverlay: {
+    ...StyleSheet.absoluteFillObject,
   },
   row: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: spacing.sm,
+    marginBottom: spacing.spacing3,
   },
   avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: spacing.radiusPill,
-    marginRight: spacing.sm,
+    width: 48,
+    height: 48,
+    borderRadius: spacing.radiusFull,
+    marginRight: spacing.spacing3,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.cardBackground,
   },
   meta: {
     flex: 1,
   },
   gymName: {
-    ...typography.heading4,
+    ...typography.heading3,
     color: colors.textPrimary,
   },
   date: {
@@ -103,24 +133,22 @@ const styles = StyleSheet.create({
   text: {
     ...typography.body,
     color: colors.textPrimary,
-    marginBottom: spacing.xs,
+    marginBottom: spacing.spacing2,
   },
   offer: {
     ...typography.bodyBold,
     color: colors.accentBlue,
-    marginBottom: spacing.xs,
+    marginBottom: spacing.spacing2,
   },
   ctaButton: {
-    backgroundColor: colors.primary,
-    borderRadius: spacing.radiusMd,
     alignSelf: "flex-start",
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.md,
-    marginTop: spacing.sm,
+    borderRadius: spacing.radiusFull,
   },
   ctaText: {
     ...typography.smallBold,
     color: colors.textOnPrimary,
+    paddingVertical: spacing.spacing3,
+    paddingHorizontal: spacing.spacing6,
   },
 });
 

@@ -1,41 +1,36 @@
 // src/theme/shadows.js
+
 import { Platform } from "react-native";
 
 const shadows = {
-  elevation1: Platform.select({
+  // 🌫 Subtle elevation for small elements
+  shadow1: Platform.select({
     ios: {
       shadowColor: "#000",
       shadowOffset: { width: 0, height: 1 },
-      shadowOpacity: 0.08,
-      shadowRadius: 2,
+      shadowOpacity: 0.1,
+      shadowRadius: 3,
     },
     android: {
       elevation: 1,
     },
   }),
-  elevation2: Platform.select({
+
+  // 🌫 Standard elevation for buttons
+  shadow2: Platform.select({
     ios: {
       shadowColor: "#000",
       shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
+      shadowOpacity: 0.15,
       shadowRadius: 4,
     },
     android: {
       elevation: 2,
     },
   }),
-  elevation3: Platform.select({
-    ios: {
-      shadowColor: "#000",
-      shadowOffset: { width: 0, height: 3 },
-      shadowOpacity: 0.15,
-      shadowRadius: 6,
-    },
-    android: {
-      elevation: 3,
-    },
-  }),
-  elevation4: Platform.select({
+
+  // 🌫 Elevated cards
+  shadow3: Platform.select({
     ios: {
       shadowColor: "#000",
       shadowOffset: { width: 0, height: 4 },
@@ -47,8 +42,8 @@ const shadows = {
     },
   }),
 
-  // New premium shadows
-  elevationGlass: Platform.select({
+  // 🌫 Glassmorphic panels
+  shadowGlass: Platform.select({
     ios: {
       shadowColor: "#000",
       shadowOffset: { width: 0, height: 10 },
@@ -60,27 +55,29 @@ const shadows = {
     },
   }),
 
-  elevationCard: Platform.select({
+  // 🌫 Hero sections or overlays
+  shadowHero: Platform.select({
     ios: {
       shadowColor: "#000",
-      shadowOffset: { width: 0, height: 6 },
-      shadowOpacity: 0.15,
-      shadowRadius: 12,
+      shadowOffset: { width: 0, height: 12 },
+      shadowOpacity: 0.3,
+      shadowRadius: 24,
     },
     android: {
-      elevation: 6,
+      elevation: 10,
     },
   }),
 
-  elevationNeon: Platform.select({
+  // 🌟 Neon glow effect (blue)
+  shadowNeon: Platform.select({
     ios: {
-      shadowColor: "#E63946", // Vibrant red glow
+      shadowColor: "#00FFFF",
       shadowOffset: { width: 0, height: 0 },
       shadowOpacity: 0.6,
-      shadowRadius: 10,
+      shadowRadius: 12,
     },
     android: {
-      elevation: 0, // Android requires custom workarounds for colored glows
+      elevation: 0, // For colored glows on Android, consider a custom lib
     },
   }),
 };

@@ -1,4 +1,5 @@
 // src/components/Button.js
+
 import React from "react";
 import PropTypes from "prop-types";
 import {
@@ -7,11 +8,13 @@ import {
   StyleSheet,
   ActivityIndicator,
   View,
+  Animated,
 } from "react-native";
 import colors from "../theme/colors";
 import spacing from "../theme/spacing";
 import typography from "../theme/typography";
-import LinearGradient from "react-native-linear-gradient"; // For gradients
+import shadows from "../theme/shadows";
+import LinearGradient from "react-native-linear-gradient";
 
 /**
  * Button component with premium visual styles.
@@ -27,15 +30,17 @@ const Button = ({
   outline = false,
   glass = false,
 }) => {
-  const variantColors = {
-    primary: colors.primary,
-    secondary: colors.accentBlue,
-    danger: colors.danger,
+  const variantGradients = {
+    primary: [colors.gradientStart, colors.gradientEnd],
+    secondary: [colors.accentNeonBlue, colors.accentNeonPink],
+    danger: [colors.neonPink, colors.neonPurple],
   };
 
-  const textColor = outline || glass
-    ? variantColors[variant] || colors.primary
-    : colors.textOnPrimary;
+  const variantColor = variantGradients[variant] || variantGradients.primary;
+  const textColor =
+    outline || glass
+      ? variantGradients[variant]?.[0] || colors.primary
+      : colors.textOnPrimary;
 
   const buttonContent = (
     <>
@@ -50,12 +55,12 @@ const Button = ({
   );
 
   if (glass) {
-    // Glass style
     return (
       <TouchableOpacity
         style={[
           styles.button,
           styles.glassButton,
+          disabled && styles.disabledButton,
           style,
         ]}
         onPress={onPress}
@@ -64,7 +69,6 @@ const Button = ({
         accessibilityRole="button"
         accessibilityLabel={label}
         accessibilityState={{ disabled: disabled || loading, busy: loading }}
-        testID={`button-${label.toLowerCase().replace(/\s+/g, "-")}`}
       >
         {buttonContent}
       </TouchableOpacity>
@@ -72,16 +76,15 @@ const Button = ({
   }
 
   if (outline) {
-    // Outline style
     return (
       <TouchableOpacity
         style={[
           styles.button,
+          styles.outlineButton,
           {
-            borderWidth: 2,
-            borderColor: variantColors[variant] || colors.primary,
-            backgroundColor: "transparent",
+            borderColor: variantColor[0],
           },
+          disabled && styles.disabledButton,
           style,
         ]}
         onPress={onPress}
@@ -90,14 +93,13 @@ const Button = ({
         accessibilityRole="button"
         accessibilityLabel={label}
         accessibilityState={{ disabled: disabled || loading, busy: loading }}
-        testID={`button-${label.toLowerCase().replace(/\s+/g, "-")}`}
       >
         {buttonContent}
       </TouchableOpacity>
     );
   }
 
-  // Gradient or solid fill
+  // Gradient style
   return (
     <TouchableOpacity
       onPress={onPress}
@@ -106,26 +108,10 @@ const Button = ({
       accessibilityRole="button"
       accessibilityLabel={label}
       accessibilityState={{ disabled: disabled || loading, busy: loading }}
-      testID={`button-${label.toLowerCase().replace(/\s+/g, "-")}`}
-      style={style}
+      style={[disabled && styles.disabledButton, style]}
     >
       <LinearGradient
-        colors={[
-          disabled
-            ? colors.disabled
-            : variant === "primary"
-            ? colors.gradientStart
-            : variant === "secondary"
-            ? colors.accentBlue
-            : colors.danger,
-          disabled
-            ? colors.disabled
-            : variant === "primary"
-            ? colors.gradientEnd
-            : variant === "secondary"
-            ? colors.neonBlue
-            : colors.neonPink,
-        ]}
+        colors={disabled ? [colors.disabled, colors.disabled] : variantColor}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.button}
@@ -151,10 +137,11 @@ const styles = StyleSheet.create({
   button: {
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: spacing.radiusPill,
-    paddingHorizontal: spacing.xl,
-    paddingVertical: spacing.md,
-    marginVertical: spacing.xs,
+    borderRadius: spacing.radiusFull,
+    paddingHorizontal: spacing.spacing8,
+    paddingVertical: spacing.spacing4,
+    marginVertical: spacing.spacing2,
+    ...shadows.shadow2,
   },
   label: {
     ...typography.button,
@@ -167,6 +154,13 @@ const styles = StyleSheet.create({
     backgroundColor: colors.glassBackground,
     borderWidth: 1,
     borderColor: colors.border,
+  },
+  outlineButton: {
+    backgroundColor: "transparent",
+    borderWidth: 2,
+  },
+  disabledButton: {
+    opacity: 0.5,
   },
 });
 

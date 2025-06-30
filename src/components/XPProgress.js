@@ -1,4 +1,5 @@
 // src/components/XPProgress.js
+
 import React, { useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import { View, Text, StyleSheet } from "react-native";
@@ -25,6 +26,7 @@ const XPProgress = ({ xp, level, xpToNext }) => {
   return (
     <View style={styles.container} accessibilityRole="progressbar">
       <View style={styles.lottieWrapper}>
+        <View style={styles.glow} />
         <LottieView
           ref={lottieRef}
           source={require("../assets/xp/xp-ring.json")}
@@ -43,7 +45,7 @@ const XPProgress = ({ xp, level, xpToNext }) => {
         </View>
       </View>
       <View style={styles.tierBadge}>
-        <Text style={styles.tierText}>{tier}</Text>
+        <Text style={styles.tierText}>{tier.toUpperCase()}</Text>
       </View>
     </View>
   );
@@ -68,12 +70,23 @@ const styles = StyleSheet.create({
   lottieWrapper: {
     justifyContent: "center",
     alignItems: "center",
-    width: 110,
-    height: 110,
+    width: 140,
+    height: 140,
+    position: "relative",
   },
   lottie: {
-    width: 110,
-    height: 110,
+    width: 140,
+    height: 140,
+  },
+  glow: {
+    position: "absolute",
+    top: -10,
+    left: -10,
+    right: -10,
+    bottom: -10,
+    borderRadius: 80,
+    backgroundColor: colors.accentBlue,
+    opacity: 0.1,
   },
   overlayText: {
     position: "absolute",
@@ -81,23 +94,27 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   levelText: {
-    ...typography.heading4,
+    ...typography.heading3,
     color: colors.textPrimary,
+    fontWeight: "700",
   },
   xpText: {
-    ...typography.small,
+    ...typography.bodyBold,
     color: colors.textSecondary,
+    marginTop: 2,
   },
   tierBadge: {
     marginTop: spacing.sm,
     backgroundColor: colors.primary,
-    borderRadius: spacing.radiusMd,
+    borderRadius: spacing.radiusPill,
     paddingHorizontal: spacing.md,
     paddingVertical: 4,
+    ...shadows.elevation2,
   },
   tierText: {
     ...typography.smallBold,
     color: colors.textOnPrimary,
+    textTransform: "uppercase",
   },
 });
 

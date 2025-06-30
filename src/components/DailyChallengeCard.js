@@ -3,10 +3,11 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import PropTypes from "prop-types";
+import LinearGradient from "react-native-linear-gradient";
 import colors from "../theme/colors";
 import typography from "../theme/typography";
 import spacing from "../theme/spacing";
-import shadows from "../theme/shadow";
+import shadows from "../theme/shadows";
 import i18n from "../locales/i18n";
 
 const DailyChallengeCard = ({ challenge, onComplete }) => {
@@ -34,15 +35,21 @@ const DailyChallengeCard = ({ challenge, onComplete }) => {
       <Text style={styles.desc}>
         {description || i18n.t("dailyChallenge.defaultDescription")}
       </Text>
-      {completed ? null : (
-        <TouchableOpacity
+      {!completed && (
+        <LinearGradient
+          colors={[colors.gradientStart, colors.gradientEnd]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
           style={styles.button}
-          onPress={onComplete}
-          accessibilityRole="button"
-          accessibilityLabel="Complete daily challenge"
         >
-          <Text style={styles.buttonText}>{i18n.t("common.submit")}</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            onPress={onComplete}
+            accessibilityRole="button"
+            accessibilityLabel="Complete daily challenge"
+          >
+            <Text style={styles.buttonText}>{i18n.t("common.submit")}</Text>
+          </TouchableOpacity>
+        </LinearGradient>
       )}
     </View>
   );
@@ -62,32 +69,37 @@ DailyChallengeCard.propTypes = {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.glassBackground,
-    borderRadius: spacing.radiusLg,
-    padding: spacing.lg,
-    marginBottom: spacing.lg,
-    ...shadows.elevationCard,
+    borderRadius: spacing.radiusXl,
+    padding: spacing.spacing5,
+    marginBottom: spacing.spacing5,
+    ...shadows.shadow3,
   },
   completedCard: {
-    backgroundColor: colors.successBackground,
     borderColor: colors.success,
-    borderWidth: 1,
+    borderWidth: 2,
+    shadowColor: colors.success,
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 0 },
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: spacing.xs,
+    marginBottom: spacing.spacing3,
   },
   title: {
     ...typography.heading3,
     color: colors.textPrimary,
     flex: 1,
+    paddingRight: spacing.spacing2,
   },
   badge: {
     backgroundColor: colors.success,
-    borderRadius: spacing.radiusSm,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 2,
+    borderRadius: spacing.radiusMd,
+    paddingHorizontal: spacing.spacing3,
+    paddingVertical: 4,
+    ...shadows.shadow1,
   },
   badgeText: {
     ...typography.caption,
@@ -97,18 +109,18 @@ const styles = StyleSheet.create({
   desc: {
     ...typography.body,
     color: colors.textSecondary,
-    marginBottom: spacing.sm,
+    marginBottom: spacing.spacing4,
   },
   button: {
     alignSelf: "flex-start",
-    backgroundColor: colors.primary,
-    borderRadius: spacing.radiusMd,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
+    borderRadius: spacing.radiusFull,
   },
   buttonText: {
     ...typography.smallBold,
     color: colors.textOnPrimary,
+    textAlign: "center",
+    paddingVertical: spacing.spacing3,
+    paddingHorizontal: spacing.spacing6,
   },
 });
 

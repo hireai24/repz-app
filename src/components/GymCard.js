@@ -1,4 +1,5 @@
 // src/components/GymCard.js
+
 import React from "react";
 import PropTypes from "prop-types";
 import {
@@ -10,10 +11,12 @@ import {
   ImageBackground,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import LinearGradient from "react-native-linear-gradient";
+
 import colors from "../theme/colors";
 import spacing from "../theme/spacing";
 import typography from "../theme/typography";
-import shadows from "../theme/shadow";
+import shadows from "../theme/shadows";
 
 const fallbackBanner = require("../assets/gymFeed/cover1.png");
 const fallbackIcon = require("../assets/gymFeed/gym-icon.png");
@@ -29,7 +32,7 @@ const GymCard = ({ gym }) => {
     <TouchableOpacity
       onPress={handlePress}
       style={styles.card}
-      activeOpacity={0.85}
+      activeOpacity={0.9}
       accessibilityRole="button"
       accessibilityLabel={`View gym profile for ${gym.name}`}
     >
@@ -43,7 +46,12 @@ const GymCard = ({ gym }) => {
         style={styles.banner}
         imageStyle={styles.bannerImage}
       >
-        <View style={styles.overlay} />
+        <LinearGradient
+          colors={["rgba(0,0,0,0.6)", "transparent"]}
+          start={{ x: 0, y: 1 }}
+          end={{ x: 0, y: 0 }}
+          style={styles.gradientOverlay}
+        />
         <View style={styles.avatarWrapper}>
           <Image
             source={gym.logo ? { uri: gym.logo } : fallbackIcon}
@@ -67,13 +75,14 @@ const GymCard = ({ gym }) => {
               {gym.description}
             </Text>
           ) : null}
-          <TouchableOpacity
+          <LinearGradient
+            colors={[colors.gradientStart, colors.gradientEnd]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
             style={styles.ctaButton}
-            accessibilityRole="button"
-            accessibilityLabel="Visit Gym"
           >
             <Text style={styles.ctaText}>Visit Gym</Text>
-          </TouchableOpacity>
+          </LinearGradient>
         </View>
       </ImageBackground>
     </TouchableOpacity>
@@ -93,42 +102,45 @@ GymCard.propTypes = {
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: spacing.radiusLg,
+    borderRadius: spacing.radiusXl,
     overflow: "hidden",
-    marginBottom: spacing.lg,
-    ...shadows.elevationCard,
+    marginBottom: spacing.spacing5,
+    ...shadows.shadowHero,
   },
   banner: {
     width: "100%",
-    height: 180,
+    height: 200,
     justifyContent: "flex-end",
   },
   bannerImage: {
     resizeMode: "cover",
   },
-  overlay: {
+  gradientOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.45)",
   },
   avatarWrapper: {
     position: "absolute",
-    top: spacing.md,
-    left: spacing.md,
-    borderRadius: spacing.radiusPill,
+    top: spacing.spacing4,
+    left: spacing.spacing4,
+    borderRadius: spacing.radiusFull,
     overflow: "hidden",
     borderWidth: 2,
     borderColor: colors.cardBackground,
     backgroundColor: colors.cardBackground,
+    width: 64,
+    height: 64,
+    ...shadows.shadow2,
   },
   avatar: {
-    width: 48,
-    height: 48,
+    width: 64,
+    height: 64,
+    borderRadius: spacing.radiusFull,
   },
   textWrapper: {
-    padding: spacing.md,
+    padding: spacing.spacing4,
   },
   name: {
-    ...typography.heading3,
+    ...typography.heading2,
     color: colors.textOnPrimary,
   },
   location: {
@@ -139,19 +151,18 @@ const styles = StyleSheet.create({
   description: {
     ...typography.small,
     color: colors.textOnPrimary,
-    marginTop: spacing.xs,
+    marginTop: spacing.spacing2,
   },
   ctaButton: {
-    backgroundColor: colors.primary,
     alignSelf: "flex-start",
-    marginTop: spacing.sm,
-    borderRadius: spacing.radiusMd,
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.md,
+    marginTop: spacing.spacing3,
+    borderRadius: spacing.radiusFull,
   },
   ctaText: {
     ...typography.smallBold,
     color: colors.textOnPrimary,
+    paddingVertical: spacing.spacing3,
+    paddingHorizontal: spacing.spacing6,
   },
 });
 

@@ -24,10 +24,11 @@ import { db } from "../firebase/firebaseClient";
 import colors from "../theme/colors";
 import spacing from "../theme/spacing";
 import typography from "../theme/typography";
-import shadows from "../theme/shadow";
+import shadows from "../theme/shadows";
 import { useUser } from "../context/UserContext";
 
 import avatarFallback from "../assets/avatars/avatar1.png";
+import LinearGradient from "react-native-linear-gradient";
 
 const LiveChatThread = ({ challengeId }) => {
   const [messages, setMessages] = useState([]);
@@ -63,18 +64,15 @@ const LiveChatThread = ({ challengeId }) => {
     });
 
     try {
-      await fetch(
-        `${process.env.EXPO_PUBLIC_API_BASE_URL}/api/notify`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            challengeId,
-            sender: user?.username || "Anonymous",
-            message,
-          }),
-        }
-      );
+      await fetch(`${process.env.EXPO_PUBLIC_API_BASE_URL}/api/notify`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          challengeId,
+          sender: user?.username || "Anonymous",
+          message,
+        }),
+      });
     } catch (err) {
       if (__DEV__) {
         // eslint-disable-next-line no-console
@@ -97,12 +95,10 @@ const LiveChatThread = ({ challengeId }) => {
               style={styles.avatar}
               accessibilityLabel="Sender avatar"
             />
-            <Text
-              style={styles.message}
-              accessibilityLabel={`Message from ${item.sender}`}
-            >
-              <Text style={styles.sender}>{item.sender}:</Text> {item.text}
-            </Text>
+            <View style={styles.bubble}>
+              <Text style={styles.sender}>{item.sender}</Text>
+              <Text style={styles.message}>{item.text}</Text>
+            </View>
           </View>
         )}
         accessibilityRole="list"
@@ -115,16 +111,23 @@ const LiveChatThread = ({ challengeId }) => {
           value={text}
           onChangeText={setText}
           style={styles.input}
+          placeholderTextColor={colors.textSecondary}
           accessibilityLabel="Type your message"
         />
-        <TouchableOpacity
-          onPress={sendMessage}
+        <LinearGradient
+          colors={[colors.gradientStart, colors.gradientEnd]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
           style={styles.sendButton}
-          accessibilityRole="button"
-          accessibilityLabel="Send chat message"
         >
-          <Text style={styles.sendText}>Send</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            onPress={sendMessage}
+            accessibilityRole="button"
+            accessibilityLabel="Send chat message"
+          >
+            <Text style={styles.sendText}>Send</Text>
+          </TouchableOpacity>
+        </LinearGradient>
       </View>
     </View>
   );
@@ -137,59 +140,66 @@ LiveChatThread.propTypes = {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: colors.glassBackground,
-    borderRadius: spacing.radiusLg,
-    padding: spacing.sm,
-    marginTop: spacing.lg,
-    ...shadows.elevationCard,
-    maxHeight: 240,
+    borderRadius: spacing.radiusXl,
+    padding: spacing.spacing3,
+    marginTop: spacing.spacing5,
+    ...shadows.shadow3,
+    maxHeight: 300,
   },
   listContent: {
-    paddingBottom: spacing.sm,
+    paddingBottom: spacing.spacing3,
   },
   messageRow: {
     flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.sm,
+    alignItems: "flex-start",
+    marginBottom: spacing.spacing3,
   },
   avatar: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    marginRight: spacing.sm,
+    width: 36,
+    height: 36,
+    borderRadius: spacing.radiusFull,
+    marginRight: spacing.spacing3,
+  },
+  bubble: {
+    backgroundColor: colors.cardBackground,
+    borderRadius: spacing.radiusLg,
+    paddingVertical: spacing.spacing2,
+    paddingHorizontal: spacing.spacing3,
+    maxWidth: "80%",
+    ...shadows.shadow1,
+  },
+  sender: {
+    ...typography.smallBold,
+    color: colors.accentBlue,
+    marginBottom: 2,
   },
   message: {
     ...typography.body,
-    flexShrink: 1,
     color: colors.textPrimary,
-  },
-  sender: {
-    color: colors.primary,
-    fontWeight: "600",
   },
   inputRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: spacing.sm,
+    marginTop: spacing.spacing3,
   },
   input: {
     backgroundColor: colors.inputBackground,
-    borderRadius: spacing.radiusMd,
+    borderRadius: spacing.radiusFull,
     flex: 1,
-    padding: spacing.sm,
-    marginRight: spacing.sm,
+    paddingVertical: spacing.spacing3,
+    paddingHorizontal: spacing.spacing4,
     ...typography.body,
     color: colors.textPrimary,
   },
   sendButton: {
-    backgroundColor: colors.primary,
-    borderRadius: spacing.radiusMd,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
+    borderRadius: spacing.radiusFull,
+    marginLeft: spacing.spacing2,
   },
   sendText: {
     ...typography.smallBold,
     color: colors.textOnPrimary,
+    paddingVertical: spacing.spacing3,
+    paddingHorizontal: spacing.spacing5,
   },
 });
 

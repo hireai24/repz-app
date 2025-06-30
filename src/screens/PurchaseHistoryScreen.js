@@ -213,6 +213,7 @@ const styles = StyleSheet.create({
   },
   detail: {
     ...typography.body,
+    marginTop: 2,
   },
   meta: {
     ...typography.caption,

@@ -1,4 +1,5 @@
 // src/components/UserPlanCard.js
+
 import React from "react";
 import PropTypes from "prop-types";
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
@@ -8,7 +9,7 @@ import { format } from "date-fns";
 import colors from "../theme/colors";
 import spacing from "../theme/spacing";
 import typography from "../theme/typography";
-import shadows from "../theme/shadow";
+import shadows from "../theme/shadows";
 
 const UserPlanCard = ({ plan, onPress, onDelete }) => {
   const formattedDate = format(new Date(plan.createdAt), "dd MMM yyyy");
@@ -35,6 +36,7 @@ const UserPlanCard = ({ plan, onPress, onDelete }) => {
       accessibilityRole="button"
       accessibilityLabel={`Open plan ${plan.name}`}
       testID={`user-plan-${plan.name.toLowerCase().replace(/\s+/g, "-")}`}
+      activeOpacity={0.9}
     >
       <View style={styles.header}>
         <Text style={styles.name}>{plan.name}</Text>
@@ -50,7 +52,9 @@ const UserPlanCard = ({ plan, onPress, onDelete }) => {
       </View>
 
       <View style={styles.details}>
-        <Text style={styles.type}>{plan.type || "Custom Plan"}</Text>
+        <View style={styles.badge}>
+          <Text style={styles.badgeText}>{plan.type?.toUpperCase() || "CUSTOM"}</Text>
+        </View>
         <Text style={styles.exercises}>
           {plan.exercises?.length || 0} Exercises
         </Text>
@@ -60,7 +64,7 @@ const UserPlanCard = ({ plan, onPress, onDelete }) => {
         <Ionicons
           name="calendar-outline"
           size={16}
-          color={colors.textSecondary}
+          color={colors.accentBlue}
         />
         <Text style={styles.date}>{formattedDate}</Text>
       </View>
@@ -86,7 +90,7 @@ const styles = StyleSheet.create({
     borderRadius: spacing.radiusLg,
     marginBottom: spacing.lg,
     padding: spacing.lg,
-    ...shadows.elevationCard,
+    ...shadows.shadow3,
   },
   header: {
     flexDirection: "row",
@@ -95,7 +99,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   name: {
-    ...typography.heading4,
+    ...typography.heading3,
     color: colors.textPrimary,
     flexShrink: 1,
     marginRight: spacing.sm,
@@ -104,17 +108,25 @@ const styles = StyleSheet.create({
     padding: spacing.xs,
   },
   details: {
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: spacing.sm,
   },
-  type: {
-    color: colors.primary,
+  badge: {
+    backgroundColor: colors.accentBlue,
+    borderRadius: spacing.radiusSm,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 2,
+    marginRight: spacing.sm,
+  },
+  badgeText: {
+    ...typography.caption,
+    color: colors.textOnPrimary,
     fontWeight: "600",
-    fontSize: 14,
-    marginBottom: 2,
   },
   exercises: {
+    ...typography.caption,
     color: colors.textSecondary,
-    fontSize: 13,
   },
   meta: {
     flexDirection: "row",

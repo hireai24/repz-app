@@ -1,5 +1,4 @@
 // src/screens/OnboardingScreen.js
-
 import React, { useState, useContext } from "react";
 import {
   View,
@@ -28,6 +27,7 @@ import typography from "../theme/typography";
 import i18n from "../locales/i18n";
 import defaultAvatar from "../assets/avatars/avatar1.png";
 import logoImage from "../assets/logo.png";
+import LottieView from "lottie-react-native";
 
 const goals = ["Fat Loss", "Muscle Gain", "Strength", "Athletic"];
 
@@ -44,8 +44,8 @@ const OnboardingScreen = () => {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
-  const logoFade = useFadeIn(150);
-  const formFade = useFadeIn(300);
+  const logoFade = useFadeIn(300);
+  const formFade = useFadeIn(500);
 
   const validateInputs = () => {
     const newErrors = {};
@@ -95,9 +95,17 @@ const OnboardingScreen = () => {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <ScrollView contentContainerStyle={styles.container}>
-        {/* Logo */}
+        {/* Hero */}
         <Animated.View style={{ opacity: logoFade }}>
-          <Image source={logoImage} style={styles.logo} resizeMode="contain" />
+          <View style={styles.heroWrapper}>
+            <LottieView
+              source={require("../assets/animations/confetti.json")}
+              autoPlay
+              loop
+              style={styles.lottie}
+            />
+            <Image source={logoImage} style={styles.logo} resizeMode="contain" />
+          </View>
         </Animated.View>
 
         {/* Form */}
@@ -131,9 +139,7 @@ const OnboardingScreen = () => {
             placeholder="••••••••"
             placeholderTextColor={colors.textSecondary}
           />
-          {errors.password && (
-            <Text style={styles.errorText}>{errors.password}</Text>
-          )}
+          {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
 
           {/* Username */}
           <Text style={styles.label}>{i18n.t("onboarding.username")}</Text>
@@ -144,9 +150,7 @@ const OnboardingScreen = () => {
             placeholder="e.g. BeastMode94"
             placeholderTextColor={colors.textSecondary}
           />
-          {errors.username && (
-            <Text style={styles.errorText}>{errors.username}</Text>
-          )}
+          {errors.username && <Text style={styles.errorText}>{errors.username}</Text>}
 
           {/* Gym */}
           <Text style={styles.label}>{i18n.t("onboarding.gym")}</Text>
@@ -211,13 +215,26 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
     padding: spacing.lg,
   },
+  heroWrapper: {
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: spacing.md,
+  },
+  lottie: {
+    position: "absolute",
+    width: 200,
+    height: 200,
+  },
   logo: {
     aspectRatio: 1,
     width: "50%",
-    marginBottom: spacing.md,
   },
   formWrapper: {
+    backgroundColor: colors.glassBackground,
+    borderRadius: spacing.radiusLg,
+    padding: spacing.lg,
     width: "100%",
+    ...shadows.elevation2,
   },
   title: {
     ...typography.heading1,

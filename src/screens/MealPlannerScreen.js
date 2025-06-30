@@ -112,7 +112,6 @@ const MealPlannerScreen = () => {
         <TouchableOpacity
           style={styles.upgradeButton}
           onPress={() => Alert.alert(i18n.t("mealPlanner.upgradeAction"))}
-          accessibilityRole="button"
         >
           <Text style={styles.upgradeButtonText}>{i18n.t("mealPlanner.upgradeButton")}</Text>
         </TouchableOpacity>
@@ -124,14 +123,13 @@ const MealPlannerScreen = () => {
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.header}>{i18n.t("mealPlanner.title")}</Text>
 
-      {/* Goal Selection */}
+      {/* Goal */}
       <Text style={styles.label}>{i18n.t("mealPlanner.goal")}</Text>
       <View style={styles.pickerWrapper}>
         <Picker
           selectedValue={goal}
           onValueChange={setGoal}
           style={styles.picker}
-          itemStyle={styles.pickerItem}
         >
           <Picker.Item label={i18n.t("mealPlanner.fatLoss")} value="fatLoss" />
           <Picker.Item label={i18n.t("mealPlanner.muscleGain")} value="muscleGain" />
@@ -139,14 +137,13 @@ const MealPlannerScreen = () => {
         </Picker>
       </View>
 
-      {/* Diet Type */}
+      {/* Diet */}
       <Text style={styles.label}>{i18n.t("mealPlanner.dietType")}</Text>
       <View style={styles.pickerWrapper}>
         <Picker
           selectedValue={dietType}
           onValueChange={setDietType}
           style={styles.picker}
-          itemStyle={styles.pickerItem}
         >
           <Picker.Item label={i18n.t("mealPlanner.balanced")} value="balanced" />
           <Picker.Item label={i18n.t("mealPlanner.highProtein")} value="highProtein" />
@@ -162,7 +159,9 @@ const MealPlannerScreen = () => {
           <Text style={styles.label}>{i18n.t(`mealPlanner.${macro}`)}</Text>
           <TextInput
             keyboardType="numeric"
-            value={macro === "protein" ? protein : macro === "carbs" ? carbs : fats}
+            value={
+              macro === "protein" ? protein : macro === "carbs" ? carbs : fats
+            }
             onChangeText={
               macro === "protein"
                 ? setProtein
@@ -177,17 +176,18 @@ const MealPlannerScreen = () => {
         </View>
       ))}
 
-      {/* Generate Button */}
+      {/* Generate */}
       <TouchableOpacity
         style={[styles.generateButton, loading && styles.buttonDisabled]}
         onPress={handleGenerate}
         disabled={loading}
-        accessibilityRole="button"
       >
         {loading ? (
           <ActivityIndicator color={colors.textOnPrimary} />
         ) : (
-          <Text style={styles.generateButtonText}>{i18n.t("mealPlanner.generate")}</Text>
+          <Text style={styles.generateButtonText}>
+            {i18n.t("mealPlanner.generate")}
+          </Text>
         )}
       </TouchableOpacity>
 
@@ -220,9 +220,6 @@ const styles = StyleSheet.create({
   },
   picker: {
     width: "100%",
-  },
-  pickerItem: {
-    color: colors.textPrimary,
   },
   input: {
     backgroundColor: colors.surface,
