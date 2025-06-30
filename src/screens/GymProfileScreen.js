@@ -79,17 +79,19 @@ const GymProfileScreen = ({ route }) => {
         <Image source={{ uri: gym.image }} style={styles.image} />
       ) : (
         <View style={styles.imagePlaceholder}>
-          <Text style={styles.imagePlaceholderText}>No Image</Text>
+          <Text style={styles.imagePlaceholderText}>No Image Available</Text>
         </View>
       )}
 
       <Text style={styles.name}>{gym.name || "Unnamed Gym"}</Text>
-      <Text style={styles.location}>
-        {gym.location || "No location listed"}
-      </Text>
-      <Text style={styles.description}>
-        {gym.description || "No description provided."}
-      </Text>
+
+      {gym.location && (
+        <Text style={styles.location}>{gym.location}</Text>
+      )}
+
+      {gym.description && (
+        <Text style={styles.description}>{gym.description}</Text>
+      )}
 
       {gym.features && (
         <Text style={styles.meta}>🏋️ Features: {gym.features}</Text>
@@ -113,7 +115,7 @@ const GymProfileScreen = ({ route }) => {
             onPress={() => navigation.navigate("GymSubmissionScreen", { gym })}
             accessibilityRole="button"
           >
-            <Text style={styles.editButtonText}>Edit Profile</Text>
+            <Text style={styles.editButtonText}>Edit Gym Profile</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -194,6 +196,7 @@ const styles = StyleSheet.create({
     ...typography.heading2,
     color: colors.textPrimary,
     textAlign: "center",
+    marginBottom: spacing.xs,
   },
   location: {
     ...typography.body,
@@ -247,6 +250,7 @@ const styles = StyleSheet.create({
   errorText: {
     ...typography.body,
     color: colors.error,
+    textAlign: "center",
   },
   loadingText: {
     ...typography.body,

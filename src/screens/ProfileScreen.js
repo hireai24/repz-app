@@ -1,5 +1,4 @@
 // src/screens/ProfileScreen.js
-
 import React, { useEffect, useState, useContext, useCallback } from "react";
 import {
   View,
@@ -10,6 +9,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Linking,
+  Animated,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { getUserProfile } from "../api/userApi";
@@ -23,6 +23,8 @@ import typography from "../theme/typography";
 import shadows from "../theme/shadow";
 import XPProgress from "../components/XPProgress";
 import TierBadge from "../components/TierBadge";
+import useFadeIn from "../animations/fadeIn";
+import LottieView from "lottie-react-native";
 
 const DEFAULT_AVATAR = "https://default-avatar.repz.app/img.png";
 
@@ -35,6 +37,8 @@ const ProfileScreen = () => {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+
+  const fadeAnim = useFadeIn(300);
 
   const loadProfile = useCallback(async () => {
     try {
@@ -85,10 +89,16 @@ const ProfileScreen = () => {
   }
 
   return (
-    <ScrollView style={styles.container}>
+    <Animated.ScrollView style={[styles.container, { opacity: fadeAnim }]}>
       {/* Profile Header */}
       <View style={styles.header}>
-        <View style={styles.avatarContainer}>
+        <View style={styles.avatarGlowWrapper}>
+          <LottieView
+            source={require("../assets/animations/avatar-glow.json")}
+            autoPlay
+            loop
+            style={styles.avatarGlow}
+          />
           <Image
             source={{
               uri: profile.profilePicture || profile.avatar || DEFAULT_AVATAR,
@@ -116,12 +126,14 @@ const ProfileScreen = () => {
 
       {/* Stats */}
       <View style={styles.statsRow}>
-        <Text style={styles.meta}>
-          {i18n.t("profile.streak")}: {profile.streak || 0}
-        </Text>
-        <Text style={styles.meta}>
-          {i18n.t("profile.tier")}: {tier}
-        </Text>
+        <View style={styles.statCard}>
+          <Text style={styles.statLabel}>{i18n.t("profile.streak")}</Text>
+          <Text style={styles.statValue}>{profile.streak || 0}</Text>
+        </View>
+        <View style={styles.statCard}>
+          <Text style={styles.statLabel}>{i18n.t("profile.tier")}</Text>
+          <Text style={styles.statValue}>{tier}</Text>
+        </View>
       </View>
 
       {/* Transformations */}
@@ -215,7 +227,7 @@ const ProfileScreen = () => {
           </View>
         </View>
       )}
-    </ScrollView>
+    </Animated.ScrollView>
   );
 };
 
@@ -234,13 +246,20 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: spacing.lg,
   },
-  avatarContainer: {
+  avatarGlowWrapper: {
     position: "relative",
+    width: 120,
+    height: 120,
+    marginBottom: spacing.sm,
+  },
+  avatarGlow: {
+    ...StyleSheet.absoluteFillObject,
   },
   avatar: {
     width: 90,
     height: 90,
     borderRadius: 45,
+    alignSelf: "center",
   },
   editIconWrapper: {
     position: "absolute",
@@ -265,11 +284,28 @@ const styles = StyleSheet.create({
     justifyContent: "space-around",
     marginBottom: spacing.md,
   },
+  statCard: {
+    backgroundColor: colors.glassCard,
+    borderRadius: 10,
+    padding: spacing.sm,
+    ...shadows.elevation1,
+  },
+  statLabel: {
+    color: colors.textSecondary,
+    fontSize: 12,
+  },
+  statValue: {
+    color: colors.textPrimary,
+    fontWeight: "bold",
+    fontSize: 16,
+  },
   section: {
-    backgroundColor: colors.surface,
+    backgroundColor: colors.glassCard,
     borderRadius: 12,
     padding: spacing.md,
     marginBottom: spacing.lg,
+    borderWidth: 1,
+    borderColor: colors.neonAccent,
     ...shadows.elevation2,
   },
   sectionTitle: {

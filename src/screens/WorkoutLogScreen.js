@@ -75,71 +75,19 @@ const WorkoutLogScreen = () => {
     if (userId) loadPlans();
   }, [userId, loadPlans]);
 
-  const addExercise = (exercise) => {
-    setWorkout((prev) => [
-      ...prev,
-      {
-        ...exercise,
-        sets: [{ weight: "", reps: "", rpe: "", pr: false }],
-        challengeEntry: false,
-        video: null,
-        date: format(date, "yyyy-MM-dd"),
-      },
-    ]);
-  };
-
-  const loadPlanToLog = (plan) => {
-    const formatted = (plan.exercises || []).map((ex) => ({
-      ...ex,
-      sets: [{ weight: "", reps: "", rpe: "", pr: false }],
-      challengeEntry: false,
-      video: null,
-      date: format(date, "yyyy-MM-dd"),
-    }));
-    setWorkout(formatted);
-  };
-
-  const updateSet = (exerciseIndex, setIndex, field, value) => {
-    const updated = [...workout];
-    updated[exerciseIndex].sets[setIndex][field] = value;
-    setWorkout(updated);
-  };
-
-  const addSet = (exerciseIndex) => {
-    const updated = [...workout];
-    updated[exerciseIndex].sets.push({
-      weight: "",
-      reps: "",
-      rpe: "",
-      pr: false,
-    });
-    setWorkout(updated);
-  };
-
-  const togglePR = (exerciseIndex, setIndex) => {
-    const updated = [...workout];
-    updated[exerciseIndex].sets[setIndex].pr =
-      !updated[exerciseIndex].sets[setIndex].pr;
-    setWorkout(updated);
-  };
-
-  const toggleChallenge = (exerciseIndex) => {
-    const updated = [...workout];
-    updated[exerciseIndex].challengeEntry =
-      !updated[exerciseIndex].challengeEntry;
-    setWorkout(updated);
-  };
-
   const filtered = searchExercises(filterExercises(exerciseData, {}), search);
   const filteredWorkout = workout.filter((ex) =>
     ex.date?.includes(format(date, "yyyy-MM-dd"))
   );
 
+  const handleDateChange = (_, selectedDate) => {
+    setShowDatePicker(Platform.OS === "ios");
+    if (selectedDate) setDate(selectedDate);
+  };
+
   const handleSaveWorkout = () => {
     setShowXP(true);
-    if (xpAnim.current) {
-      xpAnim.current.play();
-    }
+    if (xpAnim.current) xpAnim.current.play();
     setTimeout(() => setShowXP(false), 1200);
     Toast.show({
       type: "success",
@@ -147,13 +95,6 @@ const WorkoutLogScreen = () => {
       text2: i18n.t("workoutLog.savedMessage"),
       position: "bottom",
     });
-  };
-
-  const handleDateChange = (_, selectedDate) => {
-    setShowDatePicker(Platform.OS === "ios");
-    if (selectedDate) {
-      setDate(selectedDate);
-    }
   };
 
   if (!allowed) {
@@ -167,19 +108,16 @@ const WorkoutLogScreen = () => {
   return (
     <View style={styles.container}>
       <Animated.View style={{ opacity: fadeAnim }}>
-        <Text style={styles.title}>
-          {i18n.t("workoutLog.title") || i18n.t("dashboard.todayWorkout")}
-        </Text>
+        <Text style={styles.title}>{i18n.t("workoutLog.title")}</Text>
 
+        {/* Plans */}
         {loadingPlans ? (
           <Text style={styles.loadingText}>{i18n.t("common.loading")}</Text>
         ) : errorLoadingPlans ? (
           <Text style={styles.errorText}>{errorLoadingPlans}</Text>
         ) : userPlans.length > 0 ? (
           <View style={styles.planSelector}>
-            <Text style={styles.sectionTitle}>
-              {i18n.t("workoutLog.loadPlan")}
-            </Text>
+            <Text style={styles.sectionTitle}>{i18n.t("workoutLog.loadPlan")}</Text>
             <FlatList
               data={userPlans}
               horizontal
@@ -187,20 +125,28 @@ const WorkoutLogScreen = () => {
               renderItem={({ item }) => (
                 <TouchableOpacity
                   style={styles.planChip}
-                  onPress={() => loadPlanToLog(item)}
-                  accessibilityRole="button"
+                  onPress={() => {
+                    const formatted = (item.exercises || []).map((ex) => ({
+                      ...ex,
+                      sets: [{ weight: "", reps: "", rpe: "", pr: false }],
+                      challengeEntry: false,
+                      video: null,
+                      date: format(date, "yyyy-MM-dd"),
+                    }));
+                    setWorkout(formatted);
+                  }}
                 >
                   <Text style={styles.planText}>{item.name}</Text>
                 </TouchableOpacity>
               )}
               showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ paddingBottom: spacing.sm }}
             />
           </View>
         ) : (
           <Text style={styles.emptyText}>{i18n.t("dashboard.noPlans")}</Text>
         )}
 
+        {/* Date Selector */}
         <TouchableOpacity
           style={styles.inputRow}
           onPress={() => setShowDatePicker(true)}
@@ -209,9 +155,7 @@ const WorkoutLogScreen = () => {
             source={require("../assets/icons/calendar.png")}
             style={styles.icon}
           />
-          <Text style={styles.dateText}>
-            {format(date, "yyyy-MM-dd")}
-          </Text>
+          <Text style={styles.dateText}>{format(date, "yyyy-MM-dd")}</Text>
         </TouchableOpacity>
 
         {showDatePicker && (
@@ -223,18 +167,34 @@ const WorkoutLogScreen = () => {
           />
         )}
 
+        {/* Exercises */}
         <FlatList
           data={filtered}
           horizontal
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
-            <ExerciseCard exercise={item} onAdd={() => addExercise(item)} />
+            <ExerciseCard
+              exercise={item}
+              onAdd={() =>
+                setWorkout((prev) => [
+                  ...prev,
+                  {
+                    ...item,
+                    sets: [{ weight: "", reps: "", rpe: "", pr: false }],
+                    challengeEntry: false,
+                    video: null,
+                    date: format(date, "yyyy-MM-dd"),
+                  },
+                ])
+              }
+            />
           )}
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{ paddingVertical: spacing.md }}
         />
       </Animated.View>
 
+      {/* Log */}
       {filteredWorkout.length === 0 ? (
         <View style={styles.emptyState}>
           <Text style={styles.emptyText}>{i18n.t("common.noData")}</Text>
@@ -246,14 +206,37 @@ const WorkoutLogScreen = () => {
             keyExtractor={(_, index) => `log-${index}`}
             contentContainerStyle={styles.flatListContent}
             renderItem={({ item, index }) => (
-              <View key={index} style={styles.exerciseBlock}>
+              <View style={styles.exerciseBlock}>
                 <Text style={styles.exerciseTitle}>{item.name}</Text>
                 {item.sets.map((set, setIndex) => (
                   <View key={setIndex} style={styles.setRow}>
-                    {/* Input fields */}
+                    <Text style={styles.setText}>{i18n.t("workoutLog.set")} {setIndex + 1}</Text>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="kg"
+                      placeholderTextColor={colors.textSecondary}
+                      keyboardType="numeric"
+                      value={set.weight}
+                      onChangeText={(v) => {
+                        const updated = [...workout];
+                        updated[index].sets[setIndex].weight = v;
+                        setWorkout(updated);
+                      }}
+                    />
+                    <TextInput
+                      style={styles.input}
+                      placeholder="reps"
+                      placeholderTextColor={colors.textSecondary}
+                      keyboardType="numeric"
+                      value={set.reps}
+                      onChangeText={(v) => {
+                        const updated = [...workout];
+                        updated[index].sets[setIndex].reps = v;
+                        setWorkout(updated);
+                      }}
+                    />
                   </View>
                 ))}
-                {/* Add set / Challenge */}
               </View>
             )}
           />
@@ -305,6 +288,12 @@ const styles = StyleSheet.create({
   plusIcon: { width: 18, height: 18, tintColor: colors.textOnPrimary, marginRight: spacing.xs },
   saveText: { color: colors.textOnPrimary, fontWeight: "bold" },
   xpAnimation: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0 },
+  exerciseBlock: { backgroundColor: colors.surface, borderRadius: 8, padding: spacing.md, marginBottom: spacing.sm },
+  exerciseTitle: { ...typography.heading3, color: colors.textPrimary, marginBottom: spacing.xs },
+  setRow: { flexDirection: "row", alignItems: "center", marginBottom: spacing.xs },
+  setText: { color: colors.textSecondary, marginRight: spacing.sm },
+  input: { backgroundColor: colors.background, borderRadius: 6, padding: spacing.xs, marginRight: spacing.sm, width: 50, textAlign: "center", color: colors.textPrimary },
+  locked: { color: colors.textSecondary, fontSize: 16, textAlign: "center" },
 });
 
 export default React.memo(WorkoutLogScreen);

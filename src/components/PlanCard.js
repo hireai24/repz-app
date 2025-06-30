@@ -1,4 +1,5 @@
 // src/components/PlanCard.js
+
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 import {
@@ -10,14 +11,16 @@ import {
   Alert,
   Linking,
   ActivityIndicator,
+  ImageBackground,
 } from "react-native";
 
+import LinearGradient from "react-native-linear-gradient";
 import { useTier } from "../context/TierContext";
 import { purchasePlan } from "../api/marketplaceApi";
 import colors from "../theme/colors";
 import spacing from "../theme/spacing";
 import typography from "../theme/typography";
-import shadows from "../theme/shadow";
+import shadows from "../theme/shadows";
 
 const PlanCard = ({
   plan,
@@ -85,15 +88,24 @@ const PlanCard = ({
       accessibilityRole="button"
       accessibilityLabel={`View plan ${plan.name}`}
     >
-      <Image
-        source={
-          plan.thumbnail
-            ? { uri: plan.thumbnail }
-            : require("../assets/plan-bg-gradient.png")
-        }
-        style={styles.image}
-        accessibilityLabel={`Thumbnail for ${plan.name}`}
-      />
+      <View style={styles.imageWrapper}>
+        <ImageBackground
+          source={
+            plan.thumbnail
+              ? { uri: plan.thumbnail }
+              : require("../assets/plan-bg-gradient.png")
+          }
+          style={styles.image}
+          imageStyle={styles.imageStyle}
+        >
+          <LinearGradient
+            colors={["rgba(0,0,0,0.4)", "transparent"]}
+            start={{ x: 0, y: 1 }}
+            end={{ x: 0, y: 0 }}
+            style={styles.imageOverlay}
+          />
+        </ImageBackground>
+      </View>
 
       <View style={styles.content}>
         <Text style={styles.title}>{plan.name}</Text>
@@ -107,31 +119,37 @@ const PlanCard = ({
             {plan.price === 0 ? "Free" : `£${plan.price}`}
           </Text>
           {isLocked && (
-            <Text
-              style={[
-                styles.tier,
-                plan.tier === "Elite" ? styles.elite : styles.pro,
-              ]}
+            <LinearGradient
+              colors={[colors.gradientStart, colors.gradientEnd]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.tierBadge}
             >
-              {plan.tier}
-            </Text>
+              <Text style={styles.tierText}>{plan.tier}</Text>
+            </LinearGradient>
           )}
         </View>
 
         {plan.price > 0 && (
-          <TouchableOpacity
+          <LinearGradient
+            colors={[colors.gradientStart, colors.gradientEnd]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
             style={[styles.buyBtn, buyLoading && styles.disabled]}
-            onPress={handleBuy}
-            disabled={buyLoading}
-            accessibilityRole="button"
-            accessibilityLabel="Purchase this plan"
           >
-            {buyLoading ? (
-              <ActivityIndicator color={colors.textOnPrimary} />
-            ) : (
-              <Text style={styles.buyText}>PURCHASE</Text>
-            )}
-          </TouchableOpacity>
+            <TouchableOpacity
+              onPress={handleBuy}
+              disabled={buyLoading}
+              accessibilityRole="button"
+              accessibilityLabel="Purchase this plan"
+            >
+              {buyLoading ? (
+                <ActivityIndicator color={colors.textOnPrimary} />
+              ) : (
+                <Text style={styles.buyText}>PURCHASE</Text>
+              )}
+            </TouchableOpacity>
+          </LinearGradient>
         )}
       </View>
     </TouchableOpacity>
@@ -157,94 +175,103 @@ PlanCard.propTypes = {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.glassBackground,
-    borderRadius: spacing.radiusLg,
-    marginBottom: spacing.lg,
+    borderRadius: spacing.radiusXl,
+    marginBottom: spacing.spacing5,
     overflow: "hidden",
-    ...shadows.elevationCard,
+    ...shadows.shadow3,
+  },
+  imageWrapper: {
+    borderTopLeftRadius: spacing.radiusXl,
+    borderTopRightRadius: spacing.radiusXl,
+    overflow: "hidden",
   },
   image: {
     width: "100%",
-    height: 140,
+    height: 160,
+    justifyContent: "flex-end",
+  },
+  imageStyle: {
     resizeMode: "cover",
   },
+  imageOverlay: {
+    ...StyleSheet.absoluteFillObject,
+  },
   content: {
-    padding: spacing.md,
+    padding: spacing.spacing4,
   },
   title: {
     ...typography.heading3,
     color: colors.textPrimary,
     fontWeight: "700",
-    fontSize: 18,
+    marginBottom: spacing.spacing1,
   },
   author: {
+    ...typography.caption,
     color: colors.textSecondary,
-    fontSize: 13,
-    marginTop: 2,
+    marginBottom: spacing.spacing1,
   },
   meta: {
+    ...typography.caption,
     color: colors.textSecondary,
-    fontSize: 12,
-    marginTop: 4,
   },
   footer: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginTop: spacing.sm,
+    marginTop: spacing.spacing3,
   },
   price: {
     color: colors.success,
     fontWeight: "bold",
-    fontSize: 16,
+    fontSize: 18,
   },
-  tier: {
-    fontSize: 13,
-    fontWeight: "bold",
+  tierBadge: {
+    borderRadius: spacing.radiusFull,
+    paddingHorizontal: spacing.spacing3,
+    paddingVertical: spacing.spacing1,
   },
-  pro: {
-    color: colors.primary,
-  },
-  elite: {
-    color: colors.pro,
+  tierText: {
+    ...typography.caption,
+    color: colors.textOnPrimary,
+    fontWeight: "600",
   },
   buyBtn: {
-    backgroundColor: colors.primary,
-    borderRadius: spacing.radiusMd,
-    marginTop: spacing.md,
-    paddingVertical: spacing.sm,
-    alignItems: "center",
+    borderRadius: spacing.radiusFull,
+    marginTop: spacing.spacing3,
   },
   buyText: {
     ...typography.button,
     color: colors.textOnPrimary,
+    paddingVertical: spacing.spacing3,
+    paddingHorizontal: spacing.spacing5,
   },
   disabled: {
     opacity: 0.6,
   },
   skeletonImage: {
     backgroundColor: colors.surface,
-    height: 140,
+    height: 160,
     width: "100%",
   },
   skeletonText: {
     backgroundColor: colors.surface,
-    borderRadius: spacing.xs,
+    borderRadius: spacing.radiusSm,
     height: 14,
-    marginTop: 8,
+    marginTop: spacing.spacing2,
     width: "80%",
   },
   skeletonText40: {
     backgroundColor: colors.surface,
-    borderRadius: spacing.xs,
+    borderRadius: spacing.radiusSm,
     height: 14,
-    marginTop: 8,
+    marginTop: spacing.spacing2,
     width: "40%",
   },
   skeletonText60: {
     backgroundColor: colors.surface,
-    borderRadius: spacing.xs,
+    borderRadius: spacing.radiusSm,
     height: 14,
-    marginTop: 8,
+    marginTop: spacing.spacing2,
     width: "60%",
   },
 });

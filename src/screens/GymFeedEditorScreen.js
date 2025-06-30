@@ -66,6 +66,7 @@ const GymFeedEditorScreen = ({ route, navigation }) => {
         <TouchableOpacity
           style={styles.goBackButton}
           onPress={() => navigation.goBack()}
+          accessibilityRole="button"
         >
           <Text style={styles.goBackText}>Go Back</Text>
         </TouchableOpacity>
@@ -112,7 +113,11 @@ const GymFeedEditorScreen = ({ route, navigation }) => {
         />
       </View>
 
-      <TouchableOpacity style={styles.submitButton} onPress={handlePost}>
+      <TouchableOpacity
+        style={styles.submitButton}
+        onPress={handlePost}
+        accessibilityRole="button"
+      >
         <Text style={styles.submitButtonText}>Post</Text>
       </TouchableOpacity>
     </View>

@@ -1,11 +1,20 @@
 // src/components/ChallengeCard.js
+
 import React from "react";
 import PropTypes from "prop-types";
-import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+} from "react-native";
+import LinearGradient from "react-native-linear-gradient";
+
 import colors from "../theme/colors";
 import spacing from "../theme/spacing";
 import typography from "../theme/typography";
-import shadows from "../theme/shadow";
+import shadows from "../theme/shadows";
 import TierBadge from "./TierBadge";
 
 const placeholderImage = "https://via.placeholder.com/300x150";
@@ -58,19 +67,26 @@ const ChallengeCard = ({
   };
 
   return (
-    <View style={[styles.card, isWinner && styles.winnerGlow]}>
-      <Image
-        source={image ? { uri: image } : { uri: placeholderImage }}
-        style={styles.image}
-        accessibilityLabel="Challenge image"
-      />
+    <TouchableOpacity
+      activeOpacity={0.95}
+      style={[styles.card, isWinner && styles.winnerGlow]}
+    >
+      <View style={styles.imageWrapper}>
+        <Image
+          source={image ? { uri: image } : { uri: placeholderImage }}
+          style={styles.image}
+          accessibilityLabel="Challenge image"
+        />
+        <LinearGradient
+          colors={["rgba(0,0,0,0.6)", "transparent"]}
+          start={{ x: 0, y: 1 }}
+          end={{ x: 0, y: 0 }}
+          style={styles.gradientOverlay}
+        />
+      </View>
 
       <View style={styles.header}>
-        <Text
-          style={styles.title}
-          numberOfLines={2}
-          accessibilityRole="header"
-        >
+        <Text style={styles.title} numberOfLines={2}>
           {title}
         </Text>
         {requiredTier && <TierBadge tier={requiredTier} />}
@@ -106,26 +122,27 @@ const ChallengeCard = ({
         <TouchableOpacity
           style={styles.viewBtn}
           onPress={onView}
-          accessibilityRole="button"
-          accessibilityLabel="View completed challenge"
         >
           <Text style={styles.viewText}>Completed</Text>
         </TouchableOpacity>
       ) : (
-        <TouchableOpacity
+        <LinearGradient
+          colors={[colors.gradientStart, colors.gradientEnd]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
           style={styles.enterBtn}
-          onPress={onEnter}
-          accessibilityRole="button"
-          accessibilityLabel={
-            isInProgress ? "Resume challenge" : "Enter challenge"
-          }
         >
-          <Text style={styles.enterText}>
-            {isInProgress ? "Resume Challenge" : "Enter Challenge"}
-          </Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            onPress={onEnter}
+            style={styles.enterTouchable}
+          >
+            <Text style={styles.enterText}>
+              {isInProgress ? "Resume Challenge" : "Enter Challenge"}
+            </Text>
+          </TouchableOpacity>
+        </LinearGradient>
       )}
-    </View>
+    </TouchableOpacity>
   );
 };
 
@@ -155,92 +172,103 @@ ChallengeCard.propTypes = {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.glassBackground,
-    borderRadius: spacing.radiusLg,
-    marginBottom: spacing.lg,
+    borderRadius: spacing.radiusXl,
+    marginBottom: spacing.spacing6,
     overflow: "hidden",
-    ...shadows.elevationCard,
+    ...shadows.shadowHero,
+  },
+  winnerGlow: {
+    borderColor: colors.gold,
+    borderWidth: 2,
+    shadowColor: colors.gold,
+    shadowOpacity: 0.6,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 0 },
+  },
+  imageWrapper: {
+    position: "relative",
   },
   image: {
     width: "100%",
-    height: 140,
+    height: 160,
+  },
+  gradientOverlay: {
+    ...StyleSheet.absoluteFillObject,
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
-    padding: spacing.md,
+    padding: spacing.spacing4,
   },
   title: {
-    ...typography.heading4,
+    ...typography.heading3,
     color: colors.textPrimary,
     flex: 1,
-    paddingRight: spacing.sm,
+    paddingRight: spacing.spacing2,
   },
   participants: {
     ...typography.caption,
     color: colors.textSecondary,
-    paddingHorizontal: spacing.md,
+    paddingHorizontal: spacing.spacing4,
   },
   gymLabel: {
     ...typography.caption,
     color: colors.accentBlue,
     fontStyle: "italic",
-    paddingHorizontal: spacing.md,
+    paddingHorizontal: spacing.spacing4,
     paddingTop: 2,
   },
   status: {
     ...typography.caption,
     fontWeight: "600",
-    paddingHorizontal: spacing.md,
+    paddingHorizontal: spacing.spacing4,
     paddingTop: 4,
   },
   countdown: {
     ...typography.caption,
     color: colors.warning,
-    paddingHorizontal: spacing.md,
+    paddingHorizontal: spacing.spacing4,
     paddingTop: 2,
   },
   reward: {
     ...typography.caption,
     color: colors.textSecondary,
-    paddingHorizontal: spacing.md,
+    paddingHorizontal: spacing.spacing4,
     paddingTop: 4,
   },
   verificationBadge: {
     ...typography.caption,
     color: colors.success,
     fontStyle: "italic",
-    paddingHorizontal: spacing.md,
+    paddingHorizontal: spacing.spacing4,
     paddingTop: 2,
   },
   enterBtn: {
-    backgroundColor: colors.primary,
-    marginTop: spacing.sm,
-    marginHorizontal: spacing.md,
-    marginBottom: spacing.md,
-    borderRadius: spacing.radiusMd,
-    paddingVertical: spacing.sm,
+    borderRadius: spacing.radiusFull,
+    marginTop: spacing.spacing3,
+    marginHorizontal: spacing.spacing4,
+    marginBottom: spacing.spacing4,
+  },
+  enterTouchable: {
+    alignItems: "center",
+    paddingVertical: spacing.spacing3,
   },
   enterText: {
     ...typography.smallBold,
     color: colors.textOnPrimary,
-    textAlign: "center",
   },
   viewBtn: {
     backgroundColor: colors.cardBackground,
-    marginTop: spacing.sm,
-    marginHorizontal: spacing.md,
-    marginBottom: spacing.md,
-    borderRadius: spacing.radiusMd,
-    paddingVertical: spacing.sm,
+    marginTop: spacing.spacing3,
+    marginHorizontal: spacing.spacing4,
+    marginBottom: spacing.spacing4,
+    borderRadius: spacing.radiusFull,
+    paddingVertical: spacing.spacing3,
   },
   viewText: {
     ...typography.smallBold,
     color: colors.textSecondary,
     textAlign: "center",
-  },
-  winnerGlow: {
-    borderColor: colors.gold,
-    borderWidth: 2,
   },
 });
 

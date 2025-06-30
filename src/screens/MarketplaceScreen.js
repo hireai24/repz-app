@@ -130,7 +130,7 @@ const MarketplaceScreen = () => {
           accessibilityRole="button"
           accessibilityLabel={i18n.t("marketplace.sortAccessibility")}
           onPress={() => {
-            // Optional: hook up sort modal
+            // Optional: implement sort modal
           }}
         >
           <Image
@@ -140,7 +140,7 @@ const MarketplaceScreen = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Filter Chips */}
+      {/* Filters */}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -168,7 +168,7 @@ const MarketplaceScreen = () => {
         ))}
       </ScrollView>
 
-      {/* Main Content */}
+      {/* Content */}
       {loading ? (
         <ActivityIndicator
           size="large"

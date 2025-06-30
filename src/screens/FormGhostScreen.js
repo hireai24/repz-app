@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
   uploadBox: {
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: colors.surface,
+    backgroundColor: colors.glassBackground,
     borderRadius: 12,
     padding: spacing.lg,
     marginBottom: spacing.md,

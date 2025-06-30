@@ -1,9 +1,13 @@
+// src/components/ChallengeTypeSelector.js
+
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import PropTypes from "prop-types";
+import LinearGradient from "react-native-linear-gradient";
 import colors from "../theme/colors";
 import spacing from "../theme/spacing";
 import typography from "../theme/typography";
+import shadows from "../theme/shadows";
 
 const TYPES = [
   { key: "reps", label: "Max Reps" },
@@ -17,29 +21,37 @@ const ChallengeTypeSelector = ({ selectedType, onSelect }) => (
   <View style={styles.container}>
     <Text style={styles.label}>Challenge Type</Text>
     <View style={styles.optionsRow}>
-      {TYPES.map((type) => (
-        <TouchableOpacity
-          key={type.key}
-          style={[
-            styles.chip,
-            selectedType === type.key && styles.chipSelected,
-          ]}
-          onPress={() => onSelect(type.key)}
-          accessibilityRole="button"
-          accessibilityState={{ selected: selectedType === type.key }}
-          accessibilityLabel={`Select ${type.label} challenge type`}
-        >
-          <Text
-            style={
-              selectedType === type.key
-                ? styles.chipTextSelected
-                : styles.chipText
-            }
+      {TYPES.map((type) =>
+        selectedType === type.key ? (
+          <LinearGradient
+            key={type.key}
+            colors={[colors.gradientStart, colors.gradientEnd]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={[styles.chip, styles.chipSelected]}
           >
-            {type.label}
-          </Text>
-        </TouchableOpacity>
-      ))}
+            <TouchableOpacity
+              onPress={() => onSelect(type.key)}
+              accessibilityRole="button"
+              accessibilityState={{ selected: true }}
+              accessibilityLabel={`Selected ${type.label} challenge type`}
+            >
+              <Text style={styles.chipTextSelected}>{type.label}</Text>
+            </TouchableOpacity>
+          </LinearGradient>
+        ) : (
+          <TouchableOpacity
+            key={type.key}
+            style={styles.chip}
+            onPress={() => onSelect(type.key)}
+            accessibilityRole="button"
+            accessibilityState={{ selected: false }}
+            accessibilityLabel={`Select ${type.label} challenge type`}
+          >
+            <Text style={styles.chipText}>{type.label}</Text>
+          </TouchableOpacity>
+        )
+      )}
     </View>
   </View>
 );
@@ -51,38 +63,36 @@ ChallengeTypeSelector.propTypes = {
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: spacing.lg,
+    marginBottom: spacing.spacing6,
   },
   label: {
     ...typography.subheading,
     color: colors.textPrimary,
-    marginBottom: spacing.sm,
+    marginBottom: spacing.spacing2,
   },
   optionsRow: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: spacing.sm,
+    gap: spacing.spacing2,
   },
   chip: {
-    backgroundColor: colors.surface,
+    backgroundColor: colors.glassBackground,
     borderColor: colors.border,
     borderWidth: 1,
-    borderRadius: 20,
-    paddingVertical: 8,
-    paddingHorizontal: 14,
+    borderRadius: spacing.radiusFull,
+    paddingVertical: spacing.spacing2,
+    paddingHorizontal: spacing.spacing4,
   },
   chipSelected: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
+    ...shadows.shadow2,
   },
   chipText: {
+    ...typography.small,
     color: colors.textPrimary,
-    fontSize: 14,
   },
   chipTextSelected: {
+    ...typography.smallBold,
     color: colors.textOnPrimary,
-    fontWeight: "bold",
-    fontSize: 14,
   },
 });
 

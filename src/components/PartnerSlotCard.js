@@ -1,12 +1,14 @@
 // src/components/PartnerSlotCard.js
+
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 import PropTypes from "prop-types";
+import LinearGradient from "react-native-linear-gradient";
 
 import colors from "../theme/colors";
 import spacing from "../theme/spacing";
 import typography from "../theme/typography";
-import shadows from "../theme/shadow";
+import shadows from "../theme/shadows";
 
 import defaultAvatar from "../assets/avatars/avatar1.png";
 
@@ -30,20 +32,31 @@ const PartnerSlotCard = ({ slot, onAccept }) => {
         </Text>
         {note ? <Text style={styles.note}>{note}</Text> : null}
 
-        <View style={styles.tierBadge}>
+        <LinearGradient
+          colors={[colors.gradientStart, colors.gradientEnd]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.tierBadge}
+        >
           <Text style={styles.tierText}>{tier || "Free"} Tier</Text>
-        </View>
+        </LinearGradient>
       </View>
 
-      <TouchableOpacity
+      <LinearGradient
+        colors={[colors.gradientStart, colors.gradientEnd]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
         style={styles.joinBtn}
-        onPress={onAccept}
-        accessibilityRole="button"
-        accessibilityLabel="Accept training session"
-        testID={`accept-partner-${username?.toLowerCase().replace(/\s+/g, "-") || "user"}`}
       >
-        <Text style={styles.joinText}>Join</Text>
-      </TouchableOpacity>
+        <TouchableOpacity
+          onPress={onAccept}
+          accessibilityRole="button"
+          accessibilityLabel="Accept training session"
+          testID={`accept-partner-${username?.toLowerCase().replace(/\s+/g, "-") || "user"}`}
+        >
+          <Text style={styles.joinText}>Join</Text>
+        </TouchableOpacity>
+      </LinearGradient>
     </View>
   );
 };
@@ -56,8 +69,6 @@ PartnerSlotCard.propTypes = {
     tier: PropTypes.string,
     avatar: PropTypes.string,
     note: PropTypes.string,
-    participants: PropTypes.arrayOf(PropTypes.string),
-    userId: PropTypes.string,
   }).isRequired,
   onAccept: PropTypes.func.isRequired,
 };
@@ -67,22 +78,25 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: colors.glassBackground,
-    borderRadius: spacing.radiusLg,
-    padding: spacing.md,
-    marginBottom: spacing.md,
-    ...shadows.elevationCard,
+    borderRadius: spacing.radiusXl,
+    padding: spacing.spacing4,
+    marginBottom: spacing.spacing4,
+    ...shadows.shadow3,
   },
   avatar: {
-    width: 56,
-    height: 56,
-    borderRadius: spacing.radiusPill,
-    marginRight: spacing.md,
+    width: 64,
+    height: 64,
+    borderRadius: spacing.radiusFull,
+    marginRight: spacing.spacing4,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.cardBackground,
   },
   details: {
     flex: 1,
   },
   name: {
-    ...typography.heading4,
+    ...typography.heading3,
     color: colors.textPrimary,
   },
   meta: {
@@ -97,12 +111,11 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   tierBadge: {
-    marginTop: spacing.xs,
+    marginTop: spacing.spacing2,
     alignSelf: "flex-start",
-    backgroundColor: colors.accentBlue,
-    borderRadius: spacing.radiusSm,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 2,
+    borderRadius: spacing.radiusFull,
+    paddingVertical: spacing.spacing1,
+    paddingHorizontal: spacing.spacing3,
   },
   tierText: {
     ...typography.caption,
@@ -110,14 +123,14 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   joinBtn: {
-    backgroundColor: colors.primary,
-    borderRadius: spacing.radiusMd,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
+    borderRadius: spacing.radiusFull,
+    marginLeft: spacing.spacing3,
   },
   joinText: {
     ...typography.smallBold,
     color: colors.textOnPrimary,
+    paddingVertical: spacing.spacing3,
+    paddingHorizontal: spacing.spacing5,
   },
 });
 

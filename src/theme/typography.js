@@ -1,4 +1,5 @@
 // src/theme/typography.js
+
 import { Dimensions, PixelRatio, Platform } from "react-native";
 
 const { width } = Dimensions.get("window");
@@ -10,34 +11,46 @@ const scale = (size) => {
 };
 
 const typography = {
-  fontFamily: "System",
+  // 🌟 Use a premium, modern font
+  fontFamily: Platform.select({
+    ios: "System",
+    android: "sans-serif",
+    default: "System",
+  }),
 
-  // Display hero heading
+  // Hero display heading
   display: {
-    fontSize: scale(34),
+    fontSize: scale(38),
     fontWeight: "700",
-    lineHeight: scale(42),
+    lineHeight: scale(46),
   },
 
   heading1: {
-    fontSize: scale(28),
+    fontSize: scale(30),
     fontWeight: "700",
-    lineHeight: scale(36),
+    lineHeight: scale(38),
   },
   heading2: {
-    fontSize: scale(24),
+    fontSize: scale(26),
     fontWeight: "700",
-    lineHeight: scale(32),
+    lineHeight: scale(34),
   },
   heading3: {
+    fontSize: scale(22),
+    fontWeight: "600",
+    lineHeight: scale(30),
+  },
+  heading4: {
     fontSize: scale(20),
     fontWeight: "600",
     lineHeight: scale(28),
   },
-  heading4: {
+
+  // Added subheading style
+  subheading: {
     fontSize: scale(18),
-    fontWeight: "600",
-    lineHeight: scale(26),
+    fontWeight: "500",
+    lineHeight: scale(24),
   },
 
   body: {

@@ -1,11 +1,13 @@
 // src/components/MealPlanCard.js
+
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import PropTypes from "prop-types";
+import LinearGradient from "react-native-linear-gradient";
 import colors from "../theme/colors";
 import spacing from "../theme/spacing";
 import typography from "../theme/typography";
-import shadows from "../theme/shadow";
+import shadows from "../theme/shadows";
 
 const MealPlanCard = ({ meal, index }) => {
   if (!meal) return null;
@@ -31,7 +33,12 @@ const MealPlanCard = ({ meal, index }) => {
       )}
 
       {meal.macros && (
-        <View style={styles.macrosContainer}>
+        <LinearGradient
+          colors={[colors.gradientStart, colors.gradientEnd]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.macrosContainer}
+        >
           <Text style={styles.macro}>
             {`Protein: ${meal.macros.protein}g`}
           </Text>
@@ -41,7 +48,7 @@ const MealPlanCard = ({ meal, index }) => {
           <Text style={styles.macro}>
             {`Fats: ${meal.macros.fats}g`}
           </Text>
-        </View>
+        </LinearGradient>
       )}
     </View>
   );
@@ -64,42 +71,43 @@ MealPlanCard.propTypes = {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.glassBackground,
-    borderRadius: spacing.radiusLg,
-    marginBottom: spacing.lg,
-    padding: spacing.md,
-    ...shadows.elevationCard,
+    borderRadius: spacing.radiusXl,
+    marginBottom: spacing.spacing5,
+    padding: spacing.spacing4,
+    ...shadows.shadow3,
   },
   index: {
-    ...typography.caption,
-    color: colors.primary,
-    marginBottom: spacing.xs,
+    ...typography.bodyBold,
+    color: colors.accentBlue,
+    marginBottom: spacing.spacing1,
+    fontSize: 16,
   },
   name: {
-    ...typography.heading4,
+    ...typography.heading3,
     color: colors.textPrimary,
-    marginBottom: spacing.xs,
+    marginBottom: spacing.spacing1,
   },
   description: {
     ...typography.body,
     color: colors.textSecondary,
-    marginBottom: spacing.sm,
+    marginBottom: spacing.spacing2,
   },
   calories: {
-    ...typography.smallBold,
+    ...typography.bodyBold,
     color: colors.textPrimary,
     fontStyle: "italic",
-    marginBottom: spacing.xs,
+    marginBottom: spacing.spacing2,
   },
   macrosContainer: {
-    backgroundColor: colors.cardBackground,
-    borderRadius: spacing.radiusMd,
+    borderRadius: spacing.radiusLg,
     flexDirection: "row",
     justifyContent: "space-between",
-    padding: spacing.sm,
+    paddingVertical: spacing.spacing2,
+    paddingHorizontal: spacing.spacing3,
   },
   macro: {
     ...typography.caption,
-    color: colors.textPrimary,
+    color: colors.textOnPrimary,
   },
 });
 

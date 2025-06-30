@@ -28,6 +28,7 @@ const OFFLINE_PLANS_KEY = "repz_offline_user_plans";
 
 const UserPlansScreen = () => {
   const { userId } = useContext(UserContext);
+
   const [activeTab, setActiveTab] = useState("plans");
   const [plans, setPlans] = useState([]);
   const [createdChallenges, setCreatedChallenges] = useState([]);
@@ -35,6 +36,7 @@ const UserPlansScreen = () => {
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
+
   const fadeAnim = useFadeIn(300);
 
   const loadPlans = useCallback(async () => {
@@ -55,8 +57,7 @@ const UserPlansScreen = () => {
       try {
         const cached = await AsyncStorage.getItem(OFFLINE_PLANS_KEY);
         if (cached) {
-          const parsed = JSON.parse(cached);
-          setPlans(parsed);
+          setPlans(JSON.parse(cached));
           setError(i18n.t("plans.offlineMode"));
         } else {
           setError(i18n.t("plans.errorUnexpected"));
@@ -76,10 +77,9 @@ const UserPlansScreen = () => {
         where("creator", "==", userId)
       );
       const snap = await getDocs(q);
-      const data = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      setCreatedChallenges(data);
+      setCreatedChallenges(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
     } catch {
-      // Silence to avoid console warnings
+      // Silent
     }
   }, [userId]);
 
@@ -90,10 +90,9 @@ const UserPlansScreen = () => {
         where("opponents", "array-contains", userId)
       );
       const snap = await getDocs(q);
-      const data = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      setAcceptedChallenges(data);
+      setAcceptedChallenges(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
     } catch {
-      // Silence to avoid console warnings
+      // Silent
     }
   }, [userId]);
 
@@ -176,13 +175,7 @@ const UserPlansScreen = () => {
 
   const renderContent = () => {
     if (loading && activeTab === "plans") {
-      return (
-        <ActivityIndicator
-          size="large"
-          color={colors.primary}
-          style={styles.loading}
-        />
-      );
+      return <ActivityIndicator size="large" color={colors.primary} style={styles.loading} />;
     }
 
     if (error && activeTab === "plans" && plans.length === 0) {

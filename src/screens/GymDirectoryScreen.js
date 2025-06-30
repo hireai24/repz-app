@@ -14,7 +14,6 @@ import GymCard from "../components/GymCard";
 import colors from "../theme/colors";
 import spacing from "../theme/spacing";
 import typography from "../theme/typography";
-// ✅ Fixed import to use the actual file you have
 import gymIcon from "../assets/gymFeed/gym-icon.png";
 
 const GymDirectoryScreen = () => {
@@ -46,11 +45,16 @@ const GymDirectoryScreen = () => {
         <Image source={gymIcon} style={styles.gymIcon} />
         <Text style={styles.header}>{`Nearby Gyms`}</Text>
       </View>
+
       {loading ? (
-        <ActivityIndicator size="large" color={colors.primary} style={styles.loading} />
+        <ActivityIndicator
+          size="large"
+          color={colors.primary}
+          style={styles.loading}
+        />
       ) : gyms.length === 0 ? (
         <Text style={styles.emptyText}>
-          No gyms found nearby. Check back later.
+          {`No gyms found nearby.\nCheck back later.`}
         </Text>
       ) : (
         <FlatList
@@ -79,9 +83,10 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   gymIcon: {
-    width: 24,
-    height: 24,
+    width: 28,
+    height: 28,
     marginRight: spacing.sm,
+    tintColor: colors.primary,
   },
   header: {
     ...typography.heading2,

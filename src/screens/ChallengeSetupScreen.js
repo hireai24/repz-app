@@ -22,6 +22,7 @@ import i18n from "../locales/i18n";
 import colors from "../theme/colors";
 import spacing from "../theme/spacing";
 import typography from "../theme/typography";
+import shadows from "../theme/shadow";
 
 const ChallengeSetupScreen = () => {
   const navigation = useNavigation();
@@ -112,70 +113,72 @@ const ChallengeSetupScreen = () => {
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>{i18n.t("challengeSetup.title")}</Text>
 
-      <TextInput
-        style={styles.input}
-        placeholder={i18n.t("challengeSetup.exercisePlaceholder")}
-        placeholderTextColor={colors.textTertiary}
-        value={exercise}
-        onChangeText={setExercise}
-      />
-
-      <TextInput
-        style={styles.input}
-        placeholder={i18n.t("challengeSetup.opponentsPlaceholder")}
-        placeholderTextColor={colors.textTertiary}
-        value={opponents}
-        onChangeText={setOpponents}
-        autoCapitalize="none"
-      />
-
-      <TextInput
-        style={styles.input}
-        placeholder={i18n.t("challengeSetup.xpWagerPlaceholder")}
-        placeholderTextColor={colors.textTertiary}
-        value={wagerXP}
-        onChangeText={(text) => setWagerXP(text.replace(/[^0-9]/g, ""))}
-        keyboardType="numeric"
-      />
-
-      <ChallengeTypeSelector selectedType={type} onSelect={setType} />
-
-      <TextInput
-        style={styles.textArea}
-        placeholder={i18n.t("challengeSetup.descriptionPlaceholder")}
-        placeholderTextColor={colors.textTertiary}
-        value={description}
-        onChangeText={setDescription}
-        multiline
-        numberOfLines={4}
-      />
-
-      <View style={styles.toggleRow}>
-        <Text style={styles.toggleLabel}>🎯 {i18n.t("challengeSetup.winnerTakesAll")}</Text>
-        <Switch
-          value={winnerTakesAll}
-          onValueChange={setWinnerTakesAll}
-          trackColor={{ false: colors.gray, true: colors.primary }}
-          thumbColor={colors.white}
+      <View style={styles.card}>
+        <TextInput
+          style={styles.input}
+          placeholder={i18n.t("challengeSetup.exercisePlaceholder")}
+          placeholderTextColor={colors.textTertiary}
+          value={exercise}
+          onChangeText={setExercise}
         />
-      </View>
 
-      <View style={styles.toggleRow}>
-        <Text style={styles.toggleLabel}>🏋️ {i18n.t("challengeSetup.representGym")}</Text>
-        <Switch
-          value={representGym}
-          onValueChange={setRepresentGym}
-          trackColor={{ false: colors.gray, true: colors.accentBlue }}
-          thumbColor={colors.white}
-          disabled={!userProfile?.gymName}
+        <TextInput
+          style={styles.input}
+          placeholder={i18n.t("challengeSetup.opponentsPlaceholder")}
+          placeholderTextColor={colors.textTertiary}
+          value={opponents}
+          onChangeText={setOpponents}
+          autoCapitalize="none"
         />
-      </View>
 
-      {!userProfile?.gymName && representGym && (
-        <Text style={styles.disabledToggleHint}>
-          {i18n.t("challengeSetup.noGymHint")}
-        </Text>
-      )}
+        <TextInput
+          style={styles.input}
+          placeholder={i18n.t("challengeSetup.xpWagerPlaceholder")}
+          placeholderTextColor={colors.textTertiary}
+          value={wagerXP}
+          onChangeText={(text) => setWagerXP(text.replace(/[^0-9]/g, ""))}
+          keyboardType="numeric"
+        />
+
+        <ChallengeTypeSelector selectedType={type} onSelect={setType} />
+
+        <TextInput
+          style={styles.textArea}
+          placeholder={i18n.t("challengeSetup.descriptionPlaceholder")}
+          placeholderTextColor={colors.textTertiary}
+          value={description}
+          onChangeText={setDescription}
+          multiline
+          numberOfLines={4}
+        />
+
+        <View style={styles.toggleRow}>
+          <Text style={styles.toggleLabel}>🎯 {i18n.t("challengeSetup.winnerTakesAll")}</Text>
+          <Switch
+            value={winnerTakesAll}
+            onValueChange={setWinnerTakesAll}
+            trackColor={{ false: colors.gray, true: colors.primary }}
+            thumbColor={colors.white}
+          />
+        </View>
+
+        <View style={styles.toggleRow}>
+          <Text style={styles.toggleLabel}>🏋️ {i18n.t("challengeSetup.representGym")}</Text>
+          <Switch
+            value={representGym}
+            onValueChange={setRepresentGym}
+            trackColor={{ false: colors.gray, true: colors.accentBlue }}
+            thumbColor={colors.white}
+            disabled={!userProfile?.gymName}
+          />
+        </View>
+
+        {!userProfile?.gymName && representGym && (
+          <Text style={styles.disabledToggleHint}>
+            {i18n.t("challengeSetup.noGymHint")}
+          </Text>
+        )}
+      </View>
 
       <TouchableOpacity
         style={[styles.submitBtn, !canSubmit() && styles.disabledBtn]}
@@ -201,14 +204,19 @@ const styles = StyleSheet.create({
   title: {
     ...typography.heading2,
     color: colors.textPrimary,
-    marginBottom: spacing.lg,
+    marginBottom: spacing.md,
     textAlign: "center",
+  },
+  card: {
+    backgroundColor: colors.glassBackground,
+    borderRadius: spacing.radiusLg,
+    padding: spacing.lg,
+    marginBottom: spacing.lg,
+    ...shadows.elevation2,
   },
   input: {
     backgroundColor: colors.surface,
-    borderRadius: spacing.borderRadius,
-    borderWidth: 1,
-    borderColor: colors.border,
+    borderRadius: spacing.radiusMd,
     color: colors.textPrimary,
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.md,
@@ -216,9 +224,7 @@ const styles = StyleSheet.create({
   },
   textArea: {
     backgroundColor: colors.surface,
-    borderRadius: spacing.borderRadius,
-    borderWidth: 1,
-    borderColor: colors.border,
+    borderRadius: spacing.radiusMd,
     color: colors.textPrimary,
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.md,
@@ -244,17 +250,17 @@ const styles = StyleSheet.create({
   },
   submitBtn: {
     backgroundColor: colors.primary,
-    borderRadius: spacing.borderRadius,
+    borderRadius: spacing.radiusLg,
     paddingVertical: spacing.md,
     alignItems: "center",
-    marginTop: spacing.lg,
+    marginTop: spacing.sm,
   },
   submitText: {
     ...typography.bodyBold,
     color: colors.textOnPrimary,
   },
   disabledBtn: {
-    backgroundColor: colors.disabled,
+    opacity: 0.5,
   },
 });
 

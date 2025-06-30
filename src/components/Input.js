@@ -1,4 +1,5 @@
 // src/components/Input.js
+
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { TextInput, View, Text, StyleSheet } from "react-native";
@@ -23,12 +24,7 @@ const Input = ({
   return (
     <View style={[styles.container, style]}>
       {label ? (
-        <Text
-          style={styles.label}
-          accessibilityRole="label"
-        >
-          {label}
-        </Text>
+        <Text style={styles.label}>{label}</Text>
       ) : null}
       <TextInput
         style={[
@@ -72,32 +68,32 @@ Input.propTypes = {
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: spacing.md,
+    marginBottom: spacing.spacing4,
   },
   label: {
     ...typography.bodyBold,
-    color: colors.textSecondary,
-    marginBottom: spacing.xs,
+    color: colors.textPrimary,
+    marginBottom: spacing.spacing1,
   },
   input: {
     backgroundColor: colors.glassBackground,
     borderColor: colors.border,
     borderWidth: 1,
-    borderRadius: spacing.radiusMd,
+    borderRadius: spacing.radiusFull,
     color: colors.textPrimary,
     fontSize: typography.body.fontSize,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.spacing3,
+    paddingHorizontal: spacing.spacing4,
   },
   inputFocused: {
     borderColor: colors.accentBlue,
     shadowColor: colors.accentBlue,
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
+    shadowOpacity: 0.4,
+    shadowRadius: 6,
   },
   inputDisabled: {
-    opacity: 0.6,
+    opacity: 0.5,
   },
 });
 

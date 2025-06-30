@@ -1,11 +1,12 @@
 // src/components/ChallengeWagerCard.js
+
 import React from "react";
 import PropTypes from "prop-types";
 import { Text, StyleSheet, TouchableOpacity, View } from "react-native";
 import colors from "../theme/colors";
 import typography from "../theme/typography";
 import spacing from "../theme/spacing";
-import shadows from "../theme/shadow";
+import shadows from "../theme/shadows";
 import i18n from "../locales/i18n";
 
 const ChallengeWagerCard = ({ challenge, onPress }) => {
@@ -48,35 +49,42 @@ const ChallengeWagerCard = ({ challenge, onPress }) => {
 
   return (
     <TouchableOpacity
-      style={[styles.card, isUserWinner && styles.winnerGlow]}
+      style={[
+        styles.card,
+        isUserWinner && styles.winnerGlow,
+        isUserLoser && styles.loserBorder,
+      ]}
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={`View challenge: ${title || "XP Challenge"}`}
     >
       <Text style={styles.title}>{title || i18n.t("challengeWager.defaultTitle")}</Text>
 
-      <Text style={styles.detail}>
-        💪 {i18n.t("challengeWager.selectExercise")}: {exercise || "N/A"}
-      </Text>
+      <View style={styles.section}>
+        <Text style={styles.detail}>
+          💪 {i18n.t("challengeWager.selectExercise")}: {exercise || "N/A"}
+        </Text>
+        <Text style={styles.detail}>
+          🧩 {i18n.t("challengeWager.type")}: {type?.toUpperCase() || "N/A"}
+        </Text>
+      </View>
 
-      <Text style={styles.detail}>
-        🧩 {i18n.t("challengeWager.type")}: {type?.toUpperCase() || "N/A"}
-      </Text>
+      <View style={styles.section}>
+        <Text style={styles.detail}>
+          ⚔️ {i18n.t("challengeWager.opponents")}:{" "}
+          {opponents.length > 0
+            ? opponents.join(", ")
+            : i18n.t("challengeWager.noOpponentsYet")}
+        </Text>
+        <Text style={styles.detail}>
+          🎯 {i18n.t("challengeWager.wagerAmount")}: {xp} XP
+        </Text>
+        <Text style={styles.detail}>💰 Pot: {xpPot || xp} XP</Text>
+      </View>
 
-      <Text style={styles.detail}>
-        ⚔️ {i18n.t("challengeWager.opponents")}:{" "}
-        {opponents.length > 0
-          ? opponents.join(", ")
-          : i18n.t("challengeWager.noOpponentsYet")}
-      </Text>
-
-      <Text style={styles.detail}>
-        🎯 {i18n.t("challengeWager.wagerAmount")}: {xp} XP
-      </Text>
-
-      <Text style={styles.detail}>💰 Pot: {xpPot || xp} XP</Text>
-
-      {expiresAt && <Text style={styles.countdown}>{getCountdown()}</Text>}
+      {expiresAt && (
+        <Text style={styles.countdown}>{getCountdown()}</Text>
+      )}
 
       {(verified || votes > 0) && (
         <Text style={styles.verified}>
@@ -127,45 +135,59 @@ ChallengeWagerCard.propTypes = {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.glassBackground,
-    borderRadius: spacing.radiusLg,
-    padding: spacing.md,
-    marginBottom: spacing.md,
-    ...shadows.elevationCard,
+    borderRadius: spacing.radiusXl,
+    padding: spacing.spacing5,
+    marginBottom: spacing.spacing5,
+    ...shadows.shadow3,
+  },
+  winnerGlow: {
+    borderColor: colors.gold,
+    borderWidth: 2,
+    shadowColor: colors.gold,
+    shadowOpacity: 0.4,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 0 },
+  },
+  loserBorder: {
+    borderColor: colors.danger,
+    borderWidth: 1,
   },
   title: {
-    ...typography.heading4,
+    ...typography.heading3,
     color: colors.textPrimary,
-    marginBottom: spacing.sm,
+    marginBottom: spacing.spacing3,
+  },
+  section: {
+    marginBottom: spacing.spacing3,
   },
   detail: {
     ...typography.caption,
     color: colors.textSecondary,
-    marginBottom: 4,
+    marginBottom: 2,
   },
   countdown: {
     ...typography.caption,
     color: colors.warning,
-    marginBottom: 4,
+    marginBottom: spacing.spacing2,
   },
   verified: {
     ...typography.caption,
     color: colors.accentBlue,
     fontWeight: "600",
-    marginBottom: 4,
+    marginBottom: spacing.spacing2,
   },
   flagged: {
     ...typography.caption,
     color: colors.warning,
     fontWeight: "600",
-    marginBottom: 4,
+    marginBottom: spacing.spacing2,
   },
   statusContainer: {
-    marginTop: spacing.sm,
+    marginTop: spacing.spacing2,
     alignItems: "flex-start",
   },
   status: {
-    ...typography.caption,
-    fontWeight: "bold",
+    ...typography.bodyBold,
     color: colors.textSecondary,
   },
   winner: {
@@ -173,10 +195,6 @@ const styles = StyleSheet.create({
   },
   loser: {
     color: colors.danger,
-  },
-  winnerGlow: {
-    borderColor: colors.gold,
-    borderWidth: 2,
   },
 });
 

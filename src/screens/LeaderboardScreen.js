@@ -104,14 +104,25 @@ const LeaderboardScreen = () => {
       </View>
 
       {/* Categories */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.scrollRow}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.chipRow}
+      >
         {categories.map((cat) => (
           <TouchableOpacity
             key={cat}
-            style={[styles.chip, category === cat && styles.chipActive]}
+            style={[
+              styles.chip,
+              category === cat && styles.chipActive,
+            ]}
             onPress={() => setCategory(cat)}
           >
-            <Text style={category === cat ? styles.chipTextActive : styles.chipText}>
+            <Text
+              style={
+                category === cat ? styles.chipTextActive : styles.chipText
+              }
+            >
               {i18n.t(`leaderboard.category.${cat.toLowerCase()}`, cat)}
             </Text>
           </TouchableOpacity>
@@ -119,14 +130,25 @@ const LeaderboardScreen = () => {
       </ScrollView>
 
       {/* Filters */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.scrollRow}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.chipRow}
+      >
         {filters.map((f) => (
           <TouchableOpacity
             key={f}
-            style={[styles.chipSmall, filter === f && styles.chipActive]}
+            style={[
+              styles.chipSmall,
+              filter === f && styles.chipActive,
+            ]}
             onPress={() => setFilter(f)}
           >
-            <Text style={filter === f ? styles.chipTextActive : styles.chipText}>
+            <Text
+              style={
+                filter === f ? styles.chipTextActive : styles.chipText
+              }
+            >
               {i18n.t(`leaderboard.filter.${f.toLowerCase().replace(/\s/g, "")}`, f)}
             </Text>
           </TouchableOpacity>
@@ -136,7 +158,11 @@ const LeaderboardScreen = () => {
       {error ? (
         <Text style={styles.errorText}>{error}</Text>
       ) : loading ? (
-        <ActivityIndicator size="large" color={colors.primary} style={styles.loadingIndicator} />
+        <ActivityIndicator
+          size="large"
+          color={colors.primary}
+          style={styles.loadingIndicator}
+        />
       ) : (
         <FlatList
           data={leaders}
@@ -146,28 +172,34 @@ const LeaderboardScreen = () => {
           }
           contentContainerStyle={styles.listContent}
           renderItem={({ item, index }) => (
-            <View style={styles.row}>
-              <Text style={styles.rank}>#{index + 1}</Text>
-              <Image
-                source={item.avatar ? { uri: item.avatar } : avatarFallback}
-                style={styles.avatar}
-              />
-              <View style={styles.info}>
-                <Text style={styles.name}>{item.name || i18n.t("common.unknown")}</Text>
-                <Text style={styles.value}>
-                  {item.weight
-                    ? `${item.weight} kg • ${item.reps} ${i18n.t("leaderboard.reps")}`
-                    : item.value || "N/A"}
-                </Text>
+            <View style={styles.card}>
+              <View style={styles.row}>
+                <Text style={styles.rank}>#{index + 1}</Text>
+                <Image
+                  source={item.avatar ? { uri: item.avatar } : avatarFallback}
+                  style={styles.avatar}
+                />
+                <View style={styles.info}>
+                  <Text style={styles.name}>
+                    {item.name || i18n.t("common.unknown")}
+                  </Text>
+                  <Text style={styles.value}>
+                    {item.weight
+                      ? `${item.weight} kg • ${item.reps} ${i18n.t("leaderboard.reps")}`
+                      : item.value || "N/A"}
+                  </Text>
+                </View>
+                {item.videoUrl && (
+                  <TouchableOpacity
+                    onPress={() => Linking.openURL(item.videoUrl)}
+                    style={styles.watchButton}
+                  >
+                    <Text style={styles.watch}>
+                      {i18n.t("leaderboard.watch")}
+                    </Text>
+                  </TouchableOpacity>
+                )}
               </View>
-              {item.videoUrl && (
-                <TouchableOpacity
-                  onPress={() => Linking.openURL(item.videoUrl)}
-                  style={styles.watchButton}
-                >
-                  <Text style={styles.watch}>{i18n.t("leaderboard.watch")}</Text>
-                </TouchableOpacity>
-              )}
             </View>
           )}
           ListEmptyComponent={
@@ -188,7 +220,8 @@ const LeaderboardScreen = () => {
                   leaders[0]?.weight && (
                     <Text style={styles.yourRankSub}>
                       {i18n.t("leaderboard.gainToBreakTop", {
-                        value: leaders[0].weight - userRankData.bestLift.weight,
+                        value:
+                          leaders[0].weight - userRankData.bestLift.weight,
                       })}
                     </Text>
                   )}
@@ -222,7 +255,7 @@ const styles = StyleSheet.create({
     ...typography.heading2,
     color: colors.textPrimary,
   },
-  scrollRow: {
+  chipRow: {
     marginBottom: spacing.sm,
   },
   chip: {
@@ -264,13 +297,16 @@ const styles = StyleSheet.create({
     paddingTop: spacing.md,
     paddingBottom: spacing.xl,
   },
+  card: {
+    backgroundColor: colors.glassBackground,
+    borderRadius: 12,
+    marginBottom: spacing.sm,
+    padding: spacing.md,
+    ...shadows.elevation1,
+  },
   row: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.surface,
-    borderRadius: 10,
-    padding: spacing.md,
-    marginBottom: spacing.sm,
   },
   rank: {
     color: colors.accentYellow,
@@ -304,10 +340,11 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   yourRankBox: {
-    backgroundColor: colors.surface,
+    backgroundColor: colors.glassBackground,
     borderRadius: 10,
     padding: spacing.md,
     marginTop: spacing.lg,
+    ...shadows.elevation1,
   },
   yourRankText: {
     color: colors.textPrimary,

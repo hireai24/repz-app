@@ -10,11 +10,12 @@ import {
   TouchableOpacity,
 } from "react-native";
 import PropTypes from "prop-types";
+import LinearGradient from "react-native-linear-gradient";
 
 import colors from "../theme/colors";
 import spacing from "../theme/spacing";
 import typography from "../theme/typography";
-import shadows from "../theme/shadow";
+import shadows from "../theme/shadows";
 import i18n from "../locales/i18n";
 
 import streak3 from "../assets/trophies/streak3.png";
@@ -85,6 +86,10 @@ const TrophyModal = ({ visible, onClose, milestone, type = "workout" }) => {
       <View style={styles.overlay}>
         <View style={styles.modal}>
           <View style={styles.trophyWrapper}>
+            <LinearGradient
+              colors={[colors.primary, "transparent"]}
+              style={styles.glow}
+            />
             {trophyImg && (
               <Image
                 source={trophyImg}
@@ -93,7 +98,6 @@ const TrophyModal = ({ visible, onClose, milestone, type = "workout" }) => {
                 accessibilityLabel={`Trophy - ${milestone} ${type}`}
               />
             )}
-            <View style={styles.glow} />
           </View>
           <Text style={styles.title}>{i18n.t("trophy.congrats")}</Text>
           <Text style={styles.body}>
@@ -101,17 +105,23 @@ const TrophyModal = ({ visible, onClose, milestone, type = "workout" }) => {
               ? `🔥 ${milestone} Battle Wins in a Row!`
               : i18n.t("trophy.milestone", { days: milestone })}
           </Text>
-          <Text style={styles.body}>
+          <Text style={styles.xpText}>
             {i18n.t("trophy.bonusXP", { xp: xpReward })}
           </Text>
-          <TouchableOpacity
+          <LinearGradient
+            colors={[colors.gradientStart, colors.gradientEnd]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
             style={styles.button}
-            onPress={onClose}
-            accessibilityRole="button"
-            accessibilityLabel="Close trophy modal"
           >
-            <Text style={styles.buttonText}>{i18n.t("trophy.ok")}</Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              onPress={onClose}
+              accessibilityRole="button"
+              accessibilityLabel="Close trophy modal"
+            >
+              <Text style={styles.buttonText}>{i18n.t("trophy.ok")}</Text>
+            </TouchableOpacity>
+          </LinearGradient>
         </View>
       </View>
     </Modal>
@@ -134,54 +144,57 @@ const styles = StyleSheet.create({
   },
   modal: {
     backgroundColor: colors.glassBackground,
-    borderRadius: spacing.radiusLg,
-    padding: spacing.lg,
+    borderRadius: spacing.radiusXl,
+    padding: spacing.spacing4,
     alignItems: "center",
     width: "85%",
-    ...shadows.elevationCard,
+    ...shadows.shadow4,
   },
   trophyWrapper: {
     position: "relative",
-    marginBottom: spacing.md,
+    marginBottom: spacing.spacing3,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  glow: {
+    position: "absolute",
+    width: 160,
+    height: 160,
+    borderRadius: 80,
+    opacity: 0.15,
   },
   trophy: {
     width: 140,
     height: 140,
     zIndex: 2,
   },
-  glow: {
-    position: "absolute",
-    top: 10,
-    left: 10,
-    right: 10,
-    bottom: 10,
-    borderRadius: 70,
-    backgroundColor: colors.primary,
-    opacity: 0.1,
-    zIndex: 1,
-  },
   title: {
     ...typography.heading2,
     color: colors.primary,
-    marginBottom: spacing.xs,
+    marginBottom: spacing.spacing1,
     textAlign: "center",
   },
   body: {
     ...typography.body,
     color: colors.textPrimary,
-    marginBottom: spacing.xs,
+    marginBottom: spacing.spacing1,
+    textAlign: "center",
+  },
+  xpText: {
+    ...typography.bodyBold,
+    color: colors.accentBlue,
+    marginBottom: spacing.spacing2,
     textAlign: "center",
   },
   button: {
-    backgroundColor: colors.primary,
-    borderRadius: spacing.radiusMd,
-    paddingHorizontal: spacing.xl,
-    paddingVertical: spacing.sm,
-    marginTop: spacing.md,
+    borderRadius: spacing.radiusFull,
+    marginTop: spacing.spacing2,
   },
   buttonText: {
-    ...typography.buttonText,
+    ...typography.button,
     color: colors.textOnPrimary,
+    paddingVertical: spacing.spacing3,
+    paddingHorizontal: spacing.spacing5,
   },
 });
 

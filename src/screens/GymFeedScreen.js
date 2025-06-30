@@ -36,7 +36,7 @@ const GymFeedScreen = () => {
         setPosts(feedData.posts || []);
         setGym(gymData.gym || null);
       } catch {
-        // Optional: show alert here
+        // Optionally handle errors here
       } finally {
         setLoading(false);
       }
@@ -80,8 +80,10 @@ const GymFeedScreen = () => {
                 <TouchableOpacity
                   style={styles.joinBtn}
                   onPress={() => navigation.navigate("JoinGym", { gymId })}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Join ${gym.name}`}
                 >
-                  <Text style={styles.joinText}>Join Gym</Text>
+                  <Text style={styles.joinText}>{`Join Gym`}</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -90,7 +92,7 @@ const GymFeedScreen = () => {
       )}
 
       {posts.length === 0 ? (
-        <Text style={styles.empty}>No posts yet.</Text>
+        <Text style={styles.empty}>{`No posts yet.`}</Text>
       ) : (
         posts.map((post) => (
           <View key={post.id} style={styles.postWrapper}>
@@ -138,6 +140,7 @@ const styles = StyleSheet.create({
     borderRadius: 35,
     borderWidth: 2,
     borderColor: colors.white,
+    backgroundColor: colors.surface,
   },
   gymInfo: {
     marginLeft: spacing.md,

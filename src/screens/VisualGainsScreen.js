@@ -1,7 +1,7 @@
 // src/screens/VisualGainsScreen.js
 
 import React, { useState, useContext } from "react";
-import PropTypes from "prop-types"; // ✅ Add this line
+import PropTypes from "prop-types";
 import {
   View,
   Text,
@@ -182,7 +182,9 @@ const VisualGainsScreen = () => {
 
       {/* Error and Success */}
       {errorText ? <Text style={styles.errorText}>{errorText}</Text> : null}
-      {successMessage ? <Text style={styles.successText}>{successMessage}</Text> : null}
+      {successMessage ? (
+        <Text style={styles.successText}>{successMessage}</Text>
+      ) : null}
 
       {/* Analyze Button */}
       {beforeImg && afterImg && (
@@ -193,8 +195,6 @@ const VisualGainsScreen = () => {
           ]}
           onPress={handleAnalyze}
           disabled={loading}
-          accessibilityRole="button"
-          accessibilityLabel={i18n.t("visual.analyze")}
         >
           {loading ? (
             <ActivityIndicator color={colors.textOnPrimary} />
@@ -207,10 +207,6 @@ const VisualGainsScreen = () => {
       {/* Feedback */}
       {feedback && (
         <View style={styles.resultBlock}>
-          <Image
-            source={require("../assets/icons/ghost.png")}
-            style={styles.watermark}
-          />
           <Text style={styles.resultTitle}>{i18n.t("visual.feedback")}</Text>
           <Text style={styles.resultText}>{feedback}</Text>
         </View>
@@ -234,8 +230,6 @@ const UploadImageBox = ({ label, imageUri, onPick }) => (
   <TouchableOpacity
     style={styles.imageBox}
     onPress={onPick}
-    accessibilityRole="button"
-    accessibilityLabel={label}
   >
     {imageUri ? (
       <Image source={{ uri: imageUri }} style={styles.image} />
@@ -357,7 +351,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: spacing.md,
     marginTop: spacing.lg,
-    position: "relative",
   },
   resultTitle: {
     ...typography.heading3,
@@ -367,14 +360,6 @@ const styles = StyleSheet.create({
   resultText: {
     ...typography.body,
     color: colors.textSecondary,
-  },
-  watermark: {
-    position: "absolute",
-    opacity: 0.05,
-    top: spacing.md,
-    right: spacing.md,
-    width: 64,
-    height: 64,
   },
   toggleRow: {
     flexDirection: "row",

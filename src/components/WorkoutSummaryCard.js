@@ -1,4 +1,5 @@
 // src/components/WorkoutSummaryCard.js
+
 import React, { useEffect } from "react";
 import PropTypes from "prop-types";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
@@ -10,7 +11,7 @@ import useBounceXP from "../animations/bounceXP";
 import colors from "../theme/colors";
 import spacing from "../theme/spacing";
 import typography from "../theme/typography";
-import shadows from "../theme/shadow";
+import shadows from "../theme/shadows";
 
 const WorkoutSummaryCard = ({
   volume,
@@ -54,10 +55,11 @@ const WorkoutSummaryCard = ({
         <Text style={styles.value}>{prCount}</Text>
       </View>
 
-      <View style={styles.row}>
+      <View style={[styles.row, styles.xpRow]}>
+        <View style={styles.xpGlow} />
         <Ionicons name="flash-outline" size={20} color={colors.success} />
         <Text style={styles.label}>XP Earned:</Text>
-        <Text style={[styles.value, { transform: [{ scale }] }]}>
+        <Text style={[styles.xpValue, { transform: [{ scale }] }]}>
           +{xpEarned}
         </Text>
       </View>
@@ -80,6 +82,7 @@ const WorkoutSummaryCard = ({
           style={styles.shareBtn}
           accessibilityRole="button"
           accessibilityLabel="Share your lift"
+          activeOpacity={0.85}
         >
           <Ionicons name="share-social-outline" size={18} color={colors.textOnPrimary} />
           <Text style={styles.shareText}>Share Your Lift</Text>
@@ -94,6 +97,7 @@ const WorkoutSummaryCard = ({
           style={styles.adaptBtn}
           accessibilityRole="button"
           accessibilityLabel="Use AI to adapt your next workout"
+          activeOpacity={0.85}
         >
           <Ionicons name="sparkles-outline" size={18} color={colors.textOnPrimary} />
           <Text style={styles.adaptText}>AI Adapt Next Session</Text>
@@ -120,7 +124,7 @@ const styles = StyleSheet.create({
     borderRadius: spacing.radiusLg,
     marginTop: spacing.lg,
     padding: spacing.lg,
-    ...shadows.elevationCard,
+    ...shadows.shadow4,
   },
   title: {
     ...typography.heading3,
@@ -143,6 +147,25 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     fontWeight: "600",
   },
+  xpRow: {
+    position: "relative",
+  },
+  xpGlow: {
+    position: "absolute",
+    top: -6,
+    bottom: -6,
+    left: -6,
+    right: -6,
+    borderRadius: spacing.radiusMd,
+    backgroundColor: colors.success,
+    opacity: 0.05,
+  },
+  xpValue: {
+    ...typography.caption,
+    color: colors.success,
+    fontWeight: "700",
+    fontSize: 16,
+  },
   actions: {
     flexDirection: "row",
     gap: spacing.sm,
@@ -151,11 +174,11 @@ const styles = StyleSheet.create({
   shareBtn: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.secondary,
     borderRadius: spacing.radiusMd,
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
     flex: 1,
+    backgroundColor: colors.accentBlue,
   },
   shareText: {
     ...typography.smallBold,
@@ -165,11 +188,11 @@ const styles = StyleSheet.create({
   adaptBtn: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.primary,
     borderRadius: spacing.radiusMd,
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
     flex: 1,
+    backgroundColor: colors.primary,
   },
   adaptText: {
     ...typography.smallBold,

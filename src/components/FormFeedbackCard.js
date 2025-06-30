@@ -1,12 +1,14 @@
 // src/components/FormFeedbackCard.js
+
 import React from "react";
 import PropTypes from "prop-types";
 import { View, Text, StyleSheet } from "react-native";
+import LinearGradient from "react-native-linear-gradient";
 
 import colors from "../theme/colors";
 import spacing from "../theme/spacing";
 import typography from "../theme/typography";
-import shadows from "../theme/shadow";
+import shadows from "../theme/shadows";
 
 const getColor = (color) => {
   switch (color) {
@@ -35,27 +37,36 @@ const FormFeedbackCard = ({ rep }) => {
 
   return (
     <View
-      style={[
-        styles.card,
-        { borderLeftColor: getColor(color) }
-      ]}
+      style={styles.cardWrapper}
       accessibilityRole="summary"
       accessibilityLabel={`Feedback for rep ${repNumber ?? "unknown"}`}
       testID={`form-feedback-rep-${repNumber ?? "unknown"}`}
     >
-      <View style={styles.headerRow}>
-        {repNumber !== undefined && (
-          <Text style={styles.repText}>{`Rep ${repNumber}`}</Text>
-        )}
-        {score !== undefined && (
-          <Text style={styles.scoreText}>
-            {getEmojiForScore(score)} {score}/10
-          </Text>
-        )}
+      <LinearGradient
+        colors={[
+          getColor(color),
+          getColor(color) + "00" // Fade out to transparent
+        ]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        style={styles.borderAccent}
+      />
+      <View style={styles.content}>
+        <View style={styles.headerRow}>
+          {repNumber !== undefined && (
+            <Text style={styles.repText}>{`Rep ${repNumber}`}</Text>
+          )}
+          {score !== undefined && (
+            <Text style={[styles.scoreText, { color: getColor(color) }]}>
+              <Text style={styles.emoji}>{getEmojiForScore(score)}</Text>{" "}
+              {score}/10
+            </Text>
+          )}
+        </View>
+        <Text style={styles.feedbackText}>
+          {feedback || "No specific feedback provided."}
+        </Text>
       </View>
-      <Text style={styles.feedbackText}>
-        {feedback || "No specific feedback provided."}
-      </Text>
     </View>
   );
 };
@@ -70,33 +81,42 @@ FormFeedbackCard.propTypes = {
 };
 
 const styles = StyleSheet.create({
-  card: {
+  cardWrapper: {
+    flexDirection: "row",
     backgroundColor: colors.glassBackground,
-    borderLeftWidth: 4,
-    borderRadius: spacing.radiusLg,
-    marginBottom: spacing.md,
-    padding: spacing.md,
-    ...shadows.elevationCard,
+    borderRadius: spacing.radiusXl,
+    marginBottom: spacing.spacing4,
+    overflow: "hidden",
+    ...shadows.shadow3,
+  },
+  borderAccent: {
+    width: 6,
+  },
+  content: {
+    flex: 1,
+    padding: spacing.spacing4,
   },
   headerRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: spacing.xs,
+    marginBottom: spacing.spacing2,
   },
   repText: {
     ...typography.heading4,
     color: colors.textPrimary,
   },
   scoreText: {
-    ...typography.caption,
-    fontWeight: "600",
-    color: colors.success,
+    ...typography.bodyBold,
+  },
+  emoji: {
+    fontSize: 18,
+    marginRight: 4,
   },
   feedbackText: {
     ...typography.body,
     color: colors.textSecondary,
-    marginTop: spacing.xs,
+    marginTop: spacing.spacing1,
   },
 });
 
